@@ -69,12 +69,77 @@
             background: white;
             border-bottom: 1px solid #e9ecef;
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 12px;
             position: sticky;
             top: 124px;
             z-index: 99;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .settings-panel {
+            background: #f8fafc;
+            padding: 24px 16px;
+            border-bottom: 2px solid #e9ecef;
+            display: none;
+        }
+
+        .settings-panel.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                max-height: 500px;
+            }
+        }
+
+        .settings-panel h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #1f2937;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .input-group input {
+            padding: 12px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #4472C4;
+            background: #eff6ff;
+            box-shadow: 0 0 0 3px rgba(68, 114, 196, 0.1);
         }
 
         .btn {
@@ -306,10 +371,14 @@
             }
 
             .controls {
-                grid-template-columns: repeat(3, 1fr);
+                grid-template-columns: repeat(4, 1fr);
                 position: relative;
                 top: 0;
                 padding: 24px 30px;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr 1fr;
             }
 
             .content {
@@ -415,6 +484,24 @@
             <button class="btn btn-secondary" onclick="saveToLocal()">
                 Save Changes
             </button>
+            <button class="btn btn-secondary" onclick="toggleSettings()">
+                Settings
+            </button>
+        </div>
+
+        <div class="settings-panel" id="settingsPanel">
+            <h3>Salesman Information</h3>
+            <div class="settings-grid">
+                <div class="input-group">
+                    <label>Your Name</label>
+                    <input type="text" id="salesmanName" placeholder="e.g., John Smith">
+                </div>
+                <div class="input-group">
+                    <label>Phone Number</label>
+                    <input type="text" id="salesmanPhone" placeholder="e.g., 0400 123 456">
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
         </div>
 
         <div class="content" id="categoriesContainer">
@@ -432,6 +519,12 @@
     <canvas id="downloadCanvas"></canvas>
 
     <script>
+        // Salesman information
+        let salesmanInfo = {
+            name: '',
+            phone: ''
+        };
+
         // Initial data
         let priceData = {
             "TOMATOES": [
@@ -511,6 +604,13 @@
             if (saved) {
                 priceData = JSON.parse(saved);
             }
+            
+            const savedInfo = localStorage.getItem('everfresh_salesman_info');
+            if (savedInfo) {
+                salesmanInfo = JSON.parse(savedInfo);
+                document.getElementById('salesmanName').value = salesmanInfo.name || '';
+                document.getElementById('salesmanPhone').value = salesmanInfo.phone || '';
+            }
         }
 
         // Save to localStorage
@@ -524,6 +624,30 @@
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
+        }
+
+        // Toggle settings panel
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('show');
+        }
+
+        // Save settings
+        function saveSettings() {
+            salesmanInfo.name = document.getElementById('salesmanName').value;
+            salesmanInfo.phone = document.getElementById('salesmanPhone').value;
+            
+            localStorage.setItem('everfresh_salesman_info', JSON.stringify(salesmanInfo));
+            
+            const toast = document.getElementById('toast');
+            toast.innerHTML = 'Settings saved!';
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.innerHTML = 'Saved successfully!';
+            }, 2000);
+            
+            toggleSettings();
         }
 
         // Render categories
@@ -666,13 +790,33 @@
                 // Subtitle
                 ctx.fillStyle = '#666666';
                 ctx.font = '28px Arial';
-                ctx.fillText('Sydney Markets Flemington', canvas.width / 2, y + 30);
+                ctx.fillText('Stand 275, Shed C, Sydney Markets', canvas.width / 2, y + 30);
                 y += 45;
 
                 // Date
                 const today = new Date().toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
                 ctx.fillText(`Effective: ${today}`, canvas.width / 2, y + 30);
-                y += 60;
+                y += 50;
+
+                // Salesman info (if provided)
+                if (salesmanInfo.name || salesmanInfo.phone) {
+                    ctx.fillStyle = '#1F4E78';
+                    ctx.font = 'bold 24px Arial';
+                    
+                    let contactText = '';
+                    if (salesmanInfo.name && salesmanInfo.phone) {
+                        contactText = `Contact: ${salesmanInfo.name} - ${salesmanInfo.phone}`;
+                    } else if (salesmanInfo.name) {
+                        contactText = `Contact: ${salesmanInfo.name}`;
+                    } else if (salesmanInfo.phone) {
+                        contactText = `Contact: ${salesmanInfo.phone}`;
+                    }
+                    
+                    ctx.fillText(contactText, canvas.width / 2, y + 30);
+                    y += 50;
+                }
+
+                y += 10;
 
                 ctx.textAlign = 'left';
 
