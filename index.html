@@ -757,222 +757,211 @@
             document.getElementById('loading').classList.add('show');
 
             setTimeout(() => {
-                const canvas = document.getElementById('downloadCanvas');
-                const ctx = canvas.getContext('2d');
+                try {
+                    const canvas = document.getElementById('downloadCanvas');
+                    const ctx = canvas.getContext('2d');
 
-                // Calculate height
-                let totalRows = 0;
-                Object.values(priceData).forEach(items => totalRows += items.length);
-                const categoryCount = Object.keys(priceData).length;
-                
-                canvas.width = 1200;
-                canvas.height = 350 + (categoryCount * 92) + (totalRows * 42) + (categoryCount * 25) + 200;
-
-                // Fill white background
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                let y = 40;
-
-                // Fresh gradient header background
-                const headerGradient = ctx.createLinearGradient(0, 0, canvas.width, 300);
-                headerGradient.addColorStop(0, '#f0fdf4');  // Light mint green
-                headerGradient.addColorStop(1, '#dcfce7');  // Lighter green
-                ctx.fillStyle = headerGradient;
-                ctx.fillRect(0, 0, canvas.width, salesmanInfo.name || salesmanInfo.phone ? 280 : 240);
-
-                // Company name - Fresh green
-                ctx.fillStyle = '#059669';  // Fresh green
-                ctx.font = 'bold 56px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('EVERFRESH PRODUCE GROUP', canvas.width / 2, y + 50);
-                y += 80;
-
-                // Title - Deep green
-                ctx.fillStyle = '#047857';
-                ctx.font = 'bold 48px Arial';
-                ctx.fillText('WHOLESALE PRICE LIST', canvas.width / 2, y + 40);
-                y += 70;
-
-                // Address and Date in two columns
-                ctx.textAlign = 'left';
-                ctx.fillStyle = '#065f46';  // Dark forest green
-                ctx.font = 'bold 22px Arial';
-                
-                const leftCol = 100;
-                const rightCol = canvas.width - 100;
-                
-                // Left: Address
-                ctx.fillText('Stand 275, Shed C, Sydney Markets', leftCol, y + 20);
-                
-                // Right: Date
-                ctx.textAlign = 'right';
-                const today = new Date().toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
-                ctx.fillText(`Effective: ${today}`, rightCol, y + 20);
-                y += 50;
-
-                // Contact info (if provided) - Fresh orange accent
-                if (salesmanInfo.name || salesmanInfo.phone) {
-                    // Background box for contact - warm orange/peach
-                    const contactGradient = ctx.createLinearGradient(leftCol - 20, y - 10, leftCol - 20, y + 40);
-                    contactGradient.addColorStop(0, '#fff7ed');  // Light peach
-                    contactGradient.addColorStop(1, '#ffedd5');  // Peachy orange
-                    ctx.fillStyle = contactGradient;
-                    ctx.fillRect(leftCol - 20, y - 10, canvas.width - 160, 50);
+                    // Calculate height
+                    let totalRows = 0;
+                    Object.values(priceData).forEach(items => totalRows += items.length);
+                    const categoryCount = Object.keys(priceData).length;
                     
-                    ctx.strokeStyle = '#f97316';  // Vibrant orange
-                    ctx.lineWidth = 3;
-                    ctx.strokeRect(leftCol - 20, y - 10, canvas.width - 160, 50);
-                    
-                    ctx.textAlign = 'left';
-                    ctx.fillStyle = '#ea580c';  // Deep orange
-                    ctx.font = 'bold 26px Arial';
-                    
-                    if (salesmanInfo.name && salesmanInfo.phone) {
-                        ctx.fillText(`Sales Contact: ${salesmanInfo.name}`, leftCol, y + 20);
-                        ctx.textAlign = 'right';
-                        ctx.fillText(salesmanInfo.phone, rightCol, y + 20);
-                    } else if (salesmanInfo.name) {
-                        ctx.fillText(`Sales Contact: ${salesmanInfo.name}`, leftCol, y + 20);
-                    } else if (salesmanInfo.phone) {
-                        ctx.fillText(`Sales Contact: ${salesmanInfo.phone}`, leftCol, y + 20);
-                    }
-                    
-                    y += 65;
-                } else {
-                    y += 15;
-                }
+                    canvas.width = 1200;
+                    canvas.height = 400 + (categoryCount * 92) + (totalRows * 42) + (categoryCount * 25) + 200;
 
-                // Separator line - fresh green
-                ctx.strokeStyle = '#10b981';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(margin, y);
-                ctx.lineTo(canvas.width - margin, y);
-                ctx.stroke();
-                y += 30;
-
-                ctx.textAlign = 'left';
-
-                const margin = 60;
-                const tableWidth = canvas.width - 2 * margin;
-                const col1 = margin;
-                const col2 = margin + tableWidth * 0.45;
-                const col3 = margin + tableWidth * 0.80;
-                const rowHeight = 42;
-
-                // Draw categories
-                Object.keys(priceData).forEach(categoryName => {
-                    const items = priceData[categoryName];
-
-                    // Category header - Fresh green gradient
-                    const categoryGradient = ctx.createLinearGradient(margin, y, margin, y + 50);
-                    categoryGradient.addColorStop(0, '#10b981');  // Emerald green
-                    categoryGradient.addColorStop(1, '#059669');  // Deeper green
-                    ctx.fillStyle = categoryGradient;
-                    ctx.fillRect(margin, y, tableWidth, 50);
-                    ctx.strokeStyle = '#047857';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(margin, y, tableWidth, 50);
-                    
+                    // Fill white background
                     ctx.fillStyle = '#ffffff';
-                    ctx.font = 'bold 36px Arial';
-                    ctx.fillText(categoryName, col1 + 20, y + 38);
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    let y = 40;
+
+                    // Fresh gradient header background
+                    ctx.fillStyle = '#f0fdf4';
+                    ctx.fillRect(0, 0, canvas.width, salesmanInfo.name || salesmanInfo.phone ? 280 : 240);
+
+                    // Company name - Fresh green
+                    ctx.fillStyle = '#059669';
+                    ctx.font = 'bold 56px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('EVERFRESH PRODUCE GROUP', canvas.width / 2, y + 50);
+                    y += 80;
+
+                    // Title - Deep green
+                    ctx.fillStyle = '#047857';
+                    ctx.font = 'bold 48px Arial';
+                    ctx.fillText('WHOLESALE PRICE LIST', canvas.width / 2, y + 40);
+                    y += 70;
+
+                    // Address and Date
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = '#065f46';
+                    ctx.font = 'bold 22px Arial';
+                    
+                    const leftCol = 100;
+                    const rightCol = canvas.width - 100;
+                    
+                    ctx.fillText('Stand 275, Shed C, Sydney Markets', leftCol, y + 20);
+                    
+                    ctx.textAlign = 'right';
+                    const today = new Date().toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
+                    ctx.fillText(`Effective: ${today}`, rightCol, y + 20);
                     y += 50;
 
-                    // Column headers - Warm orange
-                    const headerGradient = ctx.createLinearGradient(margin, y, margin, y + rowHeight);
-                    headerGradient.addColorStop(0, '#f97316');  // Orange
-                    headerGradient.addColorStop(1, '#ea580c');  // Deep orange
-                    ctx.fillStyle = headerGradient;
-                    ctx.fillRect(margin, y, tableWidth, rowHeight);
-                    ctx.strokeRect(margin, y, tableWidth, rowHeight);
-                    
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = 'bold 28px Arial';
-                    ctx.fillText('Product', col1 + 20, y + 30);
-                    ctx.fillText('Grade/Size', col2 + 20, y + 30);
-                    ctx.fillText('Price', col3 + 20, y + 30);
-                    
-                    // Vertical lines in header
-                    ctx.beginPath();
-                    ctx.moveTo(col2, y);
-                    ctx.lineTo(col2, y + rowHeight);
-                    ctx.moveTo(col3, y);
-                    ctx.lineTo(col3, y + rowHeight);
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                    
-                    y += rowHeight;
-
-                    // Items
-                    items.forEach((item, idx) => {
-                        // Background - alternating fresh colors
-                        ctx.fillStyle = idx % 2 === 1 ? '#f0fdf4' : '#ffffff';  // Light mint alternating with white
-                        ctx.fillRect(margin, y, tableWidth, rowHeight);
+                    // Contact info
+                    if (salesmanInfo.name || salesmanInfo.phone) {
+                        ctx.fillStyle = '#fff7ed';
+                        ctx.fillRect(leftCol - 20, y - 10, canvas.width - 160, 50);
                         
-                        // Border
-                        ctx.strokeStyle = '#d1fae5';  // Soft green border
-                        ctx.lineWidth = 1;
+                        ctx.strokeStyle = '#f97316';
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(leftCol - 20, y - 10, canvas.width - 160, 50);
+                        
+                        ctx.textAlign = 'left';
+                        ctx.fillStyle = '#ea580c';
+                        ctx.font = 'bold 26px Arial';
+                        
+                        if (salesmanInfo.name && salesmanInfo.phone) {
+                            ctx.fillText(`Sales Contact: ${salesmanInfo.name}`, leftCol, y + 20);
+                            ctx.textAlign = 'right';
+                            ctx.fillText(salesmanInfo.phone, rightCol, y + 20);
+                        } else if (salesmanInfo.name) {
+                            ctx.fillText(`Sales Contact: ${salesmanInfo.name}`, leftCol, y + 20);
+                        } else if (salesmanInfo.phone) {
+                            ctx.fillText(`Sales Contact: ${salesmanInfo.phone}`, leftCol, y + 20);
+                        }
+                        
+                        y += 65;
+                    } else {
+                        y += 15;
+                    }
+
+                    // Separator line
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(60, y);
+                    ctx.lineTo(canvas.width - 60, y);
+                    ctx.stroke();
+                    y += 30;
+
+                    ctx.textAlign = 'left';
+
+                    const margin = 60;
+                    const tableWidth = canvas.width - 2 * margin;
+                    const col1 = margin;
+                    const col2 = margin + tableWidth * 0.45;
+                    const col3 = margin + tableWidth * 0.80;
+                    const rowHeight = 42;
+
+                    // Draw categories
+                    Object.keys(priceData).forEach(categoryName => {
+                        const items = priceData[categoryName];
+
+                        // Category header
+                        ctx.fillStyle = '#10b981';
+                        ctx.fillRect(margin, y, tableWidth, 50);
+                        ctx.strokeStyle = '#047857';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(margin, y, tableWidth, 50);
+                        
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = 'bold 36px Arial';
+                        ctx.fillText(categoryName, col1 + 20, y + 38);
+                        y += 50;
+
+                        // Column headers
+                        ctx.fillStyle = '#f97316';
+                        ctx.fillRect(margin, y, tableWidth, rowHeight);
                         ctx.strokeRect(margin, y, tableWidth, rowHeight);
                         
-                        // Vertical lines
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = 'bold 28px Arial';
+                        ctx.fillText('Product', col1 + 20, y + 30);
+                        ctx.fillText('Grade/Size', col2 + 20, y + 30);
+                        ctx.fillText('Price', col3 + 20, y + 30);
+                        
+                        // Vertical lines in header
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2;
                         ctx.beginPath();
                         ctx.moveTo(col2, y);
                         ctx.lineTo(col2, y + rowHeight);
                         ctx.moveTo(col3, y);
                         ctx.lineTo(col3, y + rowHeight);
                         ctx.stroke();
-
-                        // Text
-                        ctx.fillStyle = '#065f46';  // Dark forest green for text
-                        ctx.font = '24px Arial';
-                        ctx.fillText(item[0], col1 + 20, y + 28);
-                        ctx.fillText(item[1], col2 + 20, y + 28);
-                        
-                        ctx.font = 'bold 26px Arial';
-                        ctx.fillStyle = '#ea580c';  // Orange for price
-                        ctx.fillText(item[2], col3 + 20, y + 28);
                         
                         y += rowHeight;
+
+                        // Items
+                        items.forEach((item, idx) => {
+                            ctx.fillStyle = idx % 2 === 1 ? '#f0fdf4' : '#ffffff';
+                            ctx.fillRect(margin, y, tableWidth, rowHeight);
+                            
+                            ctx.strokeStyle = '#d1fae5';
+                            ctx.lineWidth = 1;
+                            ctx.strokeRect(margin, y, tableWidth, rowHeight);
+                            
+                            // Vertical lines
+                            ctx.beginPath();
+                            ctx.moveTo(col2, y);
+                            ctx.lineTo(col2, y + rowHeight);
+                            ctx.moveTo(col3, y);
+                            ctx.lineTo(col3, y + rowHeight);
+                            ctx.stroke();
+
+                            // Text
+                            ctx.fillStyle = '#065f46';
+                            ctx.font = '24px Arial';
+                            ctx.fillText(item[0], col1 + 20, y + 28);
+                            ctx.fillText(item[1], col2 + 20, y + 28);
+                            
+                            ctx.font = 'bold 26px Arial';
+                            ctx.fillStyle = '#ea580c';
+                            ctx.fillText(item[2], col3 + 20, y + 28);
+                            
+                            y += rowHeight;
+                        });
+
+                        y += 25;
                     });
 
-                    y += 25;
-                });
+                    // Notes
+                    y += 15;
+                    ctx.fillStyle = '#065f46';
+                    ctx.font = 'bold 36px Arial';
+                    ctx.fillText('NOTES:', margin, y + 30);
+                    y += 50;
 
-                // Notes
-                y += 15;
-                ctx.fillStyle = '#000000';
-                ctx.font = 'bold 36px Arial';
-                ctx.fillText('NOTES:', margin, y + 30);
-                y += 50;
+                    const notes = [
+                        '• All prices are wholesale rates',
+                        '• Prices subject to availability and market conditions',
+                        '• Quality guaranteed - fresh daily from Sydney Markets',
+                        '• Contact us for bulk pricing and special requests'
+                    ];
 
-                const notes = [
-                    '• All prices are wholesale rates',
-                    '• Prices subject to availability and market conditions',
-                    '• Quality guaranteed - fresh daily from Sydney Markets',
-                    '• Contact us for bulk pricing and special requests'
-                ];
+                    ctx.fillStyle = '#4b5563';
+                    ctx.font = '22px Arial';
+                    notes.forEach(note => {
+                        ctx.fillText(note, margin + 20, y + 25);
+                        y += 35;
+                    });
 
-                ctx.fillStyle = '#505050';
-                ctx.font = '22px Arial';
-                notes.forEach(note => {
-                    ctx.fillText(note, margin + 20, y + 25);
-                    y += 35;
-                });
-
-                // Download
-                canvas.toBlob(blob => {
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `everfresh-price-list-${new Date().toISOString().split('T')[0]}.png`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    
+                    // Download
+                    canvas.toBlob(blob => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `everfresh-price-list-${new Date().toISOString().split('T')[0]}.png`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        
+                        document.getElementById('loading').classList.remove('show');
+                    });
+                } catch (error) {
+                    console.error('Error generating image:', error);
+                    alert('Error generating image. Please try again.');
                     document.getElementById('loading').classList.remove('show');
-                });
+                }
             }, 100);
         }
 
