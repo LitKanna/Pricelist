@@ -785,20 +785,20 @@
                     let y = 40;
                     const margin = 60;
 
-                    // Header background - very soft warm gray
-                    ctx.fillStyle = '#fafaf9';
+                    // Header background - barely green-white
+                    ctx.fillStyle = '#fafdf7';
                     const headerHeight = (salesmanInfo.name || salesmanInfo.phone) ? 280 : 240;
                     ctx.fillRect(0, 0, canvas.width, headerHeight);
 
-                    // Company name - Deep slate/teal
-                    ctx.fillStyle = '#0f766e';
+                    // Company name - Forest green
+                    ctx.fillStyle = '#2d6a4f';
                     ctx.font = 'bold 56px Arial';
                     ctx.textAlign = 'center';
                     ctx.fillText('EVERFRESH PRODUCE GROUP', canvas.width / 2, y + 50);
                     y += 80;
 
-                    // Title - Medium teal
-                    ctx.fillStyle = '#14b8a6';
+                    // Title - Fresh green
+                    ctx.fillStyle = '#52b788';
                     ctx.font = 'bold 48px Arial';
                     ctx.fillText('WHOLESALE PRICE LIST', canvas.width / 2, y + 40);
                     y += 70;
@@ -808,7 +808,7 @@
                     const rightCol = canvas.width - 100;
                     
                     ctx.textAlign = 'left';
-                    ctx.fillStyle = '#52525b';
+                    ctx.fillStyle = '#2d6a4f';
                     ctx.font = 'bold 22px Arial';
                     ctx.fillText('Stand 275, Shed C, Sydney Markets', leftCol, y + 20);
                     
@@ -817,16 +817,16 @@
                     ctx.fillText('Effective: ' + today, rightCol, y + 20);
                     y += 50;
 
-                    // Contact box - soft teal accent
+                    // Contact box - very light green
                     if (salesmanInfo.name || salesmanInfo.phone) {
-                        ctx.fillStyle = '#f0fdfa';
+                        ctx.fillStyle = '#d8f3dc';
                         ctx.fillRect(leftCol - 20, y - 10, canvas.width - 160, 50);
-                        ctx.strokeStyle = '#14b8a6';
+                        ctx.strokeStyle = '#52b788';
                         ctx.lineWidth = 2;
                         ctx.strokeRect(leftCol - 20, y - 10, canvas.width - 160, 50);
                         
                         ctx.textAlign = 'left';
-                        ctx.fillStyle = '#0f766e';
+                        ctx.fillStyle = '#1b4332';
                         ctx.font = 'bold 24px Arial';
                         
                         if (salesmanInfo.name && salesmanInfo.phone) {
@@ -843,8 +843,8 @@
                         y += 15;
                     }
 
-                    // Separator - soft teal
-                    ctx.strokeStyle = '#99f6e4';
+                    // Separator - fresh green
+                    ctx.strokeStyle = '#b7e4c7';
                     ctx.lineWidth = 2;
                     ctx.beginPath();
                     ctx.moveTo(margin, y);
@@ -866,10 +866,10 @@
                     for (const categoryName in priceData) {
                         const items = priceData[categoryName];
 
-                        // Category header - Deep teal
-                        ctx.fillStyle = '#0f766e';
+                        // Category header - Medium green
+                        ctx.fillStyle = '#40916c';
                         ctx.fillRect(margin, y, tableWidth, 50);
-                        ctx.strokeStyle = '#0d9488';
+                        ctx.strokeStyle = '#2d6a4f';
                         ctx.lineWidth = 2;
                         ctx.strokeRect(margin, y, tableWidth, 50);
                         ctx.fillStyle = '#ffffff';
@@ -877,8 +877,8 @@
                         ctx.fillText(categoryName, col1 + 20, y + 36);
                         y += 50;
 
-                        // Column headers - Medium teal
-                        ctx.fillStyle = '#14b8a6';
+                        // Column headers - Light green
+                        ctx.fillStyle = '#74c69d';
                         ctx.fillRect(margin, y, tableWidth, rowHeight);
                         ctx.strokeRect(margin, y, tableWidth, rowHeight);
                         ctx.fillStyle = '#ffffff';
@@ -903,11 +903,11 @@
                             const item = items[i];
                             
                             // Background - very subtle alternating
-                            ctx.fillStyle = i % 2 === 1 ? '#fafaf9' : '#ffffff';
+                            ctx.fillStyle = i % 2 === 1 ? '#f1faee' : '#ffffff';
                             ctx.fillRect(margin, y, tableWidth, rowHeight);
                             
-                            // Borders - soft gray
-                            ctx.strokeStyle = '#e7e5e4';
+                            // Borders - soft green-gray
+                            ctx.strokeStyle = '#d8f3dc';
                             ctx.lineWidth = 1;
                             ctx.strokeRect(margin, y, tableWidth, rowHeight);
                             ctx.beginPath();
@@ -917,14 +917,14 @@
                             ctx.lineTo(col3, y + rowHeight);
                             ctx.stroke();
 
-                            // Text - dark charcoal for readability
-                            ctx.fillStyle = '#27272a';
+                            // Text - dark for readability
+                            ctx.fillStyle = '#212529';
                             ctx.font = '24px Arial';
                             ctx.fillText(item[0], col1 + 20, y + 28);
                             ctx.fillText(item[1], col2 + 20, y + 28);
                             
-                            // Price in deep teal
-                            ctx.fillStyle = '#0f766e';
+                            // Price - Deep forest green
+                            ctx.fillStyle = '#1b4332';
                             ctx.font = 'bold 26px Arial';
                             ctx.fillText(item[2], col3 + 20, y + 28);
                             
@@ -935,12 +935,12 @@
 
                     // Notes
                     y += 15;
-                    ctx.fillStyle = '#0f766e';
+                    ctx.fillStyle = '#2d6a4f';
                     ctx.font = 'bold 32px Arial';
                     ctx.fillText('NOTES:', margin, y + 30);
                     y += 50;
 
-                    ctx.fillStyle = '#71717a';
+                    ctx.fillStyle = '#495057';
                     ctx.font = '20px Arial';
                     const notes = [
                         '• All prices are wholesale rates',
