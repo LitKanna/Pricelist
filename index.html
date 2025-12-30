@@ -774,49 +774,83 @@
 
                 let y = 40;
 
-                // Company name
-                ctx.fillStyle = '#4472C4';
+                // Fresh gradient header background
+                const headerGradient = ctx.createLinearGradient(0, 0, canvas.width, 300);
+                headerGradient.addColorStop(0, '#f0fdf4');  // Light mint green
+                headerGradient.addColorStop(1, '#dcfce7');  // Lighter green
+                ctx.fillStyle = headerGradient;
+                ctx.fillRect(0, 0, canvas.width, salesmanInfo.name || salesmanInfo.phone ? 280 : 240);
+
+                // Company name - Fresh green
+                ctx.fillStyle = '#059669';  // Fresh green
                 ctx.font = 'bold 56px Arial';
                 ctx.textAlign = 'center';
                 ctx.fillText('EVERFRESH PRODUCE GROUP', canvas.width / 2, y + 50);
                 y += 80;
 
-                // Title
-                ctx.fillStyle = '#1F4E78';
+                // Title - Deep green
+                ctx.fillStyle = '#047857';
                 ctx.font = 'bold 48px Arial';
                 ctx.fillText('WHOLESALE PRICE LIST', canvas.width / 2, y + 40);
                 y += 70;
 
-                // Subtitle
-                ctx.fillStyle = '#666666';
-                ctx.font = '28px Arial';
-                ctx.fillText('Stand 275, Shed C, Sydney Markets', canvas.width / 2, y + 30);
-                y += 45;
-
-                // Date
+                // Address and Date in two columns
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#065f46';  // Dark forest green
+                ctx.font = 'bold 22px Arial';
+                
+                const leftCol = 100;
+                const rightCol = canvas.width - 100;
+                
+                // Left: Address
+                ctx.fillText('Stand 275, Shed C, Sydney Markets', leftCol, y + 20);
+                
+                // Right: Date
+                ctx.textAlign = 'right';
                 const today = new Date().toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
-                ctx.fillText(`Effective: ${today}`, canvas.width / 2, y + 30);
+                ctx.fillText(`Effective: ${today}`, rightCol, y + 20);
                 y += 50;
 
-                // Salesman info (if provided)
+                // Contact info (if provided) - Fresh orange accent
                 if (salesmanInfo.name || salesmanInfo.phone) {
-                    ctx.fillStyle = '#1F4E78';
-                    ctx.font = 'bold 24px Arial';
+                    // Background box for contact - warm orange/peach
+                    const contactGradient = ctx.createLinearGradient(leftCol - 20, y - 10, leftCol - 20, y + 40);
+                    contactGradient.addColorStop(0, '#fff7ed');  // Light peach
+                    contactGradient.addColorStop(1, '#ffedd5');  // Peachy orange
+                    ctx.fillStyle = contactGradient;
+                    ctx.fillRect(leftCol - 20, y - 10, canvas.width - 160, 50);
                     
-                    let contactText = '';
+                    ctx.strokeStyle = '#f97316';  // Vibrant orange
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(leftCol - 20, y - 10, canvas.width - 160, 50);
+                    
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = '#ea580c';  // Deep orange
+                    ctx.font = 'bold 26px Arial';
+                    
                     if (salesmanInfo.name && salesmanInfo.phone) {
-                        contactText = `Contact: ${salesmanInfo.name} - ${salesmanInfo.phone}`;
+                        ctx.fillText(`Sales Contact: ${salesmanInfo.name}`, leftCol, y + 20);
+                        ctx.textAlign = 'right';
+                        ctx.fillText(salesmanInfo.phone, rightCol, y + 20);
                     } else if (salesmanInfo.name) {
-                        contactText = `Contact: ${salesmanInfo.name}`;
+                        ctx.fillText(`Sales Contact: ${salesmanInfo.name}`, leftCol, y + 20);
                     } else if (salesmanInfo.phone) {
-                        contactText = `Contact: ${salesmanInfo.phone}`;
+                        ctx.fillText(`Sales Contact: ${salesmanInfo.phone}`, leftCol, y + 20);
                     }
                     
-                    ctx.fillText(contactText, canvas.width / 2, y + 30);
-                    y += 50;
+                    y += 65;
+                } else {
+                    y += 15;
                 }
 
-                y += 10;
+                // Separator line - fresh green
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(margin, y);
+                ctx.lineTo(canvas.width - margin, y);
+                ctx.stroke();
+                y += 30;
 
                 ctx.textAlign = 'left';
 
@@ -831,10 +865,13 @@
                 Object.keys(priceData).forEach(categoryName => {
                     const items = priceData[categoryName];
 
-                    // Category header
-                    ctx.fillStyle = '#4472C4';
+                    // Category header - Fresh green gradient
+                    const categoryGradient = ctx.createLinearGradient(margin, y, margin, y + 50);
+                    categoryGradient.addColorStop(0, '#10b981');  // Emerald green
+                    categoryGradient.addColorStop(1, '#059669');  // Deeper green
+                    ctx.fillStyle = categoryGradient;
                     ctx.fillRect(margin, y, tableWidth, 50);
-                    ctx.strokeStyle = '#B4B4B4';
+                    ctx.strokeStyle = '#047857';
                     ctx.lineWidth = 2;
                     ctx.strokeRect(margin, y, tableWidth, 50);
                     
@@ -843,8 +880,11 @@
                     ctx.fillText(categoryName, col1 + 20, y + 38);
                     y += 50;
 
-                    // Column headers
-                    ctx.fillStyle = '#1F4E78';
+                    // Column headers - Warm orange
+                    const headerGradient = ctx.createLinearGradient(margin, y, margin, y + rowHeight);
+                    headerGradient.addColorStop(0, '#f97316');  // Orange
+                    headerGradient.addColorStop(1, '#ea580c');  // Deep orange
+                    ctx.fillStyle = headerGradient;
                     ctx.fillRect(margin, y, tableWidth, rowHeight);
                     ctx.strokeRect(margin, y, tableWidth, rowHeight);
                     
@@ -868,12 +908,12 @@
 
                     // Items
                     items.forEach((item, idx) => {
-                        // Background
-                        ctx.fillStyle = idx % 2 === 1 ? '#F2F2F2' : '#ffffff';
+                        // Background - alternating fresh colors
+                        ctx.fillStyle = idx % 2 === 1 ? '#f0fdf4' : '#ffffff';  // Light mint alternating with white
                         ctx.fillRect(margin, y, tableWidth, rowHeight);
                         
                         // Border
-                        ctx.strokeStyle = '#B4B4B4';
+                        ctx.strokeStyle = '#d1fae5';  // Soft green border
                         ctx.lineWidth = 1;
                         ctx.strokeRect(margin, y, tableWidth, rowHeight);
                         
@@ -886,12 +926,13 @@
                         ctx.stroke();
 
                         // Text
-                        ctx.fillStyle = '#000000';
+                        ctx.fillStyle = '#065f46';  // Dark forest green for text
                         ctx.font = '24px Arial';
                         ctx.fillText(item[0], col1 + 20, y + 28);
                         ctx.fillText(item[1], col2 + 20, y + 28);
                         
                         ctx.font = 'bold 26px Arial';
+                        ctx.fillStyle = '#ea580c';  // Orange for price
                         ctx.fillText(item[2], col3 + 20, y + 28);
                         
                         y += rowHeight;
