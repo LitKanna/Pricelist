@@ -809,20 +809,20 @@
                     let y = 120;
                     const margin = 180;
 
-                    // Header background - Pure white
-                    ctx.fillStyle = '#ffffff';
+                    // Header background - Barely green-white
+                    ctx.fillStyle = '#fafdf7';
                     const headerHeight = (salesmanInfo.name || salesmanInfo.phone) ? 840 : 720;
                     ctx.fillRect(0, 0, canvas.width, headerHeight);
 
-                    // Company name - Near black
-                    ctx.fillStyle = '#212529';
+                    // Company name - Forest green
+                    ctx.fillStyle = '#2d6a4f';
                     ctx.font = 'bold 168px Arial';
                     ctx.textAlign = 'center';
                     ctx.fillText('EVERFRESH PRODUCE GROUP', canvas.width / 2, y + 150);
                     y += 240;
 
-                    // Title - Medium gray
-                    ctx.fillStyle = '#6c757d';
+                    // Title - Fresh green
+                    ctx.fillStyle = '#52b788';
                     ctx.font = 'bold 144px Arial';
                     ctx.fillText('WHOLESALE PRICE LIST', canvas.width / 2, y + 120);
                     y += 210;
@@ -832,7 +832,7 @@
                     const rightCol = canvas.width - 300;
                     
                     ctx.textAlign = 'left';
-                    ctx.fillStyle = '#495057';
+                    ctx.fillStyle = '#2d6a4f';
                     ctx.font = 'bold 66px Arial';
                     ctx.fillText('Stand 275, Shed C, Sydney Markets', leftCol, y + 60);
                     
@@ -841,16 +841,16 @@
                     ctx.fillText('Effective: ' + today, rightCol, y + 60);
                     y += 150;
 
-                    // Contact box - light gray
+                    // Contact box - Very light green
                     if (salesmanInfo.name || salesmanInfo.phone) {
-                        ctx.fillStyle = '#f8f9fa';
+                        ctx.fillStyle = '#d8f3dc';
                         ctx.fillRect(leftCol - 60, y - 30, canvas.width - 480, 150);
-                        ctx.strokeStyle = '#495057';
+                        ctx.strokeStyle = '#52b788';
                         ctx.lineWidth = 6;
                         ctx.strokeRect(leftCol - 60, y - 30, canvas.width - 480, 150);
                         
                         ctx.textAlign = 'left';
-                        ctx.fillStyle = '#212529';
+                        ctx.fillStyle = '#1b4332';
                         ctx.font = 'bold 72px Arial';
                         
                         if (salesmanInfo.name && salesmanInfo.phone) {
@@ -867,8 +867,8 @@
                         y += 45;
                     }
 
-                    // Separator - light gray
-                    ctx.strokeStyle = '#dee2e6';
+                    // Separator - Fresh green
+                    ctx.strokeStyle = '#b7e4c7';
                     ctx.lineWidth = 6;
                     ctx.beginPath();
                     ctx.moveTo(margin, y);
@@ -911,10 +911,10 @@
                             continue;
                         }
 
-                        // Category header - Dark gray
-                        ctx.fillStyle = '#495057';
+                        // Category header - Medium green
+                        ctx.fillStyle = '#40916c';
                         ctx.fillRect(margin, y, tableWidth, 150);
-                        ctx.strokeStyle = '#343a40';
+                        ctx.strokeStyle = '#2d6a4f';
                         ctx.lineWidth = 6;
                         ctx.strokeRect(margin, y, tableWidth, 150);
                         ctx.fillStyle = '#ffffff';
@@ -922,8 +922,8 @@
                         ctx.fillText(categoryName, col1 + 60, y + 108);
                         y += 150;
 
-                        // Column headers - Medium gray
-                        ctx.fillStyle = '#6c757d';
+                        // Column headers - Light green
+                        ctx.fillStyle = '#74c69d';
                         ctx.fillRect(margin, y, tableWidth, rowHeight);
                         ctx.strokeRect(margin, y, tableWidth, rowHeight);
                         ctx.fillStyle = '#ffffff';
@@ -947,12 +947,12 @@
                         for (let i = 0; i < availableItems.length; i++) {
                             const item = availableItems[i];
                             
-                            // Background - subtle alternating
-                            ctx.fillStyle = i % 2 === 1 ? '#f8f9fa' : '#ffffff';
+                            // Background - Very subtle alternating
+                            ctx.fillStyle = i % 2 === 1 ? '#f1faee' : '#ffffff';
                             ctx.fillRect(margin, y, tableWidth, rowHeight);
                             
-                            // Borders - light gray
-                            ctx.strokeStyle = '#dee2e6';
+                            // Borders - Soft green-gray
+                            ctx.strokeStyle = '#d8f3dc';
                             ctx.lineWidth = 3;
                             ctx.strokeRect(margin, y, tableWidth, rowHeight);
                             ctx.beginPath();
@@ -962,14 +962,14 @@
                             ctx.lineTo(col3, y + rowHeight);
                             ctx.stroke();
 
-                            // Text - dark gray
+                            // Text - Dark for readability
                             ctx.fillStyle = '#212529';
                             ctx.font = '72px Arial';
                             ctx.fillText(item[0], col1 + 60, y + 84);
                             ctx.fillText(item[1], col2 + 60, y + 84);
                             
-                            // Price - Pure black (bold)
-                            ctx.fillStyle = '#000000';
+                            // Price - Deep forest green
+                            ctx.fillStyle = '#1b4332';
                             ctx.font = 'bold 78px Arial';
                             ctx.fillText(item[2], col3 + 60, y + 84);
                             
@@ -980,12 +980,12 @@
 
                     // Notes
                     y += 45;
-                    ctx.fillStyle = '#212529';
+                    ctx.fillStyle = '#2d6a4f';
                     ctx.font = 'bold 96px Arial';
                     ctx.fillText('NOTES:', margin, y + 90);
                     y += 150;
 
-                    ctx.fillStyle = '#6c757d';
+                    ctx.fillStyle = '#495057';
                     ctx.font = '60px Arial';
                     const notes = [
                         '• All prices are wholesale rates',
