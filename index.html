@@ -756,6 +756,30 @@
             console.log('Starting image generation...');
             collectData();
             
+            // Validate: Check for empty prices
+            let hasEmptyPrices = false;
+            let emptyPriceProducts = [];
+            
+            for (const categoryName in priceData) {
+                const items = priceData[categoryName];
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    const price = (item[2] || '').toString().trim();
+                    
+                    if (price === '') {
+                        hasEmptyPrices = true;
+                        emptyPriceProducts.push(`${categoryName}: ${item[0]}`);
+                    }
+                }
+            }
+            
+            // Show error if empty prices found
+            if (hasEmptyPrices) {
+                const productList = emptyPriceProducts.join('\n- ');
+                alert(`⚠️ ERROR: Cannot generate image!\n\nThe following products have empty prices:\n\n- ${productList}\n\nPlease fill in all prices or mark as "NA" if not available.`);
+                return; // Stop here, don't generate image
+            }
+            
             const loading = document.getElementById('loading');
             loading.classList.add('show');
 
@@ -771,86 +795,86 @@
                     Object.values(priceData).forEach(items => totalRows += items.length);
                     const categoryCount = Object.keys(priceData).length;
                     
-                    const estimatedHeight = 400 + (categoryCount * 100) + (totalRows * 45) + 200;
-                    
-                    canvas.width = 1200;
+                    // Ultra HD - 3x resolution (3600px width)
+                    canvas.width = 3600;
+                    const estimatedHeight = 1200 + (categoryCount * 300) + (totalRows * 135) + 600;
                     canvas.height = estimatedHeight;
                     
-                    console.log(`Canvas size: ${canvas.width}x${canvas.height}`);
+                    console.log(`Canvas size: ${canvas.width}x${canvas.height} (Ultra HD 3x)`);
 
                     // White background
                     ctx.fillStyle = '#ffffff';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                    let y = 40;
-                    const margin = 60;
+                    let y = 120;
+                    const margin = 180;
 
-                    // Header background - barely green-white
-                    ctx.fillStyle = '#fafdf7';
-                    const headerHeight = (salesmanInfo.name || salesmanInfo.phone) ? 280 : 240;
+                    // Header background - Pure white
+                    ctx.fillStyle = '#ffffff';
+                    const headerHeight = (salesmanInfo.name || salesmanInfo.phone) ? 840 : 720;
                     ctx.fillRect(0, 0, canvas.width, headerHeight);
 
-                    // Company name - Forest green
-                    ctx.fillStyle = '#2d6a4f';
-                    ctx.font = 'bold 56px Arial';
+                    // Company name - Near black
+                    ctx.fillStyle = '#212529';
+                    ctx.font = 'bold 168px Arial';
                     ctx.textAlign = 'center';
-                    ctx.fillText('EVERFRESH PRODUCE GROUP', canvas.width / 2, y + 50);
-                    y += 80;
+                    ctx.fillText('EVERFRESH PRODUCE GROUP', canvas.width / 2, y + 150);
+                    y += 240;
 
-                    // Title - Fresh green
-                    ctx.fillStyle = '#52b788';
-                    ctx.font = 'bold 48px Arial';
-                    ctx.fillText('WHOLESALE PRICE LIST', canvas.width / 2, y + 40);
-                    y += 70;
+                    // Title - Medium gray
+                    ctx.fillStyle = '#6c757d';
+                    ctx.font = 'bold 144px Arial';
+                    ctx.fillText('WHOLESALE PRICE LIST', canvas.width / 2, y + 120);
+                    y += 210;
 
                     // Address and Date
-                    const leftCol = 100;
-                    const rightCol = canvas.width - 100;
+                    const leftCol = 300;
+                    const rightCol = canvas.width - 300;
                     
                     ctx.textAlign = 'left';
-                    ctx.fillStyle = '#2d6a4f';
-                    ctx.font = 'bold 22px Arial';
-                    ctx.fillText('Stand 275, Shed C, Sydney Markets', leftCol, y + 20);
+                    ctx.fillStyle = '#495057';
+                    ctx.font = 'bold 66px Arial';
+                    ctx.fillText('Stand 275, Shed C, Sydney Markets', leftCol, y + 60);
                     
                     ctx.textAlign = 'right';
                     const today = new Date().toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
-                    ctx.fillText('Effective: ' + today, rightCol, y + 20);
-                    y += 50;
+                    ctx.fillText('Effective: ' + today, rightCol, y + 60);
+                    y += 150;
 
-                    // Contact box - very light green
+                    // Contact box - light gray
                     if (salesmanInfo.name || salesmanInfo.phone) {
-                        ctx.fillStyle = '#d8f3dc';
-                        ctx.fillRect(leftCol - 20, y - 10, canvas.width - 160, 50);
-                        ctx.strokeStyle = '#52b788';
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(leftCol - 20, y - 10, canvas.width - 160, 50);
+                        ctx.fillStyle = '#f8f9fa';
+                        ctx.fillRect(leftCol - 60, y - 30, canvas.width - 480, 150);
+                        ctx.strokeStyle = '#495057';
+                        ctx.lineWidth = 6;
+                        ctx.strokeRect(leftCol - 60, y - 30, canvas.width - 480, 150);
                         
                         ctx.textAlign = 'left';
-                        ctx.fillStyle = '#1b4332';
-                        ctx.font = 'bold 24px Arial';
+                        ctx.fillStyle = '#212529';
+                        ctx.font = 'bold 72px Arial';
                         
                         if (salesmanInfo.name && salesmanInfo.phone) {
-                            ctx.fillText('Sales Contact: ' + salesmanInfo.name, leftCol, y + 20);
+                            ctx.fillText('Sales Contact: ' + salesmanInfo.name, leftCol, y + 60);
                             ctx.textAlign = 'right';
-                            ctx.fillText(salesmanInfo.phone, rightCol, y + 20);
+                            ctx.fillText(salesmanInfo.phone, rightCol, y + 60);
                         } else if (salesmanInfo.name) {
-                            ctx.fillText('Sales Contact: ' + salesmanInfo.name, leftCol, y + 20);
+                            ctx.fillText('Sales Contact: ' + salesmanInfo.name, leftCol, y + 60);
                         } else {
-                            ctx.fillText('Sales Contact: ' + salesmanInfo.phone, leftCol, y + 20);
+                            ctx.fillText('Sales Contact: ' + salesmanInfo.phone, leftCol, y + 60);
                         }
-                        y += 65;
+                        y += 195;
                     } else {
-                        y += 15;
+                        y += 45;
                     }
 
-                    // Separator - fresh green
-                    ctx.strokeStyle = '#b7e4c7';
-                    ctx.lineWidth = 2;
+                    // Separator - light gray
+                    ctx.strokeStyle = '#dee2e6';
+                    ctx.lineWidth = 6;
                     ctx.beginPath();
                     ctx.moveTo(margin, y);
                     ctx.lineTo(canvas.width - margin, y);
                     ctx.stroke();
-                    y += 30;
+                    y += 90;
 
                     // Table setup
                     ctx.textAlign = 'left';
@@ -858,38 +882,59 @@
                     const col1 = margin;
                     const col2 = margin + tableWidth * 0.45;
                     const col3 = margin + tableWidth * 0.80;
-                    const rowHeight = 42;
+                    const rowHeight = 126;
 
                     console.log('Drawing categories...');
                     
                     // Draw each category
                     for (const categoryName in priceData) {
                         const items = priceData[categoryName];
+                        
+                        // Filter out items with NA/Not Available price (case-insensitive, handles symbols)
+                        const availableItems = items.filter(item => {
+                            const price = (item[2] || '').toString().trim();
+                            
+                            // Empty prices already validated, so won't reach here
+                            // But keep this check for safety
+                            if (price === '') return false;
+                            
+                            // Remove all symbols and spaces, then check
+                            const cleanedPrice = price.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                            
+                            // Filter out ONLY if it's "na" or "notavailable"
+                            return cleanedPrice !== 'na' && cleanedPrice !== 'notavailable';
+                        });
+                        
+                        // Skip this category if no available items
+                        if (availableItems.length === 0) {
+                            console.log(`Skipping category "${categoryName}" - all products NA`);
+                            continue;
+                        }
 
-                        // Category header - Medium green
-                        ctx.fillStyle = '#40916c';
-                        ctx.fillRect(margin, y, tableWidth, 50);
-                        ctx.strokeStyle = '#2d6a4f';
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(margin, y, tableWidth, 50);
+                        // Category header - Dark gray
+                        ctx.fillStyle = '#495057';
+                        ctx.fillRect(margin, y, tableWidth, 150);
+                        ctx.strokeStyle = '#343a40';
+                        ctx.lineWidth = 6;
+                        ctx.strokeRect(margin, y, tableWidth, 150);
                         ctx.fillStyle = '#ffffff';
-                        ctx.font = 'bold 34px Arial';
-                        ctx.fillText(categoryName, col1 + 20, y + 36);
-                        y += 50;
+                        ctx.font = 'bold 102px Arial';
+                        ctx.fillText(categoryName, col1 + 60, y + 108);
+                        y += 150;
 
-                        // Column headers - Light green
-                        ctx.fillStyle = '#74c69d';
+                        // Column headers - Medium gray
+                        ctx.fillStyle = '#6c757d';
                         ctx.fillRect(margin, y, tableWidth, rowHeight);
                         ctx.strokeRect(margin, y, tableWidth, rowHeight);
                         ctx.fillStyle = '#ffffff';
-                        ctx.font = 'bold 26px Arial';
-                        ctx.fillText('Product', col1 + 20, y + 28);
-                        ctx.fillText('Grade/Size', col2 + 20, y + 28);
-                        ctx.fillText('Price', col3 + 20, y + 28);
+                        ctx.font = 'bold 78px Arial';
+                        ctx.fillText('Product', col1 + 60, y + 84);
+                        ctx.fillText('Grade/Size', col2 + 60, y + 84);
+                        ctx.fillText('Price', col3 + 60, y + 84);
                         
                         // Vertical lines
                         ctx.strokeStyle = '#ffffff';
-                        ctx.lineWidth = 2;
+                        ctx.lineWidth = 6;
                         ctx.beginPath();
                         ctx.moveTo(col2, y);
                         ctx.lineTo(col2, y + rowHeight);
@@ -898,17 +943,17 @@
                         ctx.stroke();
                         y += rowHeight;
 
-                        // Draw items
-                        for (let i = 0; i < items.length; i++) {
-                            const item = items[i];
+                        // Draw only available items
+                        for (let i = 0; i < availableItems.length; i++) {
+                            const item = availableItems[i];
                             
-                            // Background - very subtle alternating
-                            ctx.fillStyle = i % 2 === 1 ? '#f1faee' : '#ffffff';
+                            // Background - subtle alternating
+                            ctx.fillStyle = i % 2 === 1 ? '#f8f9fa' : '#ffffff';
                             ctx.fillRect(margin, y, tableWidth, rowHeight);
                             
-                            // Borders - soft green-gray
-                            ctx.strokeStyle = '#d8f3dc';
-                            ctx.lineWidth = 1;
+                            // Borders - light gray
+                            ctx.strokeStyle = '#dee2e6';
+                            ctx.lineWidth = 3;
                             ctx.strokeRect(margin, y, tableWidth, rowHeight);
                             ctx.beginPath();
                             ctx.moveTo(col2, y);
@@ -917,31 +962,31 @@
                             ctx.lineTo(col3, y + rowHeight);
                             ctx.stroke();
 
-                            // Text - dark for readability
+                            // Text - dark gray
                             ctx.fillStyle = '#212529';
-                            ctx.font = '24px Arial';
-                            ctx.fillText(item[0], col1 + 20, y + 28);
-                            ctx.fillText(item[1], col2 + 20, y + 28);
+                            ctx.font = '72px Arial';
+                            ctx.fillText(item[0], col1 + 60, y + 84);
+                            ctx.fillText(item[1], col2 + 60, y + 84);
                             
-                            // Price - Deep forest green
-                            ctx.fillStyle = '#1b4332';
-                            ctx.font = 'bold 26px Arial';
-                            ctx.fillText(item[2], col3 + 20, y + 28);
+                            // Price - Pure black (bold)
+                            ctx.fillStyle = '#000000';
+                            ctx.font = 'bold 78px Arial';
+                            ctx.fillText(item[2], col3 + 60, y + 84);
                             
                             y += rowHeight;
                         }
-                        y += 25;
+                        y += 75;
                     }
 
                     // Notes
-                    y += 15;
-                    ctx.fillStyle = '#2d6a4f';
-                    ctx.font = 'bold 32px Arial';
-                    ctx.fillText('NOTES:', margin, y + 30);
-                    y += 50;
+                    y += 45;
+                    ctx.fillStyle = '#212529';
+                    ctx.font = 'bold 96px Arial';
+                    ctx.fillText('NOTES:', margin, y + 90);
+                    y += 150;
 
-                    ctx.fillStyle = '#495057';
-                    ctx.font = '20px Arial';
+                    ctx.fillStyle = '#6c757d';
+                    ctx.font = '60px Arial';
                     const notes = [
                         '• All prices are wholesale rates',
                         '• Prices subject to availability and market conditions',
@@ -949,8 +994,8 @@
                         '• Contact us for bulk pricing and special requests'
                     ];
                     notes.forEach(note => {
-                        ctx.fillText(note, margin + 20, y + 22);
-                        y += 32;
+                        ctx.fillText(note, margin + 60, y + 66);
+                        y += 96;
                     });
 
                     console.log('Converting to blob...');
