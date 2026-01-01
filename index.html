@@ -142,6 +142,102 @@
             box-shadow: 0 0 0 3px rgba(68, 114, 196, 0.1);
         }
 
+        .share-controls {
+            padding: 16px;
+            background: #f8fafc;
+            border-bottom: 2px solid #e9ecef;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .btn-share {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);
+        }
+
+        .btn-share:active {
+            transform: scale(0.96);
+        }
+
+        .customer-share-menu {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            z-index: 1001;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            min-width: 300px;
+        }
+
+        .customer-share-menu.show {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        .customer-share-menu h3 {
+            margin-bottom: 20px;
+            color: #1f2937;
+            font-size: 20px;
+        }
+
+        .customer-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 2px solid #e9ecef;
+        }
+
+        .customer-info {
+            flex: 1;
+        }
+
+        .customer-name {
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 16px;
+        }
+
+        .customer-phone {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .customer-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 13px;
+            border-radius: 8px;
+        }
+
+        .customer-contacts-section {
+            margin-top: 20px;
+        }
+
         .btn {
             padding: 16px 24px;
             border: none;
@@ -488,6 +584,21 @@
                 Settings
             </button>
         </div>
+        
+        <div class="share-controls">
+            <button class="btn btn-share" onclick="quickShareWhatsApp()">
+                Share on WhatsApp
+            </button>
+            <button class="btn btn-share" onclick="showCustomerShareMenu()">
+                Send to Customer
+            </button>
+        </div>
+        
+        <div class="customer-share-menu" id="customerShareMenu">
+            <h3>Select Customer</h3>
+            <div id="customerShareList"></div>
+            <button class="btn btn-secondary" onclick="closeCustomerShareMenu()" style="margin-top: 15px;">Cancel</button>
+        </div>
 
         <div class="settings-panel" id="settingsPanel">
             <h3>Salesman Information</h3>
@@ -502,6 +613,25 @@
                 </div>
             </div>
             <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+            
+            <hr style="margin: 30px 0; border: none; border-top: 2px solid #e9ecef;">
+            
+            <h3>Customer Contacts</h3>
+            <div class="customer-contacts-section">
+                <div class="settings-grid">
+                    <div class="input-group">
+                        <label>Customer Name</label>
+                        <input type="text" id="customerName" placeholder="e.g., Mario's Restaurant">
+                    </div>
+                    <div class="input-group">
+                        <label>WhatsApp Number</label>
+                        <input type="text" id="customerPhone" placeholder="e.g., 0400123456">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="addCustomerContact()">Add Customer</button>
+                
+                <div id="customersList" style="margin-top: 20px;"></div>
+            </div>
         </div>
 
         <div class="content" id="categoriesContainer">
@@ -524,6 +654,12 @@
             name: '',
             phone: ''
         };
+
+        // Customer contacts
+        let customerContacts = [];
+
+        // Temporary storage for generated image
+        let lastGeneratedImageUrl = null;
 
         // Initial data
         let priceData = {
@@ -611,6 +747,12 @@
                 document.getElementById('salesmanName').value = salesmanInfo.name || '';
                 document.getElementById('salesmanPhone').value = salesmanInfo.phone || '';
             }
+            
+            const savedContacts = localStorage.getItem('everfresh_customer_contacts');
+            if (savedContacts) {
+                customerContacts = JSON.parse(savedContacts);
+                renderCustomersList();
+            }
         }
 
         // Save to localStorage
@@ -648,6 +790,68 @@
             }, 2000);
             
             toggleSettings();
+        }
+
+        // Add customer contact
+        function addCustomerContact() {
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            
+            if (!name || !phone) {
+                alert('Please enter both customer name and phone number');
+                return;
+            }
+            
+            customerContacts.push({ name, phone });
+            localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
+            
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerPhone').value = '';
+            
+            renderCustomersList();
+            
+            const toast = document.getElementById('toast');
+            toast.innerHTML = 'Customer added!';
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.innerHTML = 'Saved successfully!';
+            }, 2000);
+        }
+
+        // Delete customer contact
+        function deleteCustomerContact(index) {
+            if (confirm('Delete this customer contact?')) {
+                customerContacts.splice(index, 1);
+                localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
+                renderCustomersList();
+            }
+        }
+
+        // Render customers list
+        function renderCustomersList() {
+            const container = document.getElementById('customersList');
+            if (customerContacts.length === 0) {
+                container.innerHTML = '<p style="color: #6b7280; font-size: 14px; margin-top: 10px;">No customers added yet</p>';
+                return;
+            }
+            
+            let html = '<div style="margin-top: 15px;">';
+            customerContacts.forEach((customer, index) => {
+                html += `
+                    <div class="customer-item">
+                        <div class="customer-info">
+                            <div class="customer-name">${customer.name}</div>
+                            <div class="customer-phone">${customer.phone}</div>
+                        </div>
+                        <div class="customer-actions">
+                            <button class="btn btn-danger btn-small" onclick="deleteCustomerContact(${index})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
         }
 
         // Render categories
@@ -1011,6 +1215,13 @@
                         
                         console.log('Downloading...');
                         const url = URL.createObjectURL(blob);
+                        
+                        // Store for sharing
+                        if (lastGeneratedImageUrl) {
+                            URL.revokeObjectURL(lastGeneratedImageUrl);
+                        }
+                        lastGeneratedImageUrl = url;
+                        
                         const a = document.createElement('a');
                         a.href = url;
                         const dateStr = new Date().toISOString().split('T')[0];
@@ -1018,7 +1229,6 @@
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
                         
                         console.log('Download complete!');
                         loading.classList.remove('show');
@@ -1030,6 +1240,112 @@
                     loading.classList.remove('show');
                 }
             });
+        }
+
+        // Quick share on WhatsApp
+        function quickShareWhatsApp() {
+            collectData();
+            
+            // Check for empty prices
+            let hasEmptyPrices = false;
+            for (const categoryName in priceData) {
+                const items = priceData[categoryName];
+                for (let i = 0; i < items.length; i++) {
+                    const price = (items[i][2] || '').toString().trim();
+                    if (price === '') {
+                        hasEmptyPrices = true;
+                        break;
+                    }
+                }
+                if (hasEmptyPrices) break;
+            }
+            
+            if (hasEmptyPrices) {
+                alert('Please fill in all prices or mark as "NA" before sharing.');
+                return;
+            }
+            
+            const message = encodeURIComponent('Everfresh Produce Group - Latest Price List');
+            const whatsappUrl = `https://wa.me/?text=${message}`;
+            
+            alert('Image will download first. After downloading, please:\n1. Open WhatsApp\n2. Select contact/group\n3. Attach the downloaded image\n4. Send!');
+            
+            downloadImage();
+            
+            setTimeout(() => {
+                window.open(whatsappUrl, '_blank');
+            }, 1000);
+        }
+
+        // Show customer share menu
+        function showCustomerShareMenu() {
+            if (customerContacts.length === 0) {
+                alert('No customers added yet! Please add customers in Settings first.');
+                return;
+            }
+            
+            collectData();
+            
+            // Check for empty prices
+            let hasEmptyPrices = false;
+            for (const categoryName in priceData) {
+                const items = priceData[categoryName];
+                for (let i = 0; i < items.length; i++) {
+                    const price = (items[i][2] || '').toString().trim();
+                    if (price === '') {
+                        hasEmptyPrices = true;
+                        break;
+                    }
+                }
+                if (hasEmptyPrices) break;
+            }
+            
+            if (hasEmptyPrices) {
+                alert('Please fill in all prices or mark as "NA" before sharing.');
+                return;
+            }
+            
+            const container = document.getElementById('customerShareList');
+            let html = '';
+            
+            customerContacts.forEach((customer, index) => {
+                html += `
+                    <div class="customer-item">
+                        <div class="customer-info">
+                            <div class="customer-name">${customer.name}</div>
+                            <div class="customer-phone">${customer.phone}</div>
+                        </div>
+                        <button class="btn btn-primary btn-small" onclick="sendToCustomer(${index})">Send</button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            document.getElementById('customerShareMenu').classList.add('show');
+        }
+
+        // Close customer share menu
+        function closeCustomerShareMenu() {
+            document.getElementById('customerShareMenu').classList.remove('show');
+        }
+
+        // Send to specific customer
+        function sendToCustomer(index) {
+            const customer = customerContacts[index];
+            const phone = customer.phone.replace(/\D/g, ''); // Remove non-digits
+            const message = encodeURIComponent(`Hi ${customer.name}, here's our latest price list from Everfresh Produce Group`);
+            
+            // Download image first
+            downloadImage();
+            
+            closeCustomerShareMenu();
+            
+            alert(`Image downloading...\n\nAfter download:\n1. WhatsApp will open for ${customer.name}\n2. Attach the downloaded image\n3. Click send!`);
+            
+            setTimeout(() => {
+                const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
+                window.open(whatsappUrl, '_blank');
+            }, 1000);
         }
 
         // Initialize
