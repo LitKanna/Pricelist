@@ -1069,6 +1069,54 @@
         // XPS Import functionality
         let xpsExtractedProducts = [];
 
+        // Normalize product names for matching
+        function normalizeProductName(name) {
+            let normalized = name.toUpperCase().trim();
+            
+            // Remove common filler words
+            const fillers = ['PREMIUM', 'FRESH', 'NO.1', 'NO.2', 'NO1', 'NO2', 'GRADE', 'QUALITY', 'SELECT'];
+            fillers.forEach(filler => {
+                normalized = normalized.replace(new RegExp('\\b' + filler + '\\b', 'g'), '');
+            });
+            
+            // Handle plurals - remove trailing S
+            normalized = normalized.replace(/S\b/g, '');
+            
+            // Remove extra spaces
+            normalized = normalized.replace(/\s+/g, ' ').trim();
+            
+            return normalized;
+        }
+
+        // Calculate similarity score between two product names
+        function calculateSimilarity(name1, name2) {
+            const norm1 = normalizeProductName(name1);
+            const norm2 = normalizeProductName(name2);
+            
+            // Exact match
+            if (norm1 === norm2) return 100;
+            
+            // One contains the other
+            if (norm1.includes(norm2) || norm2.includes(norm1)) return 90;
+            
+            // Split into words and check overlap
+            const words1 = norm1.split(' ');
+            const words2 = norm2.split(' ');
+            
+            const commonWords = words1.filter(w => words2.includes(w) && w.length > 2);
+            const totalWords = Math.max(words1.length, words2.length);
+            
+            if (commonWords.length === 0) return 0;
+            
+            const wordScore = (commonWords.length / totalWords) * 100;
+            
+            // Boost score if key words match
+            const keyWords = ['TOMATO', 'CHILLI', 'CAPSICUM', 'CUCUMBER', 'LETTUCE', 'EGGPLANT'];
+            const hasKeyMatch = keyWords.some(kw => norm1.includes(kw) && norm2.includes(kw));
+            
+            return hasKeyMatch ? wordScore : wordScore * 0.7;
+        }
+
         // Smart extraction of unit price from concatenated format
         function extractUnitPrice(line) {
             // Format: [docket][size][qty][price][total]
@@ -1170,35 +1218,55 @@
                                         'ONION', 'GARLIC', 'PUMPKIN', 'CARROT', 'LUFFA',
                                         'MANGO', 'LIME', 'POMEGRANATE', 'GUAVA', 'COCONUT',
                                         'BASIL', 'MINT', 'CORIANDER', 'GINGER', 'POTATO',
-                                        'ZUCCHINI', 'BROCCOLI', 'CAULIFLOWER', 'SPINACH'];
+                                        'ZUCCHINI', 'BROCCOLI', 'CAULIFLOWER', 'SPINACH',
+                                        'MUSHROOM', 'CELERY', 'PARSLEY', 'KALE', 'PEA', 'SNAP'];
 
                 for (let i = 0; i < texts.length; i++) {
                     const text = texts[i].trim();
                     
-                    // Check if it's a product line
+                    // STRICT product detection criteria:
+                    // 1. Must contain a product keyword
+                    // 2. Must have " - " separator
+                    // 3. Must NOT be a "Total" line
+                    // 4. Must NOT contain customer indicators (EPG, FARMS, PTY, P/L)
+                    // 5. Must be followed by price data within next 5 lines
+                    
                     const hasKeyword = productKeywords.some(kw => text.toUpperCase().includes(kw));
                     const hasHyphen = text.includes(' - ');
                     const isNotTotal = !text.includes('Total');
-                    const isNotCustomer = !text.includes('EPG') && !text.includes('FARMS');
+                    const isNotCustomer = !text.includes('EPG') && !text.includes('FARMS') && 
+                                        !text.includes('PTY') && !text.includes('P/L') &&
+                                        !text.includes('CASH') && !text.includes('MARKET');
                     
                     if (hasKeyword && hasHyphen && isNotTotal && isNotCustomer) {
                         const productLine = text;
+                        let foundPrice = false;
                         
                         // Look for prices in next few lines
-                        for (let j = i + 1; j < Math.min(i + 15, texts.length); j++) {
+                        for (let j = i + 1; j < Math.min(i + 8, texts.length); j++) {
                             const line = texts[j];
+                            
+                            // Skip lines that are clearly not price data
+                            if (line.includes('Total') || line.includes('EPG') || 
+                                line.includes('MARKET') || line.includes('FRESH')) {
+                                continue;
+                            }
                             
                             // Use smart extraction to handle concatenated qty+price+total
                             const unitPrice = extractUnitPrice(line);
                             
-                            if (unitPrice && unitPrice > 0 && unitPrice < 10000) {
+                            if (unitPrice && unitPrice > 0 && unitPrice < 1000) {  // Sanity check
                                 if (!products[productLine]) {
                                     products[productLine] = [];
                                 }
                                 products[productLine].push(unitPrice);
+                                foundPrice = true;
                                 break;
                             }
                         }
+                        
+                        // If we found a product line but no price, it's probably not a real product
+                        // Just skip it
                     }
                 }
             }
@@ -1238,136 +1306,127 @@
 
             if (products.length === 0) {
                 list.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 40px;">No products found in XPS file.</p>';
-            } else {
-                // Match XPS products to existing products in priceData
-                const matches = [];
-                const unmatched = [];
+                modal.classList.add('show');
+                return;
+            }
 
-                products.forEach(xpsProduct => {
-                    let foundMatch = false;
+            // Match XPS products to existing products with better fuzzy matching
+            const matches = [];
+            const unmatched = [];
 
-                    // Search through all categories
-                    for (const categoryName in priceData) {
-                        const items = priceData[categoryName];
-                        
-                        for (let i = 0; i < items.length; i++) {
-                            const existingProduct = items[i][0]; // Product name
-                            const existingGrade = items[i][1];   // Grade/Size
-                            const existingPrice = items[i][2];   // Current price
+            products.forEach(xpsProduct => {
+                let bestMatch = null;
+                let bestScore = 0;
 
-                            // Fuzzy match on product name (contains or similar)
-                            const xpsNameUpper = xpsProduct.product.toUpperCase();
-                            const existingNameUpper = existingProduct.toUpperCase();
+                // Search through all categories
+                for (const categoryName in priceData) {
+                    const items = priceData[categoryName];
+                    
+                    for (let i = 0; i < items.length; i++) {
+                        const existingProduct = items[i][0]; // Product name
+                        const existingGrade = items[i][1];   // Grade/Size
+                        const existingPrice = items[i][2];   // Current price
 
-                            // Check if names match (flexible matching)
-                            const nameMatch = 
-                                xpsNameUpper.includes(existingNameUpper) || 
-                                existingNameUpper.includes(xpsNameUpper) ||
-                                levenshteinDistance(xpsNameUpper, existingNameUpper) < 5;
+                        // Calculate similarity score
+                        const score = calculateSimilarity(xpsProduct.product, existingProduct);
 
-                            if (nameMatch) {
-                                matches.push({
-                                    categoryName: categoryName,
-                                    itemIndex: i,
-                                    existingProduct: existingProduct,
-                                    existingGrade: existingGrade,
-                                    currentPrice: existingPrice,
-                                    xpsProduct: xpsProduct,
-                                    selected: true
-                                });
-                                foundMatch = true;
-                                break;
-                            }
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMatch = {
+                                categoryName: categoryName,
+                                itemIndex: i,
+                                existingProduct: existingProduct,
+                                existingGrade: existingGrade,
+                                currentPrice: existingPrice,
+                                xpsProduct: xpsProduct,
+                                matchScore: score,
+                                selected: score >= 70  // Auto-select if score >= 70%
+                            };
                         }
-                        if (foundMatch) break;
                     }
+                }
 
-                    if (!foundMatch) {
-                        unmatched.push(xpsProduct);
-                    }
-                });
+                // Only consider it a match if score is decent
+                if (bestMatch && bestScore >= 60) {
+                    matches.push(bestMatch);
+                } else {
+                    unmatched.push(xpsProduct);
+                }
+            });
 
-                list.innerHTML = `
-                    <div style="background: #f0fdf4; border: 1px solid #22c55e; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-                        <strong style="color: #15803d;">✅ Found ${matches.length} matching products in your price list</strong>
-                        <p style="color: #16a34a; font-size: 13px; margin-top: 4px;">Prices will be updated based on your sales data</p>
+            // Sort matches by score (best first)
+            matches.sort((a, b) => b.matchScore - a.matchScore);
+
+            list.innerHTML = `
+                <div style="background: #f0fdf4; border: 1px solid #22c55e; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                    <strong style="color: #15803d;">✅ Found ${matches.length} matching products in your price list</strong>
+                    <p style="color: #16a34a; font-size: 13px; margin-top: 4px;">Prices will be updated based on your sales data. Review matches below.</p>
+                </div>
+                ${unmatched.length > 0 ? `
+                    <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                        <strong style="color: #92400e;">⚠️ ${unmatched.length} products from XPS not found in your list</strong>
+                        <p style="color: #78350f; font-size: 13px; margin-top: 4px;">Add these manually if needed</p>
                     </div>
-                    ${unmatched.length > 0 ? `
-                        <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-                            <strong style="color: #92400e;">⚠️ ${unmatched.length} products from XPS not found in your list</strong>
-                            <p style="color: #78350f; font-size: 13px; margin-top: 4px;">These will be skipped (add them manually if needed)</p>
-                        </div>
-                    ` : ''}
-                    <div style="display: flex; gap: 10px; margin-bottom: 16px;">
-                        <button class="btn btn-small btn-secondary" onclick="selectAllXPSMatches(true)">Select All</button>
-                        <button class="btn btn-small btn-secondary" onclick="selectAllXPSMatches(false)">Deselect All</button>
-                    </div>
-                    <div style="max-height: 400px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
-                        ${matches.map((m, idx) => `
-                            <div style="padding: 12px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
+                ` : ''}
+                <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+                    <button class="btn btn-small btn-secondary" onclick="selectAllXPSMatches(true)">Select All</button>
+                    <button class="btn btn-small btn-secondary" onclick="selectAllXPSMatches(false)">Deselect All</button>
+                </div>
+                <div style="max-height: 450px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    ${matches.map((m, idx) => {
+                        const matchQuality = m.matchScore >= 90 ? '🟢 Excellent' : 
+                                            m.matchScore >= 80 ? '🟡 Good' :
+                                            m.matchScore >= 70 ? '🟠 Fair' : '🔴 Weak';
+                        
+                        return `
+                            <div style="padding: 12px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px; background: ${m.matchScore < 70 ? '#fef3c7' : 'white'};">
                                 <input type="checkbox" id="xps_match_${idx}" ${m.selected ? 'checked' : ''} 
                                        onchange="xpsMatches[${idx}].selected = this.checked"
                                        style="width: 18px; height: 18px; cursor: pointer;">
                                 <label for="xps_match_${idx}" style="flex: 1; cursor: pointer;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <div>
-                                            <div style="font-weight: 600; color: #1e293b;">${m.existingProduct}</div>
-                                            <div style="font-size: 13px; color: #64748b;">${m.existingGrade}</div>
-                                            <div style="font-size: 12px; color: #94a3b8;">XPS sales: ${m.xpsProduct.pricesSold.map(p => '$' + p.toFixed(2)).join(', ')}</div>
-                                        </div>
-                                        <div style="text-align: right;">
-                                            <div style="font-size: 13px; color: #94a3b8; text-decoration: line-through;">Current: ${m.currentPrice}</div>
-                                            <div style="font-weight: 700; color: #15803d; font-size: 18px;">
-                                                New: $${m.xpsProduct.suggestedPrice.toFixed(shouldRoundToWholeDollar(m.existingGrade) ? 0 : 2)}
+                                    <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px;">
+                                        <div style="flex: 1;">
+                                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                                <span style="font-size: 11px; padding: 2px 6px; background: #f1f5f9; border-radius: 4px;">${matchQuality}</span>
+                                                <span style="font-size: 11px; color: #94a3b8;">${m.matchScore.toFixed(0)}% match</span>
                                             </div>
-                                            <div style="font-size: 11px; color: #64748b;">Avg of ${m.xpsProduct.salesCount} sales</div>
+                                            <div style="font-weight: 600; color: #1e293b; margin-bottom: 2px;">${m.existingProduct}</div>
+                                            <div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">${m.existingGrade}</div>
+                                            <div style="font-size: 12px; color: #94a3b8;">
+                                                XPS: "${xpsProduct.product}" → ${m.xpsProduct.pricesSold.map(p => '$' + p.toFixed(2)).join(', ')}
+                                            </div>
+                                        </div>
+                                        <div style="text-align: right; min-width: 120px;">
+                                            <div style="font-size: 13px; color: #94a3b8; text-decoration: line-through;">Was: ${m.currentPrice}</div>
+                                            <div style="font-weight: 700; color: #15803d; font-size: 20px; margin: 4px 0;">
+                                                $${m.xpsProduct.suggestedPrice.toFixed(shouldRoundToWholeDollar(m.existingGrade) ? 0 : 2)}
+                                            </div>
+                                            <div style="font-size: 11px; color: #64748b;">${m.xpsProduct.salesCount} sale${m.xpsProduct.salesCount > 1 ? 's' : ''}</div>
                                         </div>
                                     </div>
                                 </label>
                             </div>
-                        `).join('')}
-                        ${unmatched.length > 0 ? `
-                            <div style="padding: 16px; background: #fafafa;">
-                                <div style="font-weight: 600; color: #64748b; margin-bottom: 8px;">Unmatched (Skipped):</div>
-                                ${unmatched.map(u => `
-                                    <div style="font-size: 13px; color: #94a3b8; padding: 4px 0;">
-                                        ${u.product} - ${u.grade} ($${u.suggestedPrice})
-                                    </div>
-                                `).join('')}
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
+                        `;
+                    }).join('')}
+                    ${unmatched.length > 0 ? `
+                        <div style="padding: 16px; background: #fafafa;">
+                            <div style="font-weight: 600; color: #64748b; margin-bottom: 8px;">⚠️ Not Found in Your List (${unmatched.length}):</div>
+                            ${unmatched.map(u => `
+                                <div style="font-size: 13px; color: #94a3b8; padding: 6px 0; border-bottom: 1px solid #f1f5f9;">
+                                    ${u.product} - ${u.grade} → $${u.suggestedPrice.toFixed(2)} (${u.salesCount} sales)
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
 
-                // Store matches globally
-                window.xpsMatches = matches;
-            }
-
+            // Store matches globally
+            window.xpsMatches = matches;
             modal.classList.add('show');
         }
 
         // Levenshtein distance for fuzzy matching
-        function levenshteinDistance(str1, str2) {
-            const len1 = str1.length;
-            const len2 = str2.length;
-            const matrix = Array(len1 + 1).fill(null).map(() => Array(len2 + 1).fill(0));
-
-            for (let i = 0; i <= len1; i++) matrix[i][0] = i;
-            for (let j = 0; j <= len2; j++) matrix[0][j] = j;
-
-            for (let i = 1; i <= len1; i++) {
-                for (let j = 1; j <= len2; j++) {
-                    const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
-                    matrix[i][j] = Math.min(
-                        matrix[i - 1][j] + 1,
-                        matrix[i][j - 1] + 1,
-                        matrix[i - 1][j - 1] + cost
-                    );
-                }
-            }
-
-            return matrix[len1][len2];
-        }
 
         function selectAllXPSMatches(selected) {
             if (window.xpsMatches) {
