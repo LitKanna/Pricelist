@@ -1187,89 +1187,93 @@
 
             // Find all .fpage files
             const fpageFiles = [];
-            zip.folder('Documents').forEach((relativePath, file) => {
-                if (relativePath.endsWith('.fpage')) {
-                    fpageFiles.push(file);
+            zip.forEach((relativePath, file) => {
+                if (relativePath.endsWith('.fpage') && !file.dir) {
+                    fpageFiles.push({path: relativePath, file: file});
                 }
             });
 
+            console.log(`Found ${fpageFiles.length} pages in XPS`);
+
             // Parse each page
-            for (const fpageFile of fpageFiles) {
-                const content = await fpageFile.async('text');
-                
-                // Parse XML
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(content, 'text/xml');
-                
-                // Extract all UnicodeString attributes
-                const glyphs = xmlDoc.getElementsByTagName('Glyphs');
-                const texts = [];
-                
-                for (let glyph of glyphs) {
-                    const unicodeStr = glyph.getAttribute('UnicodeString');
-                    if (unicodeStr) {
-                        texts.push(unicodeStr.replace(/&amp;/g, '&'));
+            for (const fpageInfo of fpageFiles) {
+                try {
+                    const content = await fpageInfo.file.async('text');
+                    
+                    // Parse XML
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(content, 'text/xml');
+                    
+                    // Check for parse errors
+                    const parseError = xmlDoc.getElementsByTagName('parsererror');
+                    if (parseError.length > 0) {
+                        console.error('XML parse error:', parseError[0].textContent);
+                        continue;
                     }
-                }
+                    
+                    // Extract all UnicodeString attributes
+                    const glyphs = xmlDoc.getElementsByTagName('Glyphs');
+                    const texts = [];
+                    
+                    for (let glyph of glyphs) {
+                        const unicodeStr = glyph.getAttribute('UnicodeString');
+                        if (unicodeStr) {
+                            texts.push(unicodeStr.replace(/&amp;/g, '&'));
+                        }
+                    }
 
-                // Find product patterns
-                const productKeywords = ['LETTUCE', 'EGGPLANT', 'BEETROOT', 'MELON', 'TOMATO', 
-                                        'CAPSICUM', 'CHILLI', 'CUCUMBER', 'BEANS', 'OKRA', 
-                                        'ONION', 'GARLIC', 'PUMPKIN', 'CARROT', 'LUFFA',
-                                        'MANGO', 'LIME', 'POMEGRANATE', 'GUAVA', 'COCONUT',
-                                        'BASIL', 'MINT', 'CORIANDER', 'GINGER', 'POTATO',
-                                        'ZUCCHINI', 'BROCCOLI', 'CAULIFLOWER', 'SPINACH',
-                                        'MUSHROOM', 'CELERY', 'PARSLEY', 'KALE', 'PEA', 'SNAP'];
+                    // Find product patterns
+                    const productKeywords = ['LETTUCE', 'EGGPLANT', 'BEETROOT', 'MELON', 'TOMATO', 
+                                            'CAPSICUM', 'CHILLI', 'CUCUMBER', 'BEANS', 'OKRA', 
+                                            'ONION', 'GARLIC', 'PUMPKIN', 'CARROT', 'LUFFA',
+                                            'MANGO', 'LIME', 'POMEGRANATE', 'GUAVA', 'COCONUT',
+                                            'BASIL', 'MINT', 'CORIANDER', 'GINGER', 'POTATO',
+                                            'ZUCCHINI', 'BROCCOLI', 'CAULIFLOWER', 'SPINACH',
+                                            'MUSHROOM', 'CELERY', 'PARSLEY', 'KALE', 'PEA', 'SNAP'];
 
-                for (let i = 0; i < texts.length; i++) {
-                    const text = texts[i].trim();
-                    
-                    // STRICT product detection criteria:
-                    // 1. Must contain a product keyword
-                    // 2. Must have " - " separator
-                    // 3. Must NOT be a "Total" line
-                    // 4. Must NOT contain customer indicators (EPG, FARMS, PTY, P/L)
-                    // 5. Must be followed by price data within next 5 lines
-                    
-                    const hasKeyword = productKeywords.some(kw => text.toUpperCase().includes(kw));
-                    const hasHyphen = text.includes(' - ');
-                    const isNotTotal = !text.includes('Total');
-                    const isNotCustomer = !text.includes('EPG') && !text.includes('FARMS') && 
-                                        !text.includes('PTY') && !text.includes('P/L') &&
-                                        !text.includes('CASH') && !text.includes('MARKET');
-                    
-                    if (hasKeyword && hasHyphen && isNotTotal && isNotCustomer) {
-                        const productLine = text;
-                        let foundPrice = false;
+                    for (let i = 0; i < texts.length; i++) {
+                        const text = texts[i].trim();
                         
-                        // Look for prices in next few lines
-                        for (let j = i + 1; j < Math.min(i + 8, texts.length); j++) {
-                            const line = texts[j];
+                        // STRICT product detection criteria:
+                        const hasKeyword = productKeywords.some(kw => text.toUpperCase().includes(kw));
+                        const hasHyphen = text.includes(' - ');
+                        const isNotTotal = !text.includes('Total');
+                        const isNotCustomer = !text.includes('EPG') && !text.includes('FARMS') && 
+                                            !text.includes('PTY') && !text.includes('P/L') &&
+                                            !text.includes('CASH') && !text.includes('MARKET');
+                        
+                        if (hasKeyword && hasHyphen && isNotTotal && isNotCustomer) {
+                            const productLine = text;
                             
-                            // Skip lines that are clearly not price data
-                            if (line.includes('Total') || line.includes('EPG') || 
-                                line.includes('MARKET') || line.includes('FRESH')) {
-                                continue;
-                            }
-                            
-                            // Use smart extraction to handle concatenated qty+price+total
-                            const unitPrice = extractUnitPrice(line);
-                            
-                            if (unitPrice && unitPrice > 0 && unitPrice < 1000) {  // Sanity check
-                                if (!products[productLine]) {
-                                    products[productLine] = [];
+                            // Look for prices in next few lines
+                            for (let j = i + 1; j < Math.min(i + 8, texts.length); j++) {
+                                const line = texts[j];
+                                
+                                // Skip lines that are clearly not price data
+                                if (line.includes('Total') || line.includes('EPG') || 
+                                    line.includes('MARKET') || line.includes('FRESH')) {
+                                    continue;
                                 }
-                                products[productLine].push(unitPrice);
-                                foundPrice = true;
-                                break;
+                                
+                                // Use smart extraction to handle concatenated qty+price+total
+                                const unitPrice = extractUnitPrice(line);
+                                
+                                if (unitPrice && unitPrice > 0 && unitPrice < 1000) {
+                                    if (!products[productLine]) {
+                                        products[productLine] = [];
+                                    }
+                                    products[productLine].push(unitPrice);
+                                    break;
+                                }
                             }
                         }
-                        
-                        // If we found a product line but no price, it's probably not a real product
-                        // Just skip it
                     }
+                } catch (err) {
+                    console.error(`Error parsing page ${fpageInfo.path}:`, err);
                 }
             }
+
+            console.log(`Extracted ${Object.keys(products).length} unique products`);
 
             // Format products
             const finalProducts = [];
@@ -1293,7 +1297,7 @@
                     avgPrice: Math.round(avgPrice * 100) / 100,
                     suggestedPrice: suggestedPrice,
                     salesCount: prices.length,
-                    selected: true  // Default to selected
+                    selected: true
                 });
             }
 
