@@ -126,29 +126,30 @@
         background: var(--slate-50);
     }
     
-    /* Category Cards - Beautiful & Functional */
+    /* Category Cards - Ultra Premium */
     .category {
         background: white;
-        border-radius: 20px;
-        margin-bottom: 24px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-        border: 1px solid var(--slate-100);
+        border-radius: 24px;
+        margin-bottom: 28px;
+        overflow: visible;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
     }
     
     .category-header {
         background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-        padding: 24px 20px;
+        padding: 28px 24px;
         color: white;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        border-radius: 24px 24px 0 0;
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
     }
     
     .category-title {
-        font-size: 20px;
-        font-weight: 700;
-        letter-spacing: -0.5px;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.8px;
         flex: 1;
     }
     
@@ -158,138 +159,156 @@
     }
     
     .icon-btn {
-        background: rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        border: 2px solid rgba(255, 255, 255, 0.3);
         color: white;
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        font-size: 18px;
+        font-size: 22px;
         font-weight: 700;
         transition: all 0.2s;
     }
     
     .icon-btn:active {
-        transform: scale(0.9);
-        background: rgba(255, 255, 255, 0.4);
+        transform: scale(0.92);
+        background: rgba(255, 255, 255, 0.35);
     }
     
-    /* Beautiful Product Cards */
+    /* Premium Product Cards - iOS Style */
     .product {
         padding: 0;
         border: none;
-        margin: 16px;
-        background: var(--slate-50);
-        border-radius: 16px;
-        overflow: hidden;
+        margin: 20px 20px;
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+        border-radius: 20px;
+        overflow: visible;
         position: relative;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), 
+                    0 0 0 1px rgba(0, 0, 0, 0.03);
+        transition: all 0.3s;
+    }
+    
+    .product:hover {
+        box-shadow: 0 8px 32px rgba(34, 197, 94, 0.12), 
+                    0 0 0 1px rgba(34, 197, 94, 0.1);
     }
     
     .product:last-child {
-        margin-bottom: 20px;
+        margin-bottom: 24px;
     }
     
     .product-grid {
         display: flex;
         flex-direction: column;
         gap: 0;
-        padding-right: 52px;
+        padding: 20px 60px 20px 20px;
     }
     
     .product-field {
         position: relative;
-        background: white;
+        padding: 12px 0;
+    }
+    
+    .product-field:not(:last-child) {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.04);
     }
     
     .product-label {
         display: block;
-        font-size: 11px;
-        font-weight: 700;
+        font-size: 10px;
+        font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: var(--slate-600);
-        padding: 12px 16px 4px;
+        letter-spacing: 1px;
+        color: #64748b;
+        margin-bottom: 8px;
     }
     
     .input-field {
         width: 100%;
-        padding: 0 16px 14px;
+        padding: 0;
         border: none;
         background: transparent;
-        font-size: 16px;
+        font-size: 17px;
         font-weight: 600;
-        font-family: inherit;
-        color: var(--slate-900);
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+        color: #0f172a;
+        line-height: 1.4;
     }
     
     .input-field:focus {
         outline: none;
-        background: var(--green-50);
     }
     
     .input-field::placeholder {
-        color: var(--slate-400);
+        color: #cbd5e1;
         font-weight: 500;
     }
     
-    .product-field:not(:last-child) {
-        border-bottom: 1px solid var(--slate-100);
+    /* Price field - special styling */
+    .product-field:last-child .input-field {
+        font-size: 20px;
+        font-weight: 700;
+        color: #059669;
     }
     
-    /* Delete Button - Floating */
+    /* Delete Button - iOS Style */
     .product-delete {
         position: absolute;
         top: 50%;
-        right: 12px;
+        right: 16px;
         transform: translateY(-50%);
         background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
         color: white;
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
         border: none;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        font-size: 16px;
+        font-size: 20px;
         font-weight: 700;
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        box-shadow: 0 4px 16px rgba(239, 68, 68, 0.35);
         z-index: 10;
         transition: all 0.2s;
     }
     
     .product-delete:active {
-        transform: translateY(-50%) scale(0.9);
+        transform: translateY(-50%) scale(0.88);
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
     }
     
-    /* Add Product Button */
+    /* Add Product Button - Premium */
     .add-product-btn {
-        margin: 0 16px 20px;
-        width: calc(100% - 32px);
-        padding: 16px;
-        background: linear-gradient(135deg, var(--green-500) 0%, var(--green-600) 100%);
+        margin: 0 20px 24px;
+        width: calc(100% - 40px);
+        padding: 18px;
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
         color: white;
         border: none;
-        border-radius: 14px;
-        font-size: 15px;
+        border-radius: 16px;
+        font-size: 16px;
         font-weight: 700;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
-        box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+        box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35);
         transition: all 0.2s;
+        letter-spacing: 0.3px;
     }
     
     .add-product-btn:active {
-        transform: scale(0.98);
+        transform: scale(0.97);
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
     }
     
     /* Settings Panel */
