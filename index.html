@@ -1169,12 +1169,24 @@
             showToast('📁 Parsing XPS file...');
 
             try {
+                console.log('Starting XPS parse...');
+                console.log('File:', file.name, 'Size:', file.size);
+                
                 const products = await parseXPSFile(file);
+                
+                console.log('Parse complete. Products:', products.length);
+                
+                if (products.length === 0) {
+                    alert('No products found in XPS file. The file may be empty or in an unexpected format.');
+                    return;
+                }
+                
                 xpsExtractedProducts = products;
                 showXPSPreview(products);
             } catch (error) {
                 console.error('XPS parsing error:', error);
-                alert('Error parsing XPS file. Please make sure it\'s a valid XPS sales report from Market Agent Pro.');
+                console.error('Error stack:', error.stack);
+                alert('Error parsing XPS file: ' + error.message + '\n\nCheck browser console (F12) for details.');
             }
 
             // Reset file input
@@ -1182,22 +1194,30 @@
         }
 
         async function parseXPSFile(file) {
+            console.log('Loading ZIP...');
             const zip = await JSZip.loadAsync(file);
+            console.log('ZIP loaded successfully');
+            
             const products = {};
 
             // Find all .fpage files
             const fpageFiles = [];
-            zip.forEach((relativePath, file) => {
-                if (relativePath.endsWith('.fpage') && !file.dir) {
-                    fpageFiles.push({path: relativePath, file: file});
+            zip.forEach((relativePath, zipEntry) => {
+                if (relativePath.endsWith('.fpage') && !zipEntry.dir) {
+                    fpageFiles.push({path: relativePath, file: zipEntry});
                 }
             });
 
             console.log(`Found ${fpageFiles.length} pages in XPS`);
+            
+            if (fpageFiles.length === 0) {
+                throw new Error('No .fpage files found in XPS. File may be corrupted.');
+            }
 
             // Parse each page
             for (const fpageInfo of fpageFiles) {
                 try {
+                    console.log(`Parsing ${fpageInfo.path}...`);
                     const content = await fpageInfo.file.async('text');
                     
                     // Parse XML
@@ -1221,6 +1241,8 @@
                             texts.push(unicodeStr.replace(/&amp;/g, '&'));
                         }
                     }
+                    
+                    console.log(`  Found ${texts.length} text elements`);
 
                     // Find product patterns
                     const productKeywords = ['LETTUCE', 'EGGPLANT', 'BEETROOT', 'MELON', 'TOMATO', 
@@ -1263,6 +1285,7 @@
                                         products[productLine] = [];
                                     }
                                     products[productLine].push(unitPrice);
+                                    console.log(`    Found: ${productLine} → $${unitPrice}`);
                                     break;
                                 }
                             }
@@ -1270,6 +1293,7 @@
                     }
                 } catch (err) {
                     console.error(`Error parsing page ${fpageInfo.path}:`, err);
+                    console.error('Stack:', err.stack);
                 }
             }
 
