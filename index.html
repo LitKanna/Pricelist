@@ -1069,6 +1069,51 @@
         // XPS Import functionality
         let xpsExtractedProducts = [];
 
+        // Smart extraction of unit price from concatenated format
+        function extractUnitPrice(line) {
+            // Format: [docket][size][qty][price][total]
+            // Example: "376081LGE1014.00140.00" → qty=10, price=14.00, total=140.00
+            
+            const allNumbers = line.match(/(\d+\.\d{2})/g);
+            if (!allNumbers || allNumbers.length < 2) return null;
+            
+            const total = parseFloat(allNumbers[allNumbers.length - 1]);
+            const concatenated = allNumbers[allNumbers.length - 2];
+            
+            if (allNumbers.length === 2) {
+                // Try to split concatenated qty+price
+                const clean = concatenated.replace('.', '');
+                
+                // Try different split positions to find qty * price = total
+                for (let splitPos = 1; splitPos < clean.length - 2; splitPos++) {
+                    const qtyStr = clean.substring(0, splitPos);
+                    const priceStr = clean.substring(splitPos);
+                    
+                    if (!qtyStr || !priceStr) continue;
+                    
+                    try {
+                        const qty = parseInt(qtyStr);
+                        // Re-add decimal (last 2 digits are cents)
+                        const price = parseFloat(
+                            priceStr.substring(0, priceStr.length - 2) + '.' + 
+                            priceStr.substring(priceStr.length - 2)
+                        );
+                        
+                        // Check if qty * price ≈ total
+                        const calculatedTotal = qty * price;
+                        if (Math.abs(calculatedTotal - total) < 0.01) {
+                            return price;
+                        }
+                    } catch (e) {
+                        continue;
+                    }
+                }
+            }
+            
+            // Fallback: return as-is
+            return parseFloat(concatenated);
+        }
+
         async function handleXPSUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1142,11 +1187,11 @@
                         // Look for prices in next few lines
                         for (let j = i + 1; j < Math.min(i + 15, texts.length); j++) {
                             const line = texts[j];
-                            const priceMatches = line.match(/(\d+\.\d{2})/g);
                             
-                            if (priceMatches && priceMatches.length >= 2) {
-                                const unitPrice = parseFloat(priceMatches[priceMatches.length - 1]);
-                                
+                            // Use smart extraction to handle concatenated qty+price+total
+                            const unitPrice = extractUnitPrice(line);
+                            
+                            if (unitPrice && unitPrice > 0 && unitPrice < 10000) {
                                 if (!products[productLine]) {
                                     products[productLine] = [];
                                 }
