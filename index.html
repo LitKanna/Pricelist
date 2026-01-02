@@ -1276,6 +1276,11 @@
                     throw new Error('Failed to generate image');
                 }
                 
+                // Create message with variables
+                const today = new Date().toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
+                const yourName = salesmanInfo.name || 'Everfresh Team';
+                const message = `Hi! ${yourName} here from Everfresh 👋 Fresh prices for ${today} - give me a call or text for your order! Thank you.`;
+                
                 // Check if Web Share API is available (iOS/modern browsers)
                 if (navigator.share && navigator.canShare) {
                     const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
@@ -1283,7 +1288,7 @@
                     if (navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             title: 'Everfresh Price List',
-                            text: 'Latest wholesale prices from Everfresh Produce Group',
+                            text: message,
                             files: [file]
                         });
                         loading.classList.remove('show');
@@ -1384,6 +1389,11 @@
                     throw new Error('Failed to generate image');
                 }
                 
+                // Create personalized message
+                const today = new Date().toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
+                const yourName = salesmanInfo.name || 'Everfresh Team';
+                const message = `Hi ${customer.name}! ${yourName} here from Everfresh 👋 Fresh prices for ${today} - give me a call or text for your order! Thank you.`;
+                
                 // Check if Web Share API is available (iOS/modern browsers)
                 if (navigator.share && navigator.canShare) {
                     const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
@@ -1391,7 +1401,7 @@
                     if (navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             title: `Price List for ${customer.name}`,
-                            text: `Hi ${customer.name}, here's our latest price list from Everfresh Produce Group`,
+                            text: message,
                             files: [file]
                         });
                         loading.classList.remove('show');
@@ -1413,8 +1423,8 @@
                 loading.classList.remove('show');
                 
                 // Open WhatsApp with customer number
-                const message = encodeURIComponent(`Hi ${customer.name}, here's our latest price list from Everfresh Produce Group`);
-                const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
+                const messageEncoded = encodeURIComponent(message);
+                const whatsappUrl = `https://wa.me/${phone}?text=${messageEncoded}`;
                 
                 alert('Image downloaded! WhatsApp will open - please attach the image from your Photos/Files and send.');
                 setTimeout(() => {
