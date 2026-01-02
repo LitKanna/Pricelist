@@ -572,8 +572,8 @@
             <button class="btn btn-success" onclick="downloadImage()">
                 Download
             </button>
-            <button class="btn btn-primary" onclick="addCategory()">
-                Add Category
+            <button class="btn btn-primary" onclick="showSmartAddProduct()">
+                ✨ Add Product
             </button>
             <button class="btn btn-warning" onclick="document.getElementById('xpsFileInput').click()" style="background: #f59e0b; color: white;">
                 📁 Import XPS
@@ -615,6 +615,38 @@
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button class="btn btn-secondary" onclick="closeXPSImport()">Cancel</button>
                 <button class="btn btn-success" onclick="confirmXPSImport()">Import Selected</button>
+            </div>
+        </div>
+
+        <!-- Smart Add Product Modal -->
+        <div class="customer-share-menu" id="smartAddModal" style="max-width: 600px;">
+            <h3>✨ Smart Add Product</h3>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Just type the product name - I'll figure out where it belongs!</p>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b;">Product Name</label>
+                <input type="text" id="smartProductName" placeholder="e.g., Red Onion, Cherry Tomato, Long Green Chilli..." 
+                       style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px;"
+                       onkeyup="analyzeProduct()">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b;">Grade/Size</label>
+                <input type="text" id="smartProductGrade" placeholder="e.g., 10kg, per kg, BOX, piece..." 
+                       style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b;">Price</label>
+                <input type="text" id="smartProductPrice" placeholder="e.g., $25, $0.80..." 
+                       style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px;">
+            </div>
+
+            <div id="smartAnalysis" style="margin-bottom: 20px;"></div>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeSmartAdd()">Cancel</button>
+                <button class="btn btn-success" onclick="confirmSmartAdd()">Add Product</button>
             </div>
         </div>
 
@@ -1696,6 +1728,260 @@
                 priceData[name.trim().toUpperCase()] = [['New Product', '-', '$0']];
                 renderCategories();
             }
+        }
+
+        // Smart Add Product System
+        let suggestedCategory = null;
+
+        function showSmartAddProduct() {
+            document.getElementById('smartAddModal').classList.add('show');
+            document.getElementById('smartProductName').value = '';
+            document.getElementById('smartProductGrade').value = '';
+            document.getElementById('smartProductPrice').value = '';
+            document.getElementById('smartAnalysis').innerHTML = '';
+            suggestedCategory = null;
+            
+            // Focus on product name
+            setTimeout(() => document.getElementById('smartProductName').focus(), 100);
+        }
+
+        function closeSmartAdd() {
+            document.getElementById('smartAddModal').classList.remove('show');
+        }
+
+        function analyzeProduct() {
+            const productName = document.getElementById('smartProductName').value.trim();
+            const analysisDiv = document.getElementById('smartAnalysis');
+            
+            if (!productName || productName.length < 2) {
+                analysisDiv.innerHTML = '';
+                suggestedCategory = null;
+                return;
+            }
+
+            // Show loading state
+            analysisDiv.innerHTML = `
+                <div style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px;">
+                    <strong style="color: #475569;">🤔 Analyzing...</strong>
+                    <p style="color: #64748b; font-size: 13px; margin-top: 4px;">
+                        Claude is thinking about where "${productName}" belongs...
+                    </p>
+                </div>
+            `;
+
+            // Get existing categories
+            const existingCategories = Object.keys(priceData);
+
+            // Call Claude API for smart analysis
+            analyzeWithClaude(productName, existingCategories);
+        }
+
+        async function analyzeWithClaude(productName, existingCategories) {
+            const analysisDiv = document.getElementById('smartAnalysis');
+            
+            try {
+                // Your Anthropic API key
+                const API_KEY = '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';
+                
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 1000,
+                        messages: [{
+                            role: 'user',
+                            content: `You are helping organize a wholesale fresh produce price list.
+
+Product to categorize: "${productName}"
+
+Existing categories:
+${existingCategories.map(c => `- ${c}`).join('\n')}
+
+Task: Determine which existing category this product belongs to, OR suggest a new category name if it doesn't fit any existing ones.
+
+Response format (JSON only, no markdown, no backticks):
+{
+  "category": "EXACT category name from list OR new category name",
+  "isNew": true/false,
+  "confidence": "high/medium/low",
+  "reasoning": "Brief 1-sentence explanation"
+}
+
+Rules:
+- Use EXACT existing category names when possible
+- Only suggest new category if product truly doesn't fit existing ones
+- New category names should be PLURAL and ALL CAPS (e.g., "DRAGON FRUITS", "EXOTIC FRUITS")
+- Be smart about varieties (e.g., "Kumato" is a tomato variety → TOMATOES)
+- Consider common groupings in produce wholesale (tomatoes, capsicums, leafy greens, etc)`
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API Error Response:', errorText);
+                    throw new Error('API request failed: ' + response.status);
+                }
+
+                const data = await response.json();
+                const textContent = data.content.find(c => c.type === 'text')?.text || '';
+                
+                // Clean and parse JSON response
+                let cleanText = textContent.trim();
+                // Remove markdown code blocks if present
+                cleanText = cleanText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                
+                const result = JSON.parse(cleanText);
+
+                // Update UI with result
+                const isNewCategory = result.isNew || !existingCategories.includes(result.category);
+                const confidenceColor = result.confidence === 'high' ? '#22c55e' : 
+                                       result.confidence === 'medium' ? '#f59e0b' : '#ef4444';
+                const confidenceIcon = result.confidence === 'high' ? '✅' : 
+                                      result.confidence === 'medium' ? '🟡' : '⚠️';
+
+                if (isNewCategory) {
+                    analysisDiv.innerHTML = `
+                        <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                <strong style="color: #92400e;">🆕 New Category</strong>
+                                <span style="font-size: 11px; padding: 2px 6px; background: ${confidenceColor}20; color: ${confidenceColor}; border-radius: 4px; border: 1px solid ${confidenceColor};">
+                                    ${confidenceIcon} ${result.confidence} confidence
+                                </span>
+                            </div>
+                            <p style="color: #78350f; font-size: 13px; margin-top: 4px;">
+                                <strong>"${result.category}"</strong><br>
+                                <em>${result.reasoning}</em>
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    analysisDiv.innerHTML = `
+                        <div style="background: #f0fdf4; border: 1px solid #22c55e; padding: 12px; border-radius: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                <strong style="color: #15803d;">🧠 Smart Match</strong>
+                                <span style="font-size: 11px; padding: 2px 6px; background: ${confidenceColor}20; color: ${confidenceColor}; border-radius: 4px; border: 1px solid ${confidenceColor};">
+                                    ${confidenceIcon} ${result.confidence} confidence
+                                </span>
+                            </div>
+                            <p style="color: #16a34a; font-size: 13px; margin-top: 4px;">
+                                Will add to: <strong>"${result.category}"</strong><br>
+                                <em>${result.reasoning}</em>
+                            </p>
+                        </div>
+                    `;
+                }
+
+                suggestedCategory = result.category;
+
+            } catch (error) {
+                console.error('Claude API error:', error);
+                console.error('Error details:', error.message);
+                
+                // Fallback to basic keyword matching
+                const fallbackCategory = basicCategoryMatch(productName, existingCategories);
+                
+                analysisDiv.innerHTML = `
+                    <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 8px;">
+                        <strong style="color: #92400e;">⚡ Quick Match</strong>
+                        <p style="color: #78350f; font-size: 13px; margin-top: 4px;">
+                            ${fallbackCategory.isNew ? 
+                                `I'll create a new category: <strong>"${fallbackCategory.category}"</strong>` :
+                                `Will add to: <strong>"${fallbackCategory.category}"</strong>`
+                            }
+                        </p>
+                        <p style="color: #92400e; font-size: 11px; margin-top: 8px;">
+                            ℹ️ Using basic matching (AI error: ${error.message})
+                        </p>
+                    </div>
+                `;
+                
+                suggestedCategory = fallbackCategory.category;
+            }
+        }
+
+        // Fallback basic matching if API fails
+        function basicCategoryMatch(productName, existingCategories) {
+            const name = productName.toUpperCase();
+            
+            // Simple keyword matching
+            const categoryRules = {
+                'TOMATOES': ['TOMATO', 'ROMA', 'CHERRY', 'GRAPE', 'TRUSS', 'MEDLEY'],
+                'CAPSICUM (PEPPERS)': ['CAPSICUM', 'PEPPER', 'BELL PEPPER', 'CAPS'],
+                'CHILLIES': ['CHILLI', 'CHILI', 'JALAPENO', 'HABANERO', 'CAYENNE'],
+                'CUCUMBERS': ['CUCUMBER', 'CONTINENTAL', 'LEBANESE', 'TELEGRAPH'],
+                'LETTUCE & LEAFY GREENS': ['LETTUCE', 'ICEBERG', 'COS', 'ROCKET', 'SPINACH', 'KALE', 'CHARD'],
+                'EGGPLANT': ['EGGPLANT', 'AUBERGINE', 'BRINJAL'],
+                'BEANS & PEAS': ['BEAN', 'BEANS', 'PEA', 'PEAS', 'SNOW PEA', 'SNAP', 'GREEN BEAN'],
+                'ASIAN VEGETABLES': ['BOK CHOY', 'GAI LAN', 'CHINESE', 'ASIAN', 'LUFFA', 'BITTER MELON', 'OKRA'],
+                'ONIONS': ['ONION', 'BROWN ONION', 'RED ONION', 'SPANISH', 'SHALLOT', 'ESCHALOT'],
+                'GARLIC': ['GARLIC', 'PEELED GARLIC'],
+                'PUMPKINS': ['PUMPKIN', 'SQUASH', 'BUTTERNUT'],
+                'ROOT VEGETABLES': ['BEETROOT', 'CARROT', 'PARSNIP', 'TURNIP', 'RADISH', 'SWEET POTATO'],
+                'CITRUS & EGGS': ['LIME', 'LEMON', 'ORANGE', 'MANDARIN', 'EGG', 'EGGS'],
+                'HERBS': ['BASIL', 'MINT', 'CORIANDER', 'PARSLEY', 'THYME', 'ROSEMARY', 'DILL', 'CURRY LEAF'],
+                'MUSHROOMS': ['MUSHROOM', 'BUTTON', 'OYSTER', 'SHIITAKE', 'PORTOBELLO'],
+                'ZUCCHINI': ['ZUCCHINI', 'COURGETTE'],
+                'BROCCOLI & CAULIFLOWER': ['BROCCOLI', 'CAULIFLOWER', 'BROCCOLINI']
+            };
+
+            // Find matching category
+            for (const [category, keywords] of Object.entries(categoryRules)) {
+                if (existingCategories.includes(category)) {
+                    for (const keyword of keywords) {
+                        if (name.includes(keyword)) {
+                            return { category, isNew: false };
+                        }
+                    }
+                }
+            }
+
+            // No match - create new category
+            const firstWord = name.split(' ')[0];
+            const newCategory = firstWord.endsWith('S') ? firstWord : firstWord + 'S';
+            return { category: newCategory, isNew: true };
+        }
+
+        function confirmSmartAdd() {
+            const productName = document.getElementById('smartProductName').value.trim();
+            const grade = document.getElementById('smartProductGrade').value.trim() || '-';
+            let price = document.getElementById('smartProductPrice').value.trim();
+
+            if (!productName) {
+                alert('Please enter a product name');
+                return;
+            }
+
+            // Format price
+            if (price && !price.startsWith('$')) {
+                price = '$' + price;
+            }
+            if (!price) {
+                price = '$0';
+            }
+
+            // Use suggested category or create default
+            const category = suggestedCategory || 'OTHER';
+
+            // Create category if doesn't exist
+            if (!priceData[category]) {
+                priceData[category] = [];
+            }
+
+            // Add product
+            priceData[category].push([productName, grade, price]);
+
+            // Save and re-render
+            saveToLocal();
+            renderCategories();
+            closeSmartAdd();
+
+            showToast(`✅ Added "${productName}" to ${category}!`);
         }
 
         // Delete category
