@@ -410,6 +410,12 @@
         grid-template-columns: 2fr 1.5fr 1fr 32px;
     }
     
+    /* Hide the drag handle column space when auto-sort is enabled */
+    .auto-sort-enabled .table-header-with-drag > .table-header-cell:first-child,
+    .auto-sort-enabled .product-grid-with-drag > .drag-handle {
+        display: none;
+    }
+    
     /* Add Product Button - Minimal */
     .add-product-btn {
         margin: 0;
