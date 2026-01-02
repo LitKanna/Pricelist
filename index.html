@@ -1795,24 +1795,45 @@
 Product to categorize: "${productName}"
 
 Existing categories:
-${existingCategories.map(c => `- ${c}`).join('\n')}
+${existingCategories.length > 0 ? existingCategories.map(c => `- ${c}`).join('\n') : '(No categories yet - this is a new price list)'}
 
-Task: Determine which existing category this product belongs to, OR suggest a new category name if it doesn't fit any existing ones.
+Task: Determine the BEST category for this product.
 
 Response format (JSON only, no markdown, no backticks):
 {
-  "category": "EXACT category name from list OR new category name",
+  "category": "Category name in PLURAL and ALL CAPS",
   "isNew": true/false,
   "confidence": "high/medium/low",
   "reasoning": "Brief 1-sentence explanation"
 }
 
-Rules:
-- Use EXACT existing category names when possible
-- Only suggest new category if product truly doesn't fit existing ones
-- New category names should be PLURAL and ALL CAPS (e.g., "DRAGON FRUITS", "EXOTIC FRUITS")
-- Be smart about varieties (e.g., "Kumato" is a tomato variety → TOMATOES)
-- Consider common groupings in produce wholesale (tomatoes, capsicums, leafy greens, etc)`
+IMPORTANT RULES:
+1. If an existing category matches, use it EXACTLY
+2. For produce varieties, use standard category names even if they don't exist yet:
+   - Tomato varieties → "TOMATOES"
+   - Mushroom varieties → "MUSHROOMS"  
+   - Pepper/capsicum varieties → "CAPSICUM (PEPPERS)"
+   - Chilli varieties → "CHILLIES"
+   - Lettuce/leafy greens → "LETTUCE & LEAFY GREENS"
+   - Asian vegetables → "ASIAN VEGETABLES"
+   - Root vegetables → "ROOT VEGETABLES"
+   - Herbs → "HERBS"
+   - Onion varieties → "ONIONS"
+   - Pumpkin/squash → "PUMPKINS"
+   - Cucumber varieties → "CUCUMBERS"
+   - Beans/peas → "BEANS & PEAS"
+   - Eggplant varieties → "EGGPLANT"
+   - Zucchini → "ZUCCHINI"
+   - Broccoli/cauliflower → "BROCCOLI & CAULIFLOWER"
+3. Only create unusual category names for truly unique items (dragon fruit, exotic fruits, etc)
+4. New category names should be PLURAL and ALL CAPS
+
+Examples:
+- "King Oyster Mushroom" → "MUSHROOMS" (even if category doesn't exist)
+- "Kumato" → "TOMATOES" (it's a tomato variety)
+- "Shishito Pepper" → "CHILLIES" (it's a chilli variety)
+- "Baby Bok Choy" → "ASIAN VEGETABLES"
+- "Dragon Fruit" → "EXOTIC FRUITS" (truly unique)`
                         }]
                     })
                 });
