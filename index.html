@@ -829,23 +829,21 @@
             
             const grade = gradeSize.toLowerCase();
             
-            // Container keywords (takes priority - these round to whole dollars)
-            const containerKeywords = [
-                'bag', 'box', 'carton', 'tray', 'crate', 'pallet',
-                'kg', 'kilo', 'kilogram', 'gram', 'g'
+            // Keywords that should KEEP CENTS (not round)
+            const keepCentsKeywords = [
+                'per kg', 'per kilo', '/kg', 'per kilogram',
+                'per gram', 'per g', '/g',
+                'piece', 'pieces', 'each', 'ea', 'unit', 'units', 'pc', 'pcs', 'per '
             ];
             
-            // Check if it's a container/weight - round to whole dollar
-            const isContainer = containerKeywords.some(keyword => grade.includes(keyword));
-            if (isContainer) return true;
+            // Check if it should keep cents
+            const shouldKeepCents = keepCentsKeywords.some(keyword => grade.includes(keyword));
             
-            // Individual piece keywords (keep cents)
-            const pieceKeywords = ['piece', 'pieces', 'each', 'ea', 'unit', 'units', 'pc', 'pcs', 'per '];
+            // If should keep cents, return false (don't round)
+            if (shouldKeepCents) return false;
             
-            // Check if it's individual pieces - keep cents
-            const isPiece = pieceKeywords.some(keyword => grade.includes(keyword));
-            
-            return !isPiece; // Round if NOT a piece item
+            // Everything else rounds to whole dollars (bags, boxes, cartons, etc)
+            return true;
         }
 
         // Calculate customer-specific price with smart rounding
