@@ -1790,50 +1790,113 @@
                         max_tokens: 1000,
                         messages: [{
                             role: 'user',
-                            content: `You are helping organize a wholesale fresh produce price list.
+                            content: `You are an expert wholesale fresh produce categorization system for Sydney Markets.
 
 Product to categorize: "${productName}"
 
-Existing categories:
-${existingCategories.length > 0 ? existingCategories.map(c => `- ${c}`).join('\n') : '(No categories yet - this is a new price list)'}
+Existing categories in this price list:
+${existingCategories.length > 0 ? existingCategories.map(c => `- ${c}`).join('\n') : '(No categories yet)'}
 
-Task: Determine the BEST category for this product.
+COMPREHENSIVE CATEGORY MAPPING:
 
-Response format (JSON only, no markdown, no backticks):
+🥬 LETTUCE & LEAFY GREENS:
+- Lettuce types: Iceberg, Cos, Romaine, Butter, Oakleaf, Coral, Mignonette, Little Gem, Frisée, Endive, Radicchio
+- Leafy greens: Spinach, Baby Spinach, English Spinach, Rocket, Arugula, Kale, Silverbeet, Swiss Chard, Mesclun, Mixed Leaves, Spring Mix, Sorrel, Watercress, Mizuna
+
+🍅 TOMATOES:
+- Varieties: Roma, Truss, Cherry, Grape, Cocktail, Medley, Kumato, Heirloom, Beefsteak, Campari, San Marzano, Green Tomato, Yellow Tomato, Ox Heart
+- Note: ANY tomato variety belongs here
+
+🌶️ CAPSICUM (PEPPERS):
+- Bell Peppers: Red Caps, Green Caps, Yellow Caps, Orange Caps
+- Specialty: Bullhorn, Long Sweet, Banana Pepper, Pimiento, Sweet Pointed
+
+🔥 CHILLIES:
+- Hot peppers: Long Red/Green Chilli, Thai Chilli, Bird's Eye, Jalapeño, Habanero, Serrano, Cayenne, Scotch Bonnet, Ghost Pepper
+- Mild peppers: Shishito, Padrón, Poblano, Anaheim
+- Note: If it's hot/spicy pepper = CHILLIES
+
+🍆 EGGPLANTS:
+- Varieties: Lebanese, Japanese, Thai, Purple Stripe, Graffiti, White, Indian, Baby, Globe, Fairy Tale, Rosa Bianca
+
+🥒 CUCUMBERS:
+- Types: Lebanese, Continental, Telegraph, Mini, Baby, Persian, Burpless, English, Gherkin, Pickle
+
+🥦 BROCCOLI & CAULIFLOWER:
+- Broccoli, Broccolini, Baby Broccoli, Tenderstem, Romanesco, Cauliflower, Purple Cauliflower, Orange Cauliflower
+
+🫛 BEANS & PEAS:
+- Beans: Green Beans, Flat Beans, Runner Beans, Broad Beans, Butter Beans, Snake Beans, Yard Long Beans, Borlotti
+- Peas: Snow Peas, Sugar Snap, Green Peas, Split Peas
+
+🥬 ASIAN VEGETABLES:
+- Bok Choy, Pak Choy, Choy Sum, Gai Lan, Chinese Broccoli, Wombok, Napa Cabbage, Chinese Cabbage, Shanghai Bok Choy, Baby Bok Choy
+- Specialty: Luffa, Bitter Melon, Winter Melon, Daikon, Lotus Root, Galangal, Water Spinach, Morning Glory, Taro, Kohlrabi
+
+🧅 ONIONS:
+- Types: Brown, Red, Spanish, White, Pickling, Pearl
+- Spring varieties: Spring Onion, Shallots, Eschalots, Scallions, Green Onion, Leek
+
+🧄 GARLIC:
+- Fresh Garlic, Peeled Garlic, Organic Garlic, Elephant Garlic, Black Garlic, Garlic Chives
+
+🎃 PUMPKINS:
+- Types: Butternut, Grey, White, Queensland Blue, Kent, Jap, Kabocha, Crown, Golden Nugget
+- Squash: Acorn, Delicata, Spaghetti Squash, Gem Squash
+
+🥕 ROOT VEGETABLES:
+- Carrot, Baby Carrot, Dutch Carrot, Parsnip, Turnip, Swede, Rutabaga
+- Beetroot, Baby Beetroot, Golden Beetroot, Candy Beetroot
+- Radish, Daikon, Horseradish
+- Sweet Potato, Potato, Kipfler, Sebago, Desiree, Pontiac, Coliban
+
+🌿 HERBS:
+- Common: Basil, Mint, Coriander, Parsley (Flat/Curly), Dill, Chives
+- Mediterranean: Rosemary, Thyme, Oregano, Sage, Marjoram, Bay Leaves
+- Specialty: Curry Leaf, Kaffir Lime Leaf, Lemongrass, Thai Basil, Vietnamese Mint, Tarragon, Chervil
+
+🍄 MUSHROOMS:
+- Common: Button, Cup, Flat, Swiss Brown, Cremini, Portobello
+- Asian: Shiitake, Oyster, King Oyster, Enoki, Shimeji, Wood Ear, Maitake
+- Specialty: Chanterelle, Porcini, Morel, Truffle, Lion's Mane
+
+🥬 CABBAGE & BRASSICAS:
+- Cabbage: Green, Red, Savoy, Sugarloaf, Pointed
+- Brassicas: Brussels Sprouts, Kohlrabi
+
+🥒 ZUCCHINI:
+- Green Zucchini, Yellow Zucchini, Baby Zucchini, Tromboncino, Pattypan, Squash Blossom
+
+🫑 SPECIALTY VEGETABLES:
+- Okra, Artichoke, Globe Artichoke, Asparagus, Fennel, Celery, Celeriac, Cardoon
+
+🍋 CITRUS:
+- Lemon, Lime, Orange, Mandarin, Grapefruit, Tangelo, Blood Orange, Finger Lime, Yuzu, Kumquat
+
+🥚 EGGS:
+- Chicken Eggs (600g, 700g, 800g), Duck Eggs, Quail Eggs, Free Range, Organic
+
+🍈 MELONS:
+- Watermelon, Rockmelon, Honeydew, Cantaloupe, Galia, Piel de Sapo, Korean Melon
+
+🍎 FRUITS:
+- Stone Fruit: Peach, Nectarine, Plum, Apricot, Cherry
+- Tropical: Mango, Papaya, Pineapple, Passionfruit, Lychee, Longan, Rambutan, Dragonfruit, Durian
+- Berries: Strawberry, Blueberry, Raspberry, Blackberry
+
+CRITICAL RULES:
+1. ALWAYS check if an existing category matches first - use it EXACTLY as written
+2. Match the product to its parent category even without explicit keywords (e.g., "Iceberg" alone → LETTUCE & LEAFY GREENS)
+3. Consider common misspellings: "Capsicam" = Capsicum, "Tomatoe" = Tomato, "Letuce" = Lettuce
+4. If truly uncertain, prefer broader existing categories over creating new ones
+
+Response format (JSON only, no markdown):
 {
-  "category": "Category name in PLURAL and ALL CAPS",
+  "category": "EXACT CATEGORY NAME IN CAPS",
   "isNew": true/false,
   "confidence": "high/medium/low",
-  "reasoning": "Brief 1-sentence explanation"
-}
-
-IMPORTANT RULES:
-1. If an existing category matches, use it EXACTLY
-2. For produce varieties, use standard category names even if they don't exist yet:
-   - Tomato varieties → "TOMATOES"
-   - Mushroom varieties → "MUSHROOMS"  
-   - Pepper/capsicum varieties → "CAPSICUM (PEPPERS)"
-   - Chilli varieties → "CHILLIES"
-   - Lettuce/leafy greens → "LETTUCE & LEAFY GREENS"
-   - Asian vegetables → "ASIAN VEGETABLES"
-   - Root vegetables → "ROOT VEGETABLES"
-   - Herbs → "HERBS"
-   - Onion varieties → "ONIONS"
-   - Pumpkin/squash → "PUMPKINS"
-   - Cucumber varieties → "CUCUMBERS"
-   - Beans/peas → "BEANS & PEAS"
-   - Eggplant varieties → "EGGPLANT"
-   - Zucchini → "ZUCCHINI"
-   - Broccoli/cauliflower → "BROCCOLI & CAULIFLOWER"
-3. Only create unusual category names for truly unique items (dragon fruit, exotic fruits, etc)
-4. New category names should be PLURAL and ALL CAPS
-
-Examples:
-- "King Oyster Mushroom" → "MUSHROOMS" (even if category doesn't exist)
-- "Kumato" → "TOMATOES" (it's a tomato variety)
-- "Shishito Pepper" → "CHILLIES" (it's a chilli variety)
-- "Baby Bok Choy" → "ASIAN VEGETABLES"
-- "Dragon Fruit" → "EXOTIC FRUITS" (truly unique)`
+  "reasoning": "Brief explanation"
+}`
                         }]
                     })
                 });
@@ -1910,127 +1973,485 @@ Examples:
             suggestedCategory = result.category;
         }
 
-        // Smart category matching (works offline!)
-        function smartCategoryMatch(productName, existingCategories) {
-            const name = productName.toUpperCase();
+        // ========================================
+        // 🧠 SMART PRODUCE KNOWLEDGE DATABASE
+        // ========================================
+        // This is a comprehensive database that maps individual products
+        // to their parent categories - no keywords needed!
+        
+        const PRODUCE_DATABASE = {
+            // 🥬 LETTUCE & LEAFY GREENS
+            'LETTUCE & LEAFY GREENS': {
+                products: [
+                    // Lettuce varieties
+                    'iceberg', 'cos', 'romaine', 'butter', 'butterhead', 'oakleaf', 'oak leaf',
+                    'coral', 'mignonette', 'little gem', 'gem lettuce', 'frisee', 'frisée', 'endive',
+                    'radicchio', 'red leaf', 'green leaf', 'bibb', 'boston', 'living lettuce',
+                    // Leafy greens
+                    'spinach', 'baby spinach', 'english spinach', 'rocket', 'arugula', 'wild rocket',
+                    'kale', 'tuscan kale', 'curly kale', 'baby kale', 'silverbeet', 'silver beet',
+                    'swiss chard', 'chard', 'rainbow chard', 'mesclun', 'mixed leaves', 'spring mix',
+                    'salad mix', 'sorrel', 'watercress', 'land cress', 'microgreens', 'micro greens',
+                    'baby greens', 'lettuce mix', 'salanova', 'tatsoi', 'mache', "lamb's lettuce"
+                ],
+                keywords: ['lettuce', 'leaf', 'leaves', 'greens', 'salad'],
+                reasoning: 'Lettuce or leafy green vegetable'
+            },
             
-            // Comprehensive category rules with reasoning
-            const categoryRules = {
-                'TOMATOES': {
-                    keywords: ['TOMATO', 'ROMA', 'CHERRY', 'GRAPE', 'TRUSS', 'MEDLEY', 'KUMATO', 'HEIRLOOM'],
-                    reasoning: 'Tomato variety detected'
-                },
-                'CAPSICUM (PEPPERS)': {
-                    keywords: ['CAPSICUM', 'PEPPER', 'BELL PEPPER', 'CAPS', 'PAPRIKA'],
-                    reasoning: 'Capsicum/pepper variety'
-                },
-                'CHILLIES': {
-                    keywords: ['CHILLI', 'CHILI', 'JALAPENO', 'HABANERO', 'CAYENNE', 'SERRANO', 'SHISHITO', 'THAI CHILI'],
-                    reasoning: 'Chilli variety detected'
-                },
-                'CUCUMBERS': {
-                    keywords: ['CUCUMBER', 'CONTINENTAL', 'LEBANESE', 'TELEGRAPH', 'PICKLE', 'GHERKIN'],
-                    reasoning: 'Cucumber variety'
-                },
-                'LETTUCE & LEAFY GREENS': {
-                    keywords: ['LETTUCE', 'ICEBERG', 'COS', 'ROMAINE', 'ROCKET', 'ARUGULA', 'SPINACH', 'KALE', 'CHARD', 'BABY', 'LEAF', 'MESCLUN'],
-                    reasoning: 'Leafy green vegetable'
-                },
-                'EGGPLANT': {
-                    keywords: ['EGGPLANT', 'AUBERGINE', 'BRINJAL'],
-                    reasoning: 'Eggplant variety'
-                },
-                'BEANS & PEAS': {
-                    keywords: ['BEAN', 'BEANS', 'PEA', 'PEAS', 'SNOW PEA', 'SNAP', 'GREEN BEAN', 'BROAD BEAN', 'RUNNER BEAN'],
-                    reasoning: 'Bean or pea variety'
-                },
-                'ASIAN VEGETABLES': {
-                    keywords: ['BOK CHOY', 'PAK CHOY', 'GAI LAN', 'CHINESE', 'ASIAN', 'LUFFA', 'BITTER MELON', 'OKRA', 'DAIKON', 'MIZUNA'],
-                    reasoning: 'Asian vegetable variety'
-                },
-                'ONIONS': {
-                    keywords: ['ONION', 'BROWN ONION', 'RED ONION', 'SPANISH', 'SHALLOT', 'ESCHALOT', 'SPRING ONION', 'SCALLION'],
-                    reasoning: 'Onion variety'
-                },
-                'GARLIC': {
-                    keywords: ['GARLIC', 'PEELED GARLIC'],
-                    reasoning: 'Garlic product'
-                },
-                'PUMPKINS': {
-                    keywords: ['PUMPKIN', 'SQUASH', 'BUTTERNUT', 'KABOCHA', 'ACORN SQUASH'],
-                    reasoning: 'Pumpkin or squash variety'
-                },
-                'ROOT VEGETABLES': {
-                    keywords: ['BEETROOT', 'BEET', 'CARROT', 'PARSNIP', 'TURNIP', 'RADISH', 'SWEET POTATO', 'POTATO', 'YAM'],
-                    reasoning: 'Root vegetable'
-                },
-                'CITRUS & EGGS': {
-                    keywords: ['LIME', 'LEMON', 'ORANGE', 'MANDARIN', 'GRAPEFRUIT', 'EGG', 'EGGS'],
-                    reasoning: 'Citrus fruit or eggs'
-                },
-                'HERBS': {
-                    keywords: ['BASIL', 'MINT', 'CORIANDER', 'CILANTRO', 'PARSLEY', 'THYME', 'ROSEMARY', 'DILL', 'CURRY LEAF', 'SAGE', 'OREGANO'],
-                    reasoning: 'Herb variety'
-                },
-                'MUSHROOMS': {
-                    keywords: ['MUSHROOM', 'BUTTON', 'OYSTER', 'SHIITAKE', 'PORTOBELLO', 'ENOKI', 'KING OYSTER'],
-                    reasoning: 'Mushroom variety'
-                },
-                'ZUCCHINI': {
-                    keywords: ['ZUCCHINI', 'COURGETTE'],
-                    reasoning: 'Zucchini/courgette'
-                },
-                'BROCCOLI & CAULIFLOWER': {
-                    keywords: ['BROCCOLI', 'CAULIFLOWER', 'BROCCOLINI', 'ROMANESCO'],
-                    reasoning: 'Broccoli or cauliflower variety'
+            // 🍅 TOMATOES
+            'TOMATOES': {
+                products: [
+                    'roma', 'truss', 'cherry', 'grape', 'cocktail', 'medley', 'kumato',
+                    'heirloom', 'beefsteak', 'beef steak', 'ox heart', 'oxheart', 'campari',
+                    'san marzano', 'plum', 'yellow tomato', 'green tomato', 'tiger', 'zebra',
+                    'vine ripened', 'vine-ripened', 'field tomato', 'gourmet', 'snacking',
+                    'tommy toe', 'tommy toes', 'grosse lisse', 'money maker', 'black russian'
+                ],
+                keywords: ['tomato', 'tomatoe', 'tomatos', 'tomatoes'],
+                reasoning: 'Tomato variety'
+            },
+            
+            // 🌶️ CAPSICUM (PEPPERS)
+            'CAPSICUM (PEPPERS)': {
+                products: [
+                    'red caps', 'green caps', 'yellow caps', 'orange caps', 'bell pepper',
+                    'bullhorn', 'bull horn', 'long sweet', 'banana pepper', 'pimiento',
+                    'sweet pointed', 'ramiro', 'romano', 'cubanelle', 'mini caps', 'baby caps',
+                    'mixed caps', 'tri color', 'tri-color'
+                ],
+                keywords: ['capsicum', 'caps', 'bell pepper', 'sweet pepper'],
+                reasoning: 'Capsicum/bell pepper variety'
+            },
+            
+            // 🔥 CHILLIES
+            'CHILLIES': {
+                products: [
+                    'long red', 'long green', 'thai', "bird's eye", 'birds eye', 'birdseye',
+                    'jalapeno', 'jalapeño', 'habanero', 'serrano', 'cayenne', 'scotch bonnet',
+                    'ghost pepper', 'carolina reaper', 'shishito', 'padron', 'padrón',
+                    'poblano', 'anaheim', 'pasilla', 'guajillo', 'ancho', 'chipotle',
+                    'kashmiri', 'korean', 'gochugaru', 'peri peri', 'piri piri', 'tabasco',
+                    'banana chilli', 'wax pepper', 'fresno', 'bullet', 'finger chilli'
+                ],
+                keywords: ['chilli', 'chili', 'chile', 'hot pepper', 'spicy'],
+                reasoning: 'Chilli/hot pepper variety'
+            },
+            
+            // 🍆 EGGPLANTS
+            'EGGPLANTS': {
+                products: [
+                    'lebanese', 'japanese', 'thai', 'purple stripe', 'graffiti',
+                    'white eggplant', 'indian', 'baby eggplant', 'globe', 'fairy tale',
+                    'rosa bianca', 'sicilian', 'italian', 'slim', 'long purple',
+                    'round', 'striped', 'aubergine', 'brinjal', 'pea eggplant'
+                ],
+                keywords: ['eggplant', 'aubergine', 'brinjal'],
+                reasoning: 'Eggplant variety'
+            },
+            
+            // 🥒 CUCUMBERS
+            'CUCUMBERS': {
+                products: [
+                    'lebanese', 'continental', 'telegraph', 'mini', 'baby cucumber',
+                    'persian', 'burpless', 'english', 'gherkin', 'pickle', 'pickling',
+                    'qukes', 'snack cucumber', 'apple cucumber', 'crystal', 'japanese',
+                    'telegraph', 'tele', 'long green', 'field cucumber'
+                ],
+                keywords: ['cucumber', 'cuke', 'cukes', 'gherkin'],
+                reasoning: 'Cucumber variety'
+            },
+            
+            // 🥦 BROCCOLI & CAULIFLOWER
+            'BROCCOLI & CAULIFLOWER': {
+                products: [
+                    'broccolini', 'baby broccoli', 'tenderstem', 'romanesco',
+                    'purple cauliflower', 'orange cauliflower', 'green cauliflower',
+                    'caulilini', 'cauliflower florets', 'broccoli florets', 'broccoli head',
+                    'chinese broccoli', 'broccoli rabe', 'rapini', 'sprouting broccoli',
+                    'calabrese', 'crown broccoli'
+                ],
+                keywords: ['broccoli', 'cauliflower', 'broccolini'],
+                reasoning: 'Broccoli or cauliflower variety'
+            },
+            
+            // 🫛 BEANS & PEAS
+            'BEANS & PEAS': {
+                products: [
+                    'green bean', 'flat bean', 'runner bean', 'broad bean', 'fava',
+                    'butter bean', 'snake bean', 'yard long', 'long bean', 'borlotti',
+                    'cannellini', 'kidney', 'lima', 'string bean', 'french bean',
+                    'snow pea', 'sugar snap', 'snap pea', 'green pea', 'garden pea',
+                    'split pea', 'mange tout', 'mangetout', 'stringless', 'wax bean'
+                ],
+                keywords: ['bean', 'beans', 'pea', 'peas', 'snap', 'snow'],
+                reasoning: 'Bean or pea variety'
+            },
+            
+            // 🥬 ASIAN VEGETABLES
+            'ASIAN VEGETABLES': {
+                products: [
+                    'bok choy', 'pak choy', 'bok choi', 'pak choi', 'choy sum', 'gai lan',
+                    'chinese broccoli', 'kai lan', 'wombok', 'napa', 'chinese cabbage',
+                    'shanghai', 'baby bok', 'tatsoi', 'water spinach', 'kangkong',
+                    'morning glory', 'ong choy', 'yu choy', 'mustard greens', 'gai choy',
+                    'luffa', 'loofah', 'bitter melon', 'bitter gourd', 'karela',
+                    'winter melon', 'wax gourd', 'fuzzy melon', 'mo qua', 'daikon',
+                    'lotus root', 'galangal', 'taro', 'kohlrabi', 'water chestnut',
+                    'bamboo shoot', 'bean sprout', 'mung bean', 'enoki', 'shimeji',
+                    'burdock', 'gobo', 'chrysanthemum', 'perilla', 'shiso'
+                ],
+                keywords: ['asian', 'chinese', 'oriental', 'bok', 'choy', 'choi'],
+                reasoning: 'Asian vegetable'
+            },
+            
+            // 🧅 ONIONS
+            'ONIONS': {
+                products: [
+                    'brown onion', 'red onion', 'spanish onion', 'white onion',
+                    'pickling onion', 'pearl onion', 'cipollini', 'boiling onion',
+                    'spring onion', 'shallot', 'eschalot', 'scallion', 'green onion',
+                    'leek', 'baby leek', 'welsh onion', 'bunching onion', 'vidalia',
+                    'sweet onion', 'walla walla', 'maui', 'salad onion'
+                ],
+                keywords: ['onion', 'shallot', 'eschalot', 'scallion', 'leek'],
+                reasoning: 'Onion variety'
+            },
+            
+            // 🧄 GARLIC
+            'GARLIC': {
+                products: [
+                    'fresh garlic', 'peeled garlic', 'organic garlic', 'elephant garlic',
+                    'black garlic', 'garlic chives', 'garlic scape', 'green garlic',
+                    'solo garlic', 'single clove', 'hardneck', 'softneck', 'rocambole',
+                    'purple stripe garlic', 'creole garlic', 'silverskin'
+                ],
+                keywords: ['garlic'],
+                reasoning: 'Garlic product'
+            },
+            
+            // 🎃 PUMPKINS
+            'PUMPKINS': {
+                products: [
+                    'butternut', 'grey pumpkin', 'white pumpkin', 'queensland blue',
+                    'kent', 'jap', 'kabocha', 'crown pumpkin', 'golden nugget',
+                    'acorn', 'delicata', 'spaghetti', 'gem squash', 'hubbard',
+                    'turban', 'banana squash', 'carnival', 'dumpling', 'red kuri',
+                    'blue hubbard', 'buttercup', 'jarrahdale', 'musquee', 'honeynut'
+                ],
+                keywords: ['pumpkin', 'squash'],
+                reasoning: 'Pumpkin or squash variety'
+            },
+            
+            // 🥕 ROOT VEGETABLES
+            'ROOT VEGETABLES': {
+                products: [
+                    'carrot', 'baby carrot', 'dutch carrot', 'heirloom carrot', 'rainbow carrot',
+                    'parsnip', 'turnip', 'swede', 'rutabaga',
+                    'beetroot', 'beet', 'baby beetroot', 'golden beetroot', 'candy beetroot', 'chioggia',
+                    'radish', 'red radish', 'french radish', 'watermelon radish', 'black radish',
+                    'horseradish', 'wasabi',
+                    'sweet potato', 'gold sweet potato', 'white sweet potato', 'purple sweet potato',
+                    'potato', 'kipfler', 'sebago', 'desiree', 'pontiac', 'coliban', 'dutch cream',
+                    'nicola', 'pink eye', 'royal blue', 'chat potato', 'new potato', 'fingerling',
+                    'yam', 'cassava', 'yuca', 'jicama', 'sunchoke', 'jerusalem artichoke'
+                ],
+                keywords: ['root', 'potato', 'carrot', 'beet', 'turnip', 'parsnip'],
+                reasoning: 'Root vegetable'
+            },
+            
+            // 🌿 HERBS
+            'HERBS': {
+                products: [
+                    'basil', 'sweet basil', 'thai basil', 'holy basil', 'lemon basil',
+                    'mint', 'spearmint', 'peppermint', 'vietnamese mint', 'chocolate mint',
+                    'coriander', 'cilantro', 'culantro', 'sawtooth',
+                    'parsley', 'flat parsley', 'curly parsley', 'italian parsley',
+                    'dill', 'chives', 'garlic chives',
+                    'rosemary', 'thyme', 'lemon thyme', 'oregano', 'sage', 'marjoram',
+                    'bay leaves', 'bay leaf', 'curry leaf', 'kaffir lime', 'makrut',
+                    'lemongrass', 'tarragon', 'chervil', 'lovage', 'savory', 'epazote',
+                    'shiso', 'perilla', 'sorrel', 'borage', 'hyssop', 'lavender',
+                    'chamomile', 'stevia', 'fennel fronds', 'dill weed'
+                ],
+                keywords: ['herb', 'basil', 'mint', 'parsley', 'coriander', 'thyme', 'rosemary'],
+                reasoning: 'Herb variety'
+            },
+            
+            // 🍄 MUSHROOMS
+            'MUSHROOMS': {
+                products: [
+                    'button', 'cup', 'flat', 'swiss brown', 'cremini', 'cremini',
+                    'portobello', 'portabella', 'portobella',
+                    'shiitake', 'oyster', 'king oyster', 'king trumpet', 'eryngii',
+                    'enoki', 'enokitake', 'shimeji', 'bunashimeji', 'wood ear',
+                    'maitake', 'hen of the woods', 'chanterelle', 'porcini', 'cep',
+                    'morel', 'truffle', 'black truffle', 'white truffle',
+                    "lion's mane", 'hedgehog', 'puffball', 'chestnut', 'nameko',
+                    'mixed mushroom', 'exotic mushroom', 'field mushroom'
+                ],
+                keywords: ['mushroom', 'fungi', 'shroom'],
+                reasoning: 'Mushroom variety'
+            },
+            
+            // 🥒 ZUCCHINI
+            'ZUCCHINI': {
+                products: [
+                    'green zucchini', 'yellow zucchini', 'baby zucchini', 'tromboncino',
+                    'pattypan', 'patty pan', 'scallop', 'round zucchini', 'ronde de nice',
+                    'cousa', 'costata romanesco', 'zephyr', 'eight ball',
+                    'squash blossom', 'zucchini flower', 'courgette'
+                ],
+                keywords: ['zucchini', 'courgette', 'marrow'],
+                reasoning: 'Zucchini variety'
+            },
+            
+            // 🫑 SPECIALTY VEGETABLES
+            'SPECIALTY VEGETABLES': {
+                products: [
+                    'okra', 'lady finger', 'bhindi', 'gumbo',
+                    'artichoke', 'globe artichoke', 'baby artichoke',
+                    'asparagus', 'white asparagus', 'purple asparagus', 'wild asparagus',
+                    'fennel', 'florence fennel', 'anise', 'finocchio',
+                    'celery', 'celery heart', 'celeriac', 'celery root',
+                    'cardoon', 'rhubarb', 'fiddlehead', 'hearts of palm',
+                    'nopal', 'cactus paddle', 'sea bean', 'samphire', 'sea asparagus'
+                ],
+                keywords: ['specialty', 'okra', 'artichoke', 'asparagus', 'fennel', 'celery'],
+                reasoning: 'Specialty vegetable'
+            },
+            
+            // 🍋 CITRUS
+            'CITRUS': {
+                products: [
+                    'lemon', 'meyer lemon', 'eureka lemon', 'lisbon',
+                    'lime', 'tahitian lime', 'kaffir lime', 'key lime', 'finger lime',
+                    'orange', 'navel', 'valencia', 'blood orange', 'cara cara',
+                    'mandarin', 'imperial', 'murcott', 'clementine', 'satsuma', 'tangerine',
+                    'grapefruit', 'ruby grapefruit', 'pink grapefruit', 'pomelo',
+                    'tangelo', 'minneola', 'kumquat', 'yuzu', 'sudachi', 'bergamot',
+                    'citron', 'buddha hand', "buddha's hand", 'ugli fruit'
+                ],
+                keywords: ['citrus', 'lemon', 'lime', 'orange', 'mandarin', 'grapefruit'],
+                reasoning: 'Citrus fruit'
+            },
+            
+            // 🥚 EGGS
+            'EGGS': {
+                products: [
+                    'chicken egg', 'duck egg', 'quail egg', 'free range', 'organic egg',
+                    'cage free', 'barn laid', 'pastured', 'omega-3', 'jumbo', 'xl eggs',
+                    '600g', '700g', '800g', '55g', '60g', '65g', '70g', 'dozen'
+                ],
+                keywords: ['egg', 'eggs'],
+                reasoning: 'Egg product'
+            },
+            
+            // 🍈 MELONS
+            'MELONS': {
+                products: [
+                    'watermelon', 'seedless watermelon', 'mini watermelon', 'yellow watermelon',
+                    'rockmelon', 'cantaloupe', 'honeydew', 'galia', 'charentais',
+                    'piel de sapo', 'santa claus', 'korean melon', 'canary melon',
+                    'crenshaw', 'casaba', 'hami', 'sprite melon', 'sugar kiss',
+                    'orange flesh', 'green flesh'
+                ],
+                keywords: ['melon', 'watermelon', 'rockmelon', 'honeydew', 'cantaloupe'],
+                reasoning: 'Melon variety'
+            },
+            
+            // 🥬 CABBAGE & BRASSICAS
+            'CABBAGE & BRASSICAS': {
+                products: [
+                    'green cabbage', 'red cabbage', 'purple cabbage', 'savoy cabbage',
+                    'sugarloaf', 'pointed cabbage', 'sweetheart', 'hispi',
+                    'brussels sprout', 'brussels', 'sprouts',
+                    'kohlrabi', 'kohl rabi'
+                ],
+                keywords: ['cabbage', 'brussels', 'sprout', 'brassica'],
+                reasoning: 'Cabbage or brassica variety'
+            },
+            
+            // 🍎 FRUITS (General)
+            'FRUITS': {
+                products: [
+                    // Stone fruits
+                    'peach', 'nectarine', 'plum', 'apricot', 'cherry', 'cherries',
+                    // Tropical
+                    'mango', 'papaya', 'pawpaw', 'pineapple', 'passionfruit', 'passion fruit',
+                    'lychee', 'longan', 'rambutan', 'dragonfruit', 'dragon fruit', 'pitaya',
+                    'durian', 'jackfruit', 'star fruit', 'starfruit', 'carambola',
+                    'guava', 'feijoa', 'tamarillo', 'persimmon', 'cherimoya',
+                    // Berries
+                    'strawberry', 'blueberry', 'raspberry', 'blackberry', 'mulberry',
+                    'boysenberry', 'loganberry', 'gooseberry', 'currant', 'açaí', 'acai',
+                    // Other
+                    'banana', 'plantain', 'coconut', 'pomegranate', 'fig', 'date',
+                    'kiwi', 'kiwifruit', 'grape', 'grapes'
+                ],
+                keywords: ['fruit', 'berry', 'tropical'],
+                reasoning: 'Fruit variety'
+            }
+        };
+        
+        // Common misspellings and variations mapping
+        const SPELLING_CORRECTIONS = {
+            'capsicam': 'capsicum', 'capsicm': 'capsicum', 'capiscum': 'capsicum',
+            'tomatoe': 'tomato', 'tomatos': 'tomato', 'tomateos': 'tomato',
+            'letuce': 'lettuce', 'lettice': 'lettuce', 'lattuce': 'lettuce',
+            'icburg': 'iceberg', 'icberg': 'iceberg', 'icebarg': 'iceberg',
+            'brocoli': 'broccoli', 'brocolli': 'broccoli', 'broccolli': 'broccoli',
+            'califlower': 'cauliflower', 'cauliflour': 'cauliflower', 'couliflower': 'cauliflower',
+            'zuchini': 'zucchini', 'zuchinni': 'zucchini', 'zuccini': 'zucchini',
+            'eggplnt': 'eggplant', 'eggplat': 'eggplant', 'eggplnt': 'eggplant',
+            'cucmber': 'cucumber', 'cucumer': 'cucumber', 'cucmumber': 'cucumber',
+            'mushrrom': 'mushroom', 'mushrom': 'mushroom', 'mushrooom': 'mushroom',
+            'spinich': 'spinach', 'spinnach': 'spinach', 'spinash': 'spinach',
+            'aspargus': 'asparagus', 'aspargaus': 'asparagus', 'asperagus': 'asparagus',
+            'aubergene': 'aubergine', 'aubergeen': 'aubergine',
+            'coriender': 'coriander', 'corriander': 'coriander',
+            'parsely': 'parsley', 'parsly': 'parsley',
+            'shallott': 'shallot', 'shalot': 'shallot',
+            'potatoe': 'potato', 'potatos': 'potato',
+            'beens': 'beans', 'beanes': 'beans',
+            'chille': 'chilli', 'chillie': 'chilli', 'chily': 'chilli',
+            'jalepeno': 'jalapeno', 'jalapenio': 'jalapeno', 'jallepeno': 'jalapeno',
+            'bokchoy': 'bok choy', 'bokchoi': 'bok choy', 'bok choi': 'bok choy',
+            'galran': 'gai lan', 'gailan': 'gai lan', 'gai larn': 'gai lan',
+            'wom bok': 'wombok', 'wong bok': 'wombok'
+        };
+        
+        // Calculate string similarity (Levenshtein distance)
+        function stringSimilarity(s1, s2) {
+            const longer = s1.length > s2.length ? s1 : s2;
+            const shorter = s1.length > s2.length ? s2 : s1;
+            
+            if (longer.length === 0) return 1.0;
+            
+            const costs = [];
+            for (let i = 0; i <= s1.length; i++) {
+                let lastValue = i;
+                for (let j = 0; j <= s2.length; j++) {
+                    if (i === 0) {
+                        costs[j] = j;
+                    } else if (j > 0) {
+                        let newValue = costs[j - 1];
+                        if (s1.charAt(i - 1) !== s2.charAt(j - 1)) {
+                            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                        }
+                        costs[j - 1] = lastValue;
+                        lastValue = newValue;
+                    }
                 }
-            };
-
-            // Find best matching category
+                if (i > 0) costs[s2.length] = lastValue;
+            }
+            
+            return (longer.length - costs[s2.length]) / longer.length;
+        }
+        
+        // Smart category matching with comprehensive knowledge base
+        function smartCategoryMatch(productName, existingCategories) {
+            let name = productName.toLowerCase().trim();
+            
+            // Step 1: Apply spelling corrections
+            for (const [misspelled, correct] of Object.entries(SPELLING_CORRECTIONS)) {
+                if (name.includes(misspelled)) {
+                    name = name.replace(misspelled, correct);
+                }
+            }
+            
+            const nameUpper = name.toUpperCase();
             let bestMatch = null;
             let bestScore = 0;
-            let matchedKeyword = '';
-
-            for (const [category, data] of Object.entries(categoryRules)) {
-                // Only check categories that exist
-                if (!existingCategories.includes(category)) continue;
-
-                for (const keyword of data.keywords) {
-                    if (name.includes(keyword)) {
-                        const score = keyword.length * 10; // Longer keyword = better match
+            let bestReasoning = '';
+            let isExactMatch = false;
+            
+            // Step 2: Search through the produce database
+            for (const [category, data] of Object.entries(PRODUCE_DATABASE)) {
+                // Check individual products (these are EXACT identifiers)
+                for (const product of data.products) {
+                    const productLower = product.toLowerCase();
+                    
+                    // Exact match in name
+                    if (name.includes(productLower) || productLower.includes(name)) {
+                        const matchLength = productLower.length;
+                        const score = matchLength * 15; // Higher weight for product matches
+                        
                         if (score > bestScore) {
                             bestScore = score;
                             bestMatch = category;
-                            matchedKeyword = keyword;
+                            bestReasoning = `"${product}" is a ${data.reasoning.toLowerCase()}`;
+                            isExactMatch = true;
+                        }
+                    }
+                    
+                    // Fuzzy match for typos
+                    const similarity = stringSimilarity(name, productLower);
+                    if (similarity > 0.75) { // 75%+ similarity
+                        const score = similarity * 100;
+                        if (score > bestScore && !isExactMatch) {
+                            bestScore = score;
+                            bestMatch = category;
+                            bestReasoning = `Similar to "${product}" - ${data.reasoning.toLowerCase()}`;
+                        }
+                    }
+                }
+                
+                // Check keywords as fallback
+                for (const keyword of data.keywords) {
+                    if (name.includes(keyword.toLowerCase())) {
+                        const score = keyword.length * 8;
+                        if (score > bestScore && !isExactMatch) {
+                            bestScore = score;
+                            bestMatch = category;
+                            bestReasoning = data.reasoning;
                         }
                     }
                 }
             }
-
-            // Determine confidence based on match quality
-            let confidence = 'high';
-            if (bestScore < 40) confidence = 'low';
-            else if (bestScore < 60) confidence = 'medium';
-
+            
+            // Step 3: If we found a match, check if category exists
             if (bestMatch) {
-                return {
-                    category: bestMatch,
-                    isNew: false,
-                    confidence: confidence,
-                    reasoning: categoryRules[bestMatch].reasoning
-                };
+                // Try to find an existing category that matches
+                const existingMatch = existingCategories.find(cat => {
+                    const catLower = cat.toLowerCase();
+                    const matchLower = bestMatch.toLowerCase();
+                    return catLower === matchLower || 
+                           catLower.includes(matchLower.split(' ')[0]) ||
+                           matchLower.includes(catLower.split(' ')[0]);
+                });
+                
+                // Determine confidence
+                let confidence = 'high';
+                if (bestScore < 50) confidence = 'low';
+                else if (bestScore < 80) confidence = 'medium';
+                
+                if (existingMatch) {
+                    return {
+                        category: existingMatch, // Use exact existing category name
+                        isNew: false,
+                        confidence: confidence,
+                        reasoning: bestReasoning
+                    };
+                } else {
+                    return {
+                        category: bestMatch,
+                        isNew: true,
+                        confidence: confidence,
+                        reasoning: bestReasoning
+                    };
+                }
             }
-
-            // No match - create new category
+            
+            // Step 4: No match found - try to create a sensible category
             const words = name.split(' ').filter(w => w.length > 2);
-            const firstWord = words[0] || name;
-            const newCategory = firstWord.endsWith('S') ? firstWord : firstWord + 'S';
-
+            const mainWord = words[0] || name;
+            const newCategory = mainWord.toUpperCase() + (mainWord.endsWith('S') ? '' : 'S');
+            
             return {
                 category: newCategory,
                 isNew: true,
-                confidence: 'medium',
-                reasoning: `No existing category matches, creating new category for ${productName.toLowerCase()}`
+                confidence: 'low',
+                reasoning: `No known category match - creating new category for "${productName}"`
             };
         }
 
