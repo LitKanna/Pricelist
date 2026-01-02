@@ -416,6 +416,103 @@
         display: none;
     }
     
+    /* Mobile responsive - iPhone and small screens */
+    @media (max-width: 480px) {
+        .product-grid-with-drag {
+            grid-template-columns: 20px 1.5fr 1fr 0.7fr 0.7fr 28px;
+            gap: 6px;
+            padding: 10px 10px;
+        }
+        
+        .table-header-with-drag {
+            grid-template-columns: 20px 1.5fr 1fr 0.7fr 0.7fr 28px;
+            gap: 6px;
+            padding: 6px 10px;
+        }
+        
+        .auto-sort-enabled .product-grid-with-drag {
+            grid-template-columns: 1.5fr 1fr 0.7fr 0.7fr 28px;
+        }
+        
+        .auto-sort-enabled .table-header-with-drag {
+            grid-template-columns: 1.5fr 1fr 0.7fr 0.7fr 28px;
+        }
+        
+        .input-field {
+            padding: 4px 6px;
+            font-size: 13px;
+        }
+        
+        .table-header-cell {
+            font-size: 9px;
+        }
+        
+        .cost-header {
+            font-size: 8px;
+        }
+        
+        .product-delete {
+            width: 28px;
+            height: 28px;
+            font-size: 14px;
+        }
+        
+        .drag-handle {
+            width: 20px;
+        }
+        
+        .category-header {
+            padding: 12px 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .category-margin {
+            font-size: 11px;
+        }
+        
+        .category-margin select {
+            padding: 3px 6px;
+            font-size: 11px;
+        }
+        
+        .category-margin span {
+            display: none;
+        }
+    }
+    
+    /* Extra small screens */
+    @media (max-width: 380px) {
+        .product-grid-with-drag {
+            grid-template-columns: 18px 1.4fr 0.9fr 0.65fr 0.65fr 26px;
+            gap: 4px;
+            padding: 8px 8px;
+        }
+        
+        .table-header-with-drag {
+            grid-template-columns: 18px 1.4fr 0.9fr 0.65fr 0.65fr 26px;
+            gap: 4px;
+            padding: 6px 8px;
+        }
+        
+        .auto-sort-enabled .product-grid-with-drag {
+            grid-template-columns: 1.4fr 0.9fr 0.65fr 0.65fr 26px;
+        }
+        
+        .auto-sort-enabled .table-header-with-drag {
+            grid-template-columns: 1.4fr 0.9fr 0.65fr 0.65fr 26px;
+        }
+        
+        .input-field {
+            padding: 3px 4px;
+            font-size: 12px;
+        }
+        
+        .table-header-cell {
+            font-size: 8px;
+        }
+    }
+    
     /* Cost field styling - distinct internal look */
     .cost-field .input-field {
         background: #fef3c7;
