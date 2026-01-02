@@ -1433,15 +1433,25 @@
         // Generate image blob (helper function)
         function generateImageBlob() {
             return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    const canvas = document.getElementById('imageCanvas');
-                    const ctx = canvas.getContext('2d');
+                const canvas = document.getElementById('imageCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                try {
+                    // Collect fresh data
+                    collectData();
                     
-                    try {
-                        // Calculate height
-                        let totalRows = 0;
-                        Object.values(priceData).forEach(items => totalRows += items.length);
-                        const categoryCount = Object.keys(priceData).length;
+                    // Calculate height
+                    let totalRows = 0;
+                    Object.values(priceData).forEach(items => {
+                        const availableItems = items.filter(item => {
+                            const price = (item[2] || '').toString().trim();
+                            if (price === '') return false;
+                            const cleanedPrice = price.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                            return cleanedPrice !== 'na' && cleanedPrice !== 'notavailable';
+                        });
+                        totalRows += availableItems.length;
+                    });
+                    const categoryCount = Object.keys(priceData).length;
                         
                         // Ultra HD - 3x resolution (3600px width)
                         canvas.width = 3600;
@@ -1648,13 +1658,17 @@
 
                         // Convert to blob
                         canvas.toBlob(function(blob) {
-                            resolve(blob);
+                            if (blob) {
+                                resolve(blob);
+                            } else {
+                                reject(new Error('Failed to create blob'));
+                            }
                         }, 'image/png');
                         
                     } catch (error) {
+                        console.error('Error generating blob:', error);
                         reject(error);
                     }
-                }, 100);
             });
         }
 
