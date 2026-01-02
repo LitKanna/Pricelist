@@ -383,37 +383,88 @@
         display: none !important;
     }
     
-    /* Adjust product grid for drag handle */
+    /* Adjust product grid for drag handle + cost column */
     .product-grid-with-drag {
         display: grid;
-        grid-template-columns: 24px 2fr 1.5fr 1fr 32px;
-        gap: 12px;
+        grid-template-columns: 24px 2fr 1.2fr 0.8fr 0.8fr 32px;
+        gap: 10px;
         padding: 12px 16px;
         align-items: center;
     }
     
     .table-header-with-drag {
         display: grid;
-        grid-template-columns: 24px 2fr 1.5fr 1fr 32px;
-        gap: 12px;
+        grid-template-columns: 24px 2fr 1.2fr 0.8fr 0.8fr 32px;
+        gap: 10px;
         padding: 8px 16px;
         background: #fafafa;
         border-bottom: 1px solid #f1f5f9;
     }
     
-    /* When auto-sort is on, use original grid */
+    /* When auto-sort is on, hide drag column */
     .auto-sort-enabled .product-grid-with-drag {
-        grid-template-columns: 2fr 1.5fr 1fr 32px;
+        grid-template-columns: 2fr 1.2fr 0.8fr 0.8fr 32px;
     }
     
     .auto-sort-enabled .table-header-with-drag {
-        grid-template-columns: 2fr 1.5fr 1fr 32px;
+        grid-template-columns: 2fr 1.2fr 0.8fr 0.8fr 32px;
     }
     
     /* Hide the drag handle column space when auto-sort is enabled */
     .auto-sort-enabled .table-header-with-drag > .table-header-cell:first-child,
     .auto-sort-enabled .product-grid-with-drag > .drag-handle {
         display: none;
+    }
+    
+    /* Cost field styling - distinct internal look */
+    .cost-field .input-field {
+        background: #fef3c7;
+        border: 1px dashed #f59e0b;
+        color: #92400e;
+        font-weight: 500;
+    }
+    
+    .cost-field .input-field:hover {
+        background: #fef3c7;
+    }
+    
+    .cost-field .input-field:focus {
+        background: #fef9c3;
+        border-color: #f59e0b;
+    }
+    
+    /* Cost header styling */
+    .cost-header {
+        color: #92400e;
+        font-size: 10px;
+    }
+    
+    /* Category margin selector */
+    .category-margin {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #64748b;
+    }
+    
+    .category-margin select {
+        padding: 4px 8px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 12px;
+        background: white;
+        color: #334155;
+        cursor: pointer;
+    }
+    
+    .category-margin select:hover {
+        border-color: #cbd5e1;
+    }
+    
+    .category-margin select:focus {
+        outline: none;
+        border-color: #22c55e;
     }
     
     /* Add Product Button - Minimal */
@@ -690,10 +741,10 @@
                 Download
             </button>
             <button class="btn btn-primary" onclick="showSmartAddProduct()">
-                ✨ Add Product
+                Add Product
             </button>
             <button class="btn btn-warning" onclick="document.getElementById('xpsFileInput').click()" style="background: #f59e0b; color: white;">
-                📁 Import XPS
+                Import XPS
             </button>
             <input type="file" id="xpsFileInput" accept=".xps" style="display: none;" onchange="handleXPSUpload(event)">
             <button class="btn btn-secondary" onclick="saveToLocal()">
@@ -703,16 +754,16 @@
                 Settings
             </button>
             <button class="btn btn-secondary" onclick="toggleCustomerPricing()" id="customerPricingBtn">
-                💰 Pricing
+                Pricing
             </button>
         </div>
         
         <div class="share-controls">
             <button class="btn btn-share" onclick="quickShareWhatsApp()">
-                📤 Share Image
+                Share Image
             </button>
             <button class="btn btn-share" onclick="showCustomerShareMenu()">
-                👥 Send to Customer
+                Send to Customer
             </button>
         </div>
         
@@ -724,7 +775,7 @@
 
         <!-- XPS Import Modal -->
         <div class="customer-share-menu" id="xpsImportModal" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
-            <h3>📁 Import Products from XPS</h3>
+            <h3>Import Products from XPS</h3>
             <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Review the products extracted from your sales report. Select which ones to import.</p>
             
             <div id="xpsPreviewList" style="margin-bottom: 20px;"></div>
@@ -737,7 +788,7 @@
 
         <!-- Smart Add Product Modal -->
         <div class="customer-share-menu" id="smartAddModal" style="max-width: 600px;">
-            <h3>✨ Smart Add Product</h3>
+            <h3>Smart Add Product</h3>
             <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Just type the product name - I'll figure out where it belongs!</p>
             
             <div style="margin-bottom: 20px;">
@@ -896,6 +947,11 @@
         
         // Auto-sort setting (default OFF for manual control)
         let autoSortEnabled = false;
+        
+        // Category margins (percentage markup on cost)
+        // Default 15% for all categories
+        let categoryMargins = {};
+        const DEFAULT_MARGIN = 15;
 
         // Temporary storage for generated image
         let lastGeneratedImageUrl = null;
@@ -1095,6 +1151,12 @@
             document.getElementById('autoSortToggle').checked = autoSortEnabled;
             updateAutoSortUI();
             
+            // Load category margins
+            const savedMargins = localStorage.getItem('everfresh_category_margins');
+            if (savedMargins) {
+                categoryMargins = JSON.parse(savedMargins);
+            }
+            
             const savedContacts = localStorage.getItem('everfresh_customer_contacts');
             if (savedContacts) {
                 customerContacts = JSON.parse(savedContacts);
@@ -1111,6 +1173,7 @@
         function saveToLocal() {
             collectData();
             localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
+            localStorage.setItem('everfresh_category_margins', JSON.stringify(categoryMargins));
             
             // Show toast notification
             const toast = document.getElementById('toast');
@@ -1394,7 +1457,7 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            showToast('📁 Parsing XPS file...');
+            showToast('Parsing XPS file...');
 
             try {
                 console.log('Starting XPS parse...');
@@ -1614,12 +1677,12 @@
 
             list.innerHTML = `
                 <div style="background: #f0fdf4; border: 1px solid #22c55e; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-                    <strong style="color: #15803d;">✅ Found ${matches.length} matching products in your price list</strong>
+                    <strong style="color: #15803d;">Found ${matches.length} matching products in your price list</strong>
                     <p style="color: #16a34a; font-size: 13px; margin-top: 4px;">Prices will be updated based on your sales data. Review matches below.</p>
                 </div>
                 ${unmatched.length > 0 ? `
                     <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-                        <strong style="color: #92400e;">⚠️ ${unmatched.length} products from XPS not found in your list</strong>
+                        <strong style="color: #92400e;">${unmatched.length} products from XPS not found in your list</strong>
                         <p style="color: #78350f; font-size: 13px; margin-top: 4px;">Add these manually if needed</p>
                     </div>
                 ` : ''}
@@ -1629,9 +1692,9 @@
                 </div>
                 <div style="max-height: 450px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
                     ${matches.map((m, idx) => {
-                        const matchQuality = m.matchScore >= 90 ? '🟢 Excellent' : 
-                                            m.matchScore >= 80 ? '🟡 Good' :
-                                            m.matchScore >= 70 ? '🟠 Fair' : '🔴 Weak';
+                        const matchQuality = m.matchScore >= 90 ? 'Excellent' : 
+                                            m.matchScore >= 80 ? 'Good' :
+                                            m.matchScore >= 70 ? 'Fair' : 'Weak';
                         
                         return `
                             <div style="padding: 12px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px; background: ${m.matchScore < 70 ? '#fef3c7' : 'white'};">
@@ -1665,7 +1728,7 @@
                     }).join('')}
                     ${unmatched.length > 0 ? `
                         <div style="padding: 16px; background: #fafafa;">
-                            <div style="font-weight: 600; color: #64748b; margin-bottom: 8px;">⚠️ Not Found in Your List (${unmatched.length}):</div>
+                            <div style="font-weight: 600; color: #64748b; margin-bottom: 8px;">Not Found in Your List (${unmatched.length}):</div>
                             ${unmatched.map(u => `
                                 <div style="font-size: 13px; color: #94a3b8; padding: 6px 0; border-bottom: 1px solid #f1f5f9;">
                                     ${u.product} - ${u.grade} → $${u.suggestedPrice.toFixed(2)} (${u.salesCount} sales)
@@ -1724,7 +1787,7 @@
             renderCategories();
             closeXPSImport();
 
-            showToast(`✅ Updated ${selected.length} product prices!`);
+            showToast(`Updated ${selected.length} product prices!`);
         }
 
         // Save settings
@@ -1826,8 +1889,8 @@
                     <div style="background: #f0fdf4; border: 1px solid #22c55e; padding: 16px; border-radius: 12px; margin-bottom: 16px;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <strong style="color: #15803d; font-size: 15px;">💰 ${selectedCustomer.name} Pricing Active</strong>
-                                <p style="color: #16a34a; font-size: 13px; margin-top: 4px;">Adjustment: ${adjustmentText} (Bulk items → whole $, Pieces → with cents)</p>
+                                <strong style="color: #15803d; font-size: 15px;">${selectedCustomer.name} Pricing Active</strong>
+                                <p style="color: #16a34a; font-size: 13px; margin-top: 4px;">Adjustment: ${adjustmentText} (Bulk items to whole $, Pieces with cents)</p>
                             </div>
                             <button class="btn btn-small btn-secondary" onclick="applyCustomerPricing(${selectedCustomer.id})">Reset to Standard</button>
                         </div>
@@ -1837,6 +1900,15 @@
             
             // Drag handle SVG icon
             const dragHandleSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>`;
+            
+            // Generate margin options HTML (15% to 100% in steps of 5)
+            function getMarginOptions(selectedMargin) {
+                let options = '';
+                for (let i = 15; i <= 100; i += 5) {
+                    options += `<option value="${i}" ${selectedMargin === i ? 'selected' : ''}>${i}%</option>`;
+                }
+                return options;
+            }
 
             Object.keys(priceData).forEach((categoryName, catIndex) => {
                 const category = document.createElement('div');
@@ -1845,10 +1917,19 @@
                 category.dataset.categoryName = categoryName;
                 category.dataset.categoryIndex = catIndex;
                 
+                // Get margin for this category (default 15%)
+                const margin = categoryMargins[categoryName] || DEFAULT_MARGIN;
+                
                 let html = `
                     <div class="category-header">
                         <div class="category-drag-handle" title="Drag to reorder category">${dragHandleSVG}</div>
                         <div class="category-title" style="flex: 1;">${categoryName}</div>
+                        <div class="category-margin">
+                            <span>Margin:</span>
+                            <select onchange="updateCategoryMargin('${categoryName}', this.value)">
+                                ${getMarginOptions(margin)}
+                            </select>
+                        </div>
                         <div class="category-actions">
                             <button class="icon-btn" onclick="deleteCategory('${categoryName}')" title="Delete">×</button>
                         </div>
@@ -1857,12 +1938,18 @@
                         <div class="table-header-cell"></div>
                         <div class="table-header-cell">Product</div>
                         <div class="table-header-cell">Grade/Size</div>
-                        <div class="table-header-cell">Price${selectedCustomer ? ' (Adjusted)' : ''}</div>
+                        <div class="table-header-cell cost-header">Cost (Internal)</div>
+                        <div class="table-header-cell">Price${selectedCustomer ? ' (Adj.)' : ''}</div>
                         <div class="table-header-cell"></div>
                     </div>
                 `;
 
                 priceData[categoryName].forEach((item, idx) => {
+                    // item[0] = product name
+                    // item[1] = grade/size
+                    // item[2] = selling price
+                    // item[3] = cost (optional)
+                    const cost = item[3] || '';
                     const displayPrice = selectedCustomer 
                         ? calculateCustomerPrice(item[2], item[1], selectedCustomer)
                         : item[2];
@@ -1876,6 +1963,9 @@
                                 </div>
                                 <div class="product-field">
                                     <input type="text" class="input-field" value="${item[1]}" placeholder="Grade/size" data-category="${categoryName}" data-row="${idx}" data-col="1">
+                                </div>
+                                <div class="product-field cost-field">
+                                    <input type="text" class="input-field" value="${cost}" placeholder="$0" data-category="${categoryName}" data-row="${idx}" data-col="3" onchange="calculatePriceFromCost('${categoryName}', ${idx}, this.value)">
                                 </div>
                                 <div class="product-field">
                                     <input type="text" class="input-field" value="${displayPrice}" placeholder="$0.00" data-category="${categoryName}" data-row="${idx}" data-col="2" ${selectedCustomer ? 'readonly style="background: #f0fdf4; color: #15803d;"' : ''}>
@@ -1902,6 +1992,57 @@
                     });
                 }
             });
+        }
+        
+        // Update category margin
+        function updateCategoryMargin(categoryName, margin) {
+            categoryMargins[categoryName] = parseInt(margin);
+            localStorage.setItem('everfresh_category_margins', JSON.stringify(categoryMargins));
+            
+            // Recalculate all prices in this category that have costs
+            priceData[categoryName].forEach((item, idx) => {
+                if (item[3]) {
+                    calculatePriceFromCost(categoryName, idx, item[3]);
+                }
+            });
+        }
+        
+        // Calculate selling price from cost + margin
+        function calculatePriceFromCost(categoryName, idx, costValue) {
+            // Parse cost value
+            let cost = parseFloat(costValue.toString().replace('$', '').replace(',', ''));
+            
+            if (isNaN(cost) || cost <= 0) {
+                return; // Don't update price if cost is invalid
+            }
+            
+            // Get category margin
+            const margin = categoryMargins[categoryName] || DEFAULT_MARGIN;
+            
+            // Calculate selling price: cost * (1 + margin/100)
+            let sellingPrice = cost * (1 + margin / 100);
+            
+            // Get grade to determine rounding
+            const grade = priceData[categoryName][idx][1];
+            
+            // Apply smart rounding
+            sellingPrice = smartRoundPrice(sellingPrice, grade);
+            
+            // Format price
+            const formattedPrice = sellingPrice % 1 === 0 ? `$${sellingPrice}` : `$${sellingPrice.toFixed(2)}`;
+            
+            // Update priceData
+            priceData[categoryName][idx][2] = formattedPrice;
+            priceData[categoryName][idx][3] = costValue.toString().startsWith('$') ? costValue : `$${cost}`;
+            
+            // Update the price input field directly (without re-rendering)
+            const priceInput = document.querySelector(`input[data-category="${categoryName}"][data-row="${idx}"][data-col="2"]`);
+            if (priceInput) {
+                priceInput.value = formattedPrice;
+            }
+            
+            // Save
+            localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
         }
         
         // ========================================
@@ -2109,7 +2250,7 @@
 
         // Add new row
         function addRow(categoryName) {
-            priceData[categoryName].push(['New Product', '-', '$0']);
+            priceData[categoryName].push(['New Product', '-', '$0', '']);
             renderCategories();
         }
 
@@ -2125,7 +2266,7 @@
         function addCategory() {
             const name = prompt('Enter category name:');
             if (name && name.trim()) {
-                priceData[name.trim().toUpperCase()] = [['New Product', '-', '$0']];
+                priceData[name.trim().toUpperCase()] = [['New Product', '-', '$0', '']];
                 renderCategories();
             }
         }
@@ -2162,7 +2303,7 @@
             // Show analyzing state
             analysisDiv.innerHTML = `
                 <div style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px;">
-                    <strong style="color: #475569;">🤔 Analyzing with AI...</strong>
+                    <strong style="color: #475569;">Analyzing with AI...</strong>
                 </div>
             `;
 
@@ -2331,16 +2472,16 @@ Response format (JSON only, no markdown):
             const isNewCategory = result.isNew || !existingCategories.includes(result.category);
             const confidenceColor = result.confidence === 'high' ? '#22c55e' : 
                                    result.confidence === 'medium' ? '#f59e0b' : '#ef4444';
-            const confidenceIcon = result.confidence === 'high' ? '✅' : 
-                                  result.confidence === 'medium' ? '🟡' : '⚠️';
+            const confidenceIcon = result.confidence === 'high' ? '[HIGH]' : 
+                                  result.confidence === 'medium' ? '[MED]' : '[LOW]';
             
-            const aiLabel = isAI ? '🧠 AI Analysis' : '✨ Smart Match';
+            const aiLabel = isAI ? 'AI Analysis' : 'Smart Match';
 
             if (isNewCategory) {
                 analysisDiv.innerHTML = `
                     <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 8px;">
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                            <strong style="color: #92400e;">🆕 New Category</strong>
+                            <strong style="color: #92400e;">New Category</strong>
                             <span style="font-size: 11px; padding: 2px 6px; background: ${confidenceColor}20; color: ${confidenceColor}; border-radius: 4px; border: 1px solid ${confidenceColor};">
                                 ${confidenceIcon} ${result.confidence}
                             </span>
@@ -2374,7 +2515,7 @@ Response format (JSON only, no markdown):
         }
 
         // ========================================
-        // 🧠 SMART PRODUCE KNOWLEDGE DATABASE
+        // SMART PRODUCE KNOWLEDGE DATABASE
         // ========================================
         // This is a comprehensive database that maps individual products
         // to their parent categories - no keywords needed!
@@ -2882,15 +3023,15 @@ Response format (JSON only, no markdown):
                 priceData[category] = [];
             }
 
-            // Add product
-            priceData[category].push([productName, grade, price]);
+            // Add product (with empty cost field)
+            priceData[category].push([productName, grade, price, '']);
 
             // Save and re-render
             saveToLocal();
             renderCategories();
             closeSmartAdd();
 
-            showToast(`✅ Added "${productName}" to ${category}!`);
+            showToast(`Added "${productName}" to ${category}!`);
         }
 
         // Delete category
@@ -2935,7 +3076,7 @@ Response format (JSON only, no markdown):
             // Show error if empty prices found
             if (hasEmptyPrices) {
                 const productList = emptyPriceProducts.join('\n- ');
-                alert(`⚠️ ERROR: Cannot generate image!\n\nThe following products have empty prices:\n\n- ${productList}\n\nPlease fill in all prices or mark as "NA" if not available.`);
+                alert(`ERROR: Cannot generate image!\n\nThe following products have empty prices:\n\n- ${productList}\n\nPlease fill in all prices or mark as "NA" if not available.`);
                 return; // Stop here, don't generate image
             }
             
