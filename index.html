@@ -846,6 +846,18 @@
             return true;
         }
 
+        // Smart price rounding
+        function smartRoundPrice(price, gradeSize) {
+            if (shouldRoundToWholeDollar(gradeSize)) {
+                // Round to whole dollar
+                return Math.round(price);
+            } else {
+                // Round to nearest 5 cents (0.05)
+                // Examples: $2.37 → $2.35, $0.83 → $0.85, $1.22 → $1.20
+                return Math.round(price * 20) / 20;
+            }
+        }
+
         // Calculate customer-specific price with smart rounding
         function calculateCustomerPrice(basePrice, gradeSize, customer) {
             if (!customer || !customer.adjustmentValue) {
@@ -864,12 +876,13 @@
                 price = price + customer.adjustmentValue;
             }
 
-            // Apply smart rounding
+            // Apply smart rounding (whole dollars OR nearest 5 cents)
+            price = smartRoundPrice(price, gradeSize);
+            
+            // Format price
             if (shouldRoundToWholeDollar(gradeSize)) {
-                price = Math.round(price); // Round to nearest whole dollar
                 return '$' + price;
             } else {
-                price = Math.round(price * 100) / 100; // Keep 2 decimal places
                 return '$' + price.toFixed(2);
             }
         }
@@ -1308,9 +1321,8 @@
 
                 const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
 
-                // Smart rounding based on grade
-                const shouldRound = !/(piece|pieces|each|ea|unit|per )/i.test(grade.toLowerCase());
-                const suggestedPrice = shouldRound ? Math.round(avgPrice) : Math.round(avgPrice * 100) / 100;
+                // Use smart rounding (whole dollars OR nearest 5 cents)
+                const suggestedPrice = smartRoundPrice(avgPrice, grade);
 
                 finalProducts.push({
                     product: name,
