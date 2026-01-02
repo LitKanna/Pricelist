@@ -1121,8 +1121,12 @@
             updateAutoSortUI();
             
             if (autoSortEnabled) {
+                // First collect any unsaved changes from DOM
+                collectData();
+                // Then sort the data
                 sortPriceDataAlphabetically();
-                saveToLocal();
+                // Save directly (don't call saveToLocal as it would collectData again)
+                localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
             }
             
             renderCategories();
