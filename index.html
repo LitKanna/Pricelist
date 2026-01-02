@@ -155,8 +155,8 @@
         padding: 16px 20px;
         color: #0f172a;
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        gap: 12px;
         border-bottom: 1px solid #f1f5f9;
     }
     
@@ -168,6 +168,7 @@
         text-transform: uppercase;
         font-size: 11px;
         letter-spacing: 0.5px;
+        flex: 1;
     }
     
     .category-actions {
@@ -297,6 +298,116 @@
     
     .product-delete:active {
         transform: scale(0.9);
+    }
+    
+    /* Drag and Drop Styles */
+    .drag-handle {
+        width: 24px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: grab;
+        color: #cbd5e1;
+        opacity: 0;
+        transition: all 0.15s;
+        flex-shrink: 0;
+    }
+    
+    .drag-handle:active {
+        cursor: grabbing;
+    }
+    
+    .product:hover .drag-handle,
+    .category-header:hover .drag-handle {
+        opacity: 1;
+    }
+    
+    .drag-handle:hover {
+        color: #94a3b8;
+    }
+    
+    .drag-handle svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    /* Category drag handle */
+    .category-drag-handle {
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: grab;
+        color: #94a3b8;
+        opacity: 0;
+        transition: all 0.15s;
+        border-radius: 6px;
+    }
+    
+    .category-drag-handle:active {
+        cursor: grabbing;
+    }
+    
+    .category-header:hover .category-drag-handle {
+        opacity: 1;
+    }
+    
+    .category-drag-handle:hover {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+    
+    /* Dragging states */
+    .dragging {
+        opacity: 0.5;
+        transform: scale(0.98);
+    }
+    
+    .drag-over {
+        border-top: 3px solid #22c55e !important;
+    }
+    
+    .category.drag-over {
+        box-shadow: 0 -3px 0 0 #22c55e;
+    }
+    
+    .product.drag-over {
+        background: #f0fdf4;
+    }
+    
+    /* Hide drag handles when auto-sort is enabled */
+    .auto-sort-enabled .drag-handle,
+    .auto-sort-enabled .category-drag-handle {
+        display: none !important;
+    }
+    
+    /* Adjust product grid for drag handle */
+    .product-grid-with-drag {
+        display: grid;
+        grid-template-columns: 24px 2fr 1.5fr 1fr 32px;
+        gap: 12px;
+        padding: 12px 16px;
+        align-items: center;
+    }
+    
+    .table-header-with-drag {
+        display: grid;
+        grid-template-columns: 24px 2fr 1.5fr 1fr 32px;
+        gap: 12px;
+        padding: 8px 16px;
+        background: #fafafa;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    /* When auto-sort is on, use original grid */
+    .auto-sort-enabled .product-grid-with-drag {
+        grid-template-columns: 2fr 1.5fr 1fr 32px;
+    }
+    
+    .auto-sort-enabled .table-header-with-drag {
+        grid-template-columns: 2fr 1.5fr 1fr 32px;
     }
     
     /* Add Product Button - Minimal */
@@ -677,6 +788,17 @@
                 </label>
             </div>
             
+            <div class="toggle-setting" style="margin-top: 16px;">
+                <div class="toggle-info">
+                    <label class="toggle-label">Auto-Sort A-Z</label>
+                    <p class="toggle-description">When ON: Categories & products sort alphabetically | When OFF: Drag to reorder manually</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="autoSortToggle" onchange="toggleAutoSort()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
             <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
             
             <hr style="margin: 30px 0; border: none; border-top: 2px solid #e9ecef;">
@@ -765,6 +887,9 @@
 
         // Customer contacts
         let customerContacts = [];
+        
+        // Auto-sort setting (default OFF for manual control)
+        let autoSortEnabled = false;
 
         // Temporary storage for generated image
         let lastGeneratedImageUrl = null;
@@ -956,6 +1081,14 @@
                 document.getElementById('nextDayToggle').checked = salesmanInfo.sendForNextDay !== false; // Default true
             }
             
+            // Load auto-sort setting
+            const savedAutoSort = localStorage.getItem('everfresh_auto_sort');
+            if (savedAutoSort !== null) {
+                autoSortEnabled = savedAutoSort === 'true';
+            }
+            document.getElementById('autoSortToggle').checked = autoSortEnabled;
+            updateAutoSortUI();
+            
             const savedContacts = localStorage.getItem('everfresh_customer_contacts');
             if (savedContacts) {
                 customerContacts = JSON.parse(savedContacts);
@@ -979,6 +1112,48 @@
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
+        }
+        
+        // Toggle auto-sort setting
+        function toggleAutoSort() {
+            autoSortEnabled = document.getElementById('autoSortToggle').checked;
+            localStorage.setItem('everfresh_auto_sort', autoSortEnabled);
+            updateAutoSortUI();
+            
+            if (autoSortEnabled) {
+                sortPriceDataAlphabetically();
+                saveToLocal();
+            }
+            
+            renderCategories();
+        }
+        
+        // Update UI based on auto-sort setting
+        function updateAutoSortUI() {
+            const container = document.getElementById('categoriesContainer');
+            if (autoSortEnabled) {
+                container.classList.add('auto-sort-enabled');
+            } else {
+                container.classList.remove('auto-sort-enabled');
+            }
+        }
+        
+        // Sort priceData alphabetically (categories and products)
+        function sortPriceDataAlphabetically() {
+            // Sort categories
+            const sortedCategories = Object.keys(priceData).sort((a, b) => 
+                a.localeCompare(b, undefined, { sensitivity: 'base' })
+            );
+            
+            const sortedData = {};
+            for (const category of sortedCategories) {
+                // Sort products within each category by product name
+                sortedData[category] = [...priceData[category]].sort((a, b) => 
+                    a[0].localeCompare(b[0], undefined, { sensitivity: 'base' })
+                );
+            }
+            
+            priceData = sortedData;
         }
 
         // Toggle settings panel
@@ -1627,6 +1802,9 @@
         function renderCategories() {
             const container = document.getElementById('categoriesContainer');
             container.innerHTML = '';
+            
+            // Update auto-sort UI class
+            updateAutoSortUI();
 
             // Show active pricing info
             if (selectedCustomer) {
@@ -1646,19 +1824,27 @@
                     </div>
                 `;
             }
+            
+            // Drag handle SVG icon
+            const dragHandleSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>`;
 
-            Object.keys(priceData).forEach(categoryName => {
+            Object.keys(priceData).forEach((categoryName, catIndex) => {
                 const category = document.createElement('div');
                 category.className = 'category';
+                category.draggable = !autoSortEnabled;
+                category.dataset.categoryName = categoryName;
+                category.dataset.categoryIndex = catIndex;
                 
                 let html = `
                     <div class="category-header">
-                        <div class="category-title">${categoryName}</div>
+                        <div class="category-drag-handle" title="Drag to reorder category">${dragHandleSVG}</div>
+                        <div class="category-title" style="flex: 1;">${categoryName}</div>
                         <div class="category-actions">
                             <button class="icon-btn" onclick="deleteCategory('${categoryName}')" title="Delete">×</button>
                         </div>
                     </div>
-                    <div class="table-header">
+                    <div class="table-header-with-drag">
+                        <div class="table-header-cell"></div>
                         <div class="table-header-cell">Product</div>
                         <div class="table-header-cell">Grade/Size</div>
                         <div class="table-header-cell">Price${selectedCustomer ? ' (Adjusted)' : ''}</div>
@@ -1672,8 +1858,9 @@
                         : item[2];
                     
                     html += `
-                        <div class="product">
-                            <div class="product-grid">
+                        <div class="product" draggable="${!autoSortEnabled}" data-category="${categoryName}" data-product-index="${idx}">
+                            <div class="product-grid-with-drag">
+                                <div class="drag-handle" title="Drag to reorder">${dragHandleSVG}</div>
                                 <div class="product-field">
                                     <input type="text" class="input-field" value="${item[0]}" placeholder="Product name" data-category="${categoryName}" data-row="${idx}" data-col="0">
                                 </div>
@@ -1693,7 +1880,210 @@
 
                 category.innerHTML = html;
                 container.appendChild(category);
+                
+                // Add drag event listeners for category
+                if (!autoSortEnabled) {
+                    setupCategoryDragEvents(category, categoryName);
+                    
+                    // Add drag event listeners for products within this category
+                    const products = category.querySelectorAll('.product[draggable="true"]');
+                    products.forEach(product => {
+                        setupProductDragEvents(product, categoryName);
+                    });
+                }
             });
+        }
+        
+        // ========================================
+        // DRAG AND DROP FUNCTIONALITY
+        // ========================================
+        
+        let draggedElement = null;
+        let dragType = null; // 'category' or 'product'
+        let dragSourceCategory = null;
+        let dragSourceIndex = null;
+        
+        function setupCategoryDragEvents(categoryEl, categoryName) {
+            const handle = categoryEl.querySelector('.category-drag-handle');
+            
+            // Start drag only from handle
+            handle.addEventListener('mousedown', () => {
+                categoryEl.draggable = true;
+            });
+            
+            handle.addEventListener('mouseup', () => {
+                if (!draggedElement) categoryEl.draggable = false;
+            });
+            
+            categoryEl.addEventListener('dragstart', (e) => {
+                if (autoSortEnabled) {
+                    e.preventDefault();
+                    return;
+                }
+                
+                // Only allow drag from handle
+                if (!e.target.closest('.category-drag-handle') && e.target.classList.contains('category')) {
+                    // Check if drag started from product
+                    if (e.target.closest('.product')) return;
+                }
+                
+                draggedElement = categoryEl;
+                dragType = 'category';
+                dragSourceCategory = categoryName;
+                dragSourceIndex = parseInt(categoryEl.dataset.categoryIndex);
+                
+                categoryEl.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', categoryName);
+            });
+            
+            categoryEl.addEventListener('dragend', () => {
+                categoryEl.classList.remove('dragging');
+                document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                draggedElement = null;
+                dragType = null;
+                dragSourceCategory = null;
+                dragSourceIndex = null;
+            });
+            
+            categoryEl.addEventListener('dragover', (e) => {
+                if (dragType !== 'category' || autoSortEnabled) return;
+                e.preventDefault();
+                
+                const draggingCategory = document.querySelector('.category.dragging');
+                if (draggingCategory === categoryEl) return;
+                
+                categoryEl.classList.add('drag-over');
+            });
+            
+            categoryEl.addEventListener('dragleave', () => {
+                categoryEl.classList.remove('drag-over');
+            });
+            
+            categoryEl.addEventListener('drop', (e) => {
+                if (dragType !== 'category' || autoSortEnabled) return;
+                e.preventDefault();
+                
+                categoryEl.classList.remove('drag-over');
+                
+                const targetCategoryName = categoryEl.dataset.categoryName;
+                if (dragSourceCategory === targetCategoryName) return;
+                
+                // Reorder categories
+                reorderCategories(dragSourceCategory, targetCategoryName);
+            });
+        }
+        
+        function setupProductDragEvents(productEl, categoryName) {
+            const handle = productEl.querySelector('.drag-handle');
+            
+            handle.addEventListener('mousedown', () => {
+                productEl.draggable = true;
+            });
+            
+            handle.addEventListener('mouseup', () => {
+                if (!draggedElement) productEl.draggable = false;
+            });
+            
+            productEl.addEventListener('dragstart', (e) => {
+                if (autoSortEnabled) {
+                    e.preventDefault();
+                    return;
+                }
+                
+                e.stopPropagation(); // Prevent category drag
+                
+                draggedElement = productEl;
+                dragType = 'product';
+                dragSourceCategory = categoryName;
+                dragSourceIndex = parseInt(productEl.dataset.productIndex);
+                
+                productEl.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', `${categoryName}:${dragSourceIndex}`);
+            });
+            
+            productEl.addEventListener('dragend', () => {
+                productEl.classList.remove('dragging');
+                document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                draggedElement = null;
+                dragType = null;
+                dragSourceCategory = null;
+                dragSourceIndex = null;
+            });
+            
+            productEl.addEventListener('dragover', (e) => {
+                if (dragType !== 'product' || autoSortEnabled) return;
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const draggingProduct = document.querySelector('.product.dragging');
+                if (draggingProduct === productEl) return;
+                
+                // Only allow drop within same category
+                if (productEl.dataset.category !== dragSourceCategory) return;
+                
+                productEl.classList.add('drag-over');
+            });
+            
+            productEl.addEventListener('dragleave', () => {
+                productEl.classList.remove('drag-over');
+            });
+            
+            productEl.addEventListener('drop', (e) => {
+                if (dragType !== 'product' || autoSortEnabled) return;
+                e.preventDefault();
+                e.stopPropagation();
+                
+                productEl.classList.remove('drag-over');
+                
+                const targetIndex = parseInt(productEl.dataset.productIndex);
+                const targetCategory = productEl.dataset.category;
+                
+                if (dragSourceCategory !== targetCategory) return;
+                if (dragSourceIndex === targetIndex) return;
+                
+                // Reorder products within category
+                reorderProducts(dragSourceCategory, dragSourceIndex, targetIndex);
+            });
+        }
+        
+        function reorderCategories(fromCategory, toCategory) {
+            collectData(); // Save current input values
+            
+            const categoryNames = Object.keys(priceData);
+            const fromIndex = categoryNames.indexOf(fromCategory);
+            const toIndex = categoryNames.indexOf(toCategory);
+            
+            if (fromIndex === -1 || toIndex === -1) return;
+            
+            // Create new ordered object
+            const newPriceData = {};
+            const reorderedNames = [...categoryNames];
+            
+            // Remove from old position and insert at new position
+            reorderedNames.splice(fromIndex, 1);
+            reorderedNames.splice(toIndex, 0, fromCategory);
+            
+            // Rebuild priceData in new order
+            reorderedNames.forEach(name => {
+                newPriceData[name] = priceData[name];
+            });
+            
+            priceData = newPriceData;
+            saveToLocal();
+            renderCategories();
+        }
+        
+        function reorderProducts(categoryName, fromIndex, toIndex) {
+            collectData(); // Save current input values
+            
+            const products = priceData[categoryName];
+            const [movedProduct] = products.splice(fromIndex, 1);
+            products.splice(toIndex, 0, movedProduct);
+            
+            saveToLocal();
+            renderCategories();
         }
 
         // Collect data from inputs
