@@ -65,59 +65,70 @@
         font-weight: 500;
     }
     
-    /* Modern Controls */
+    /* Modern Controls - Minimal & Clean */
     .controls, .share-controls {
-        padding: 20px;
+        padding: 12px 16px;
         background: white;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        border-bottom: 1px solid var(--slate-100);
+        display: flex;
+        gap: 8px;
+        border-bottom: 1px solid #f1f5f9;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
     
-    /* Beautiful Buttons */
+    .controls::-webkit-scrollbar,
+    .share-controls::-webkit-scrollbar {
+        display: none;
+    }
+    
+    /* Minimal Buttons - Notion/Linear Style */
     .btn {
-        padding: 14px 20px;
-        border-radius: 10px;
-        font-size: 15px;
-        font-weight: 600;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
         border: none;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.15s;
+        white-space: nowrap;
     }
     
     .btn-success {
-        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        background: #0f172a;
         color: white;
-        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.25);
     }
     
     .btn-success:active {
-        transform: scale(0.98);
+        transform: scale(0.96);
     }
     
     .btn-primary {
-        background: var(--slate-900);
-        color: white;
+        background: #f1f5f9;
+        color: #0f172a;
     }
     
     .btn-secondary {
-        background: var(--slate-100);
-        color: var(--slate-900);
+        background: transparent;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
     }
     
     .btn-danger {
-        background: #ef4444;
-        color: white;
+        background: #fef2f2;
+        color: #ef4444;
     }
     
     .btn-share {
-        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        background: #059669;
         color: white;
-        padding: 16px 24px;
-        border-radius: 12px;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        padding: 8px 14px;
+        font-size: 13px;
+        flex: 1;
+    }
+    
+    .btn-small {
+        padding: 6px 12px;
+        font-size: 12px;
     }
     
     /* Content Area */
@@ -126,189 +137,208 @@
         background: var(--slate-50);
     }
     
-    /* Category Cards - Ultra Premium */
+    /* Category Cards - Clean & Modern */
     .category {
         background: white;
-        border-radius: 24px;
-        margin-bottom: 28px;
-        overflow: visible;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        border-radius: 16px;
+        margin-bottom: 16px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
     }
     
     .category-header {
-        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-        padding: 28px 24px;
-        color: white;
+        background: white;
+        padding: 16px 20px;
+        color: #0f172a;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-radius: 24px 24px 0 0;
-        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+        border-bottom: 1px solid #f1f5f9;
     }
     
     .category-title {
-        font-size: 22px;
-        font-weight: 800;
-        letter-spacing: -0.8px;
-        flex: 1;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.2px;
+        color: #64748b;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.5px;
     }
     
     .category-actions {
         display: flex;
-        gap: 10px;
+        gap: 8px;
     }
     
     .icon-btn {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        color: white;
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        font-size: 22px;
-        font-weight: 700;
-        transition: all 0.2s;
+        font-size: 18px;
+        transition: all 0.15s;
+    }
+    
+    .icon-btn:hover {
+        background: #f8fafc;
+        color: #ef4444;
     }
     
     .icon-btn:active {
-        transform: scale(0.92);
-        background: rgba(255, 255, 255, 0.35);
+        transform: scale(0.95);
     }
     
-    /* Premium Product Cards - iOS Style */
+    /* Modern Product Cards - Notion/Linear Style */
     .product {
         padding: 0;
         border: none;
-        margin: 20px 20px;
-        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-        border-radius: 20px;
-        overflow: visible;
+        margin: 0;
+        background: white;
         position: relative;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), 
-                    0 0 0 1px rgba(0, 0, 0, 0.03);
-        transition: all 0.3s;
-    }
-    
-    .product:hover {
-        box-shadow: 0 8px 32px rgba(34, 197, 94, 0.12), 
-                    0 0 0 1px rgba(34, 197, 94, 0.1);
+        border-bottom: 1px solid #f1f5f9;
     }
     
     .product:last-child {
-        margin-bottom: 24px;
+        border-bottom: none;
+    }
+    
+    .product:hover {
+        background: #fafafa;
     }
     
     .product-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-        padding: 20px 60px 20px 20px;
+        display: grid;
+        grid-template-columns: 2fr 1.5fr 1fr 32px;
+        gap: 16px;
+        padding: 12px 16px;
+        align-items: center;
     }
     
     .product-field {
         position: relative;
-        padding: 12px 0;
-    }
-    
-    .product-field:not(:last-child) {
-        border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        min-height: 32px;
+        display: flex;
+        align-items: center;
     }
     
     .product-label {
-        display: block;
-        font-size: 10px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #64748b;
-        margin-bottom: 8px;
+        display: none;
     }
     
     .input-field {
         width: 100%;
-        padding: 0;
+        padding: 6px 8px;
         border: none;
         background: transparent;
-        font-size: 17px;
-        font-weight: 600;
-        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
         color: #0f172a;
-        line-height: 1.4;
+        border-radius: 6px;
+        transition: background 0.15s;
+    }
+    
+    .input-field:hover {
+        background: #f8fafc;
     }
     
     .input-field:focus {
         outline: none;
+        background: #f1f5f9;
     }
     
     .input-field::placeholder {
         color: #cbd5e1;
-        font-weight: 500;
+        font-weight: 400;
     }
     
-    /* Price field - special styling */
-    .product-field:last-child .input-field {
-        font-size: 20px;
-        font-weight: 700;
+    /* Price field */
+    .product-field:nth-child(3) .input-field {
+        font-weight: 600;
         color: #059669;
     }
     
-    /* Delete Button - iOS Style */
+    /* Delete Button - Minimal */
     .product-delete {
-        position: absolute;
-        top: 50%;
-        right: 16px;
-        transform: translateY(-50%);
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        color: white;
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
+        width: 32px;
+        height: 32px;
+        background: transparent;
+        color: #cbd5e1;
         border: none;
+        border-radius: 6px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        font-size: 20px;
-        font-weight: 700;
-        box-shadow: 0 4px 16px rgba(239, 68, 68, 0.35);
-        z-index: 10;
-        transition: all 0.2s;
+        font-size: 16px;
+        transition: all 0.15s;
+        opacity: 0;
+    }
+    
+    .product:hover .product-delete {
+        opacity: 1;
+    }
+    
+    .product-delete:hover {
+        background: #fef2f2;
+        color: #ef4444;
     }
     
     .product-delete:active {
-        transform: translateY(-50%) scale(0.88);
-        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+        transform: scale(0.9);
     }
     
-    /* Add Product Button - Premium */
+    /* Add Product Button - Minimal */
     .add-product-btn {
-        margin: 0 20px 24px;
-        width: calc(100% - 40px);
-        padding: 18px;
-        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-        color: white;
+        margin: 0;
+        width: 100%;
+        padding: 10px 16px;
+        background: transparent;
+        color: #64748b;
         border: none;
-        border-radius: 16px;
-        font-size: 16px;
-        font-weight: 700;
+        border-top: 1px solid #f1f5f9;
+        font-size: 13px;
+        font-weight: 500;
         cursor: pointer;
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 8px;
-        box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35);
-        transition: all 0.2s;
-        letter-spacing: 0.3px;
+        justify-content: flex-start;
+        gap: 6px;
+        transition: all 0.15s;
+    }
+    
+    .add-product-btn:hover {
+        background: #fafafa;
+        color: #0f172a;
     }
     
     .add-product-btn:active {
-        transform: scale(0.97);
-        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        background: #f5f5f5;
+    }
+    
+    /* Table Header - Subtle */
+    .table-header {
+        display: grid;
+        grid-template-columns: 2fr 1.5fr 1fr 32px;
+        gap: 16px;
+        padding: 8px 16px;
+        background: #fafafa;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .table-header-cell {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #94a3b8;
     }
     
     /* Settings Panel */
@@ -858,8 +888,14 @@
                     <div class="category-header">
                         <div class="category-title">${categoryName}</div>
                         <div class="category-actions">
-                            <button class="icon-btn" onclick="deleteCategory('${categoryName}')" title="Delete Category">×</button>
+                            <button class="icon-btn" onclick="deleteCategory('${categoryName}')" title="Delete">×</button>
                         </div>
+                    </div>
+                    <div class="table-header">
+                        <div class="table-header-cell">Product</div>
+                        <div class="table-header-cell">Grade/Size</div>
+                        <div class="table-header-cell">Price</div>
+                        <div class="table-header-cell"></div>
                     </div>
                 `;
 
@@ -868,24 +904,21 @@
                         <div class="product">
                             <div class="product-grid">
                                 <div class="product-field">
-                                    <label class="product-label">Product Name</label>
-                                    <input type="text" class="input-field" value="${item[0]}" placeholder="e.g., Lettuce" data-category="${categoryName}" data-row="${idx}" data-col="0">
+                                    <input type="text" class="input-field" value="${item[0]}" placeholder="Product name" data-category="${categoryName}" data-row="${idx}" data-col="0">
                                 </div>
                                 <div class="product-field">
-                                    <label class="product-label">Grade / Size</label>
-                                    <input type="text" class="input-field" value="${item[1]}" placeholder="e.g., Large" data-category="${categoryName}" data-row="${idx}" data-col="1">
+                                    <input type="text" class="input-field" value="${item[1]}" placeholder="Grade/size" data-category="${categoryName}" data-row="${idx}" data-col="1">
                                 </div>
                                 <div class="product-field">
-                                    <label class="product-label">Price</label>
-                                    <input type="text" class="input-field" value="${item[2]}" placeholder="e.g., $5.50" data-category="${categoryName}" data-row="${idx}" data-col="2">
+                                    <input type="text" class="input-field" value="${item[2]}" placeholder="$0.00" data-category="${categoryName}" data-row="${idx}" data-col="2">
                                 </div>
+                                <button class="product-delete" onclick="deleteRow('${categoryName}', ${idx})">×</button>
                             </div>
-                            <button class="product-delete" onclick="deleteRow('${categoryName}', ${idx})" title="Delete Product">×</button>
                         </div>
                     `;
                 });
 
-                html += `<button class="add-product-btn" onclick="addRow('${categoryName}')">+ Add Product</button>`;
+                html += `<button class="add-product-btn" onclick="addRow('${categoryName}')">+ Add</button>`;
 
                 category.innerHTML = html;
                 container.appendChild(category);
