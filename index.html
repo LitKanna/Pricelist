@@ -1759,36 +1759,31 @@
                 return;
             }
 
-            // Show loading state
+            // Show analyzing state
             analysisDiv.innerHTML = `
                 <div style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px;">
-                    <strong style="color: #475569;">🤔 Analyzing...</strong>
-                    <p style="color: #64748b; font-size: 13px; margin-top: 4px;">
-                        Claude is thinking about where "${productName}" belongs...
-                    </p>
+                    <strong style="color: #475569;">🤔 Analyzing with AI...</strong>
                 </div>
             `;
 
             // Get existing categories
             const existingCategories = Object.keys(priceData);
 
-            // Call Claude API for smart analysis
-            analyzeWithClaude(productName, existingCategories);
+            // Try AI analysis first, fallback to smart matching if it fails
+            analyzeWithAI(productName, existingCategories);
         }
 
-        async function analyzeWithClaude(productName, existingCategories) {
+        async function analyzeWithAI(productName, existingCategories) {
             const analysisDiv = document.getElementById('smartAnalysis');
             
+            // Your Cloudflare Worker URL
+            const WORKER_URL = 'https://pricelist.maruthi4a5.workers.dev/';
+            
             try {
-                // Your Anthropic API key
-                const API_KEY = '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';
-                
-                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                const response = await fetch(WORKER_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'x-api-key': API_KEY,
-                        'anthropic-version': '2023-06-01'
                     },
                     body: JSON.stringify({
                         model: 'claude-sonnet-4-20250514',
@@ -1823,9 +1818,7 @@ Rules:
                 });
 
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('API Error Response:', errorText);
-                    throw new Error('API request failed: ' + response.status);
+                    throw new Error('Worker request failed');
                 }
 
                 const data = await response.json();
@@ -1833,119 +1826,193 @@ Rules:
                 
                 // Clean and parse JSON response
                 let cleanText = textContent.trim();
-                // Remove markdown code blocks if present
                 cleanText = cleanText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 
                 const result = JSON.parse(cleanText);
 
-                // Update UI with result
-                const isNewCategory = result.isNew || !existingCategories.includes(result.category);
-                const confidenceColor = result.confidence === 'high' ? '#22c55e' : 
-                                       result.confidence === 'medium' ? '#f59e0b' : '#ef4444';
-                const confidenceIcon = result.confidence === 'high' ? '✅' : 
-                                      result.confidence === 'medium' ? '🟡' : '⚠️';
-
-                if (isNewCategory) {
-                    analysisDiv.innerHTML = `
-                        <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 8px;">
-                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                                <strong style="color: #92400e;">🆕 New Category</strong>
-                                <span style="font-size: 11px; padding: 2px 6px; background: ${confidenceColor}20; color: ${confidenceColor}; border-radius: 4px; border: 1px solid ${confidenceColor};">
-                                    ${confidenceIcon} ${result.confidence} confidence
-                                </span>
-                            </div>
-                            <p style="color: #78350f; font-size: 13px; margin-top: 4px;">
-                                <strong>"${result.category}"</strong><br>
-                                <em>${result.reasoning}</em>
-                            </p>
-                        </div>
-                    `;
-                } else {
-                    analysisDiv.innerHTML = `
-                        <div style="background: #f0fdf4; border: 1px solid #22c55e; padding: 12px; border-radius: 8px;">
-                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                                <strong style="color: #15803d;">🧠 Smart Match</strong>
-                                <span style="font-size: 11px; padding: 2px 6px; background: ${confidenceColor}20; color: ${confidenceColor}; border-radius: 4px; border: 1px solid ${confidenceColor};">
-                                    ${confidenceIcon} ${result.confidence} confidence
-                                </span>
-                            </div>
-                            <p style="color: #16a34a; font-size: 13px; margin-top: 4px;">
-                                Will add to: <strong>"${result.category}"</strong><br>
-                                <em>${result.reasoning}</em>
-                            </p>
-                        </div>
-                    `;
-                }
-
-                suggestedCategory = result.category;
+                // Show AI result
+                displayAnalysisResult(result, existingCategories, true);
 
             } catch (error) {
-                console.error('Claude API error:', error);
-                console.error('Error details:', error.message);
+                console.error('AI analysis error:', error);
                 
-                // Fallback to basic keyword matching
-                const fallbackCategory = basicCategoryMatch(productName, existingCategories);
-                
-                analysisDiv.innerHTML = `
-                    <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 8px;">
-                        <strong style="color: #92400e;">⚡ Quick Match</strong>
-                        <p style="color: #78350f; font-size: 13px; margin-top: 4px;">
-                            ${fallbackCategory.isNew ? 
-                                `I'll create a new category: <strong>"${fallbackCategory.category}"</strong>` :
-                                `Will add to: <strong>"${fallbackCategory.category}"</strong>`
-                            }
-                        </p>
-                        <p style="color: #92400e; font-size: 11px; margin-top: 8px;">
-                            ℹ️ Using basic matching (AI error: ${error.message})
-                        </p>
-                    </div>
-                `;
-                
-                suggestedCategory = fallbackCategory.category;
+                // Fallback to smart offline matching
+                const result = smartCategoryMatch(productName, existingCategories);
+                displayAnalysisResult(result, existingCategories, false);
             }
         }
 
-        // Fallback basic matching if API fails
-        function basicCategoryMatch(productName, existingCategories) {
+        function displayAnalysisResult(result, existingCategories, isAI) {
+            const analysisDiv = document.getElementById('smartAnalysis');
+            const isNewCategory = result.isNew || !existingCategories.includes(result.category);
+            const confidenceColor = result.confidence === 'high' ? '#22c55e' : 
+                                   result.confidence === 'medium' ? '#f59e0b' : '#ef4444';
+            const confidenceIcon = result.confidence === 'high' ? '✅' : 
+                                  result.confidence === 'medium' ? '🟡' : '⚠️';
+            
+            const aiLabel = isAI ? '🧠 AI Analysis' : '✨ Smart Match';
+
+            if (isNewCategory) {
+                analysisDiv.innerHTML = `
+                    <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <strong style="color: #92400e;">🆕 New Category</strong>
+                            <span style="font-size: 11px; padding: 2px 6px; background: ${confidenceColor}20; color: ${confidenceColor}; border-radius: 4px; border: 1px solid ${confidenceColor};">
+                                ${confidenceIcon} ${result.confidence}
+                            </span>
+                            ${isAI ? '<span style="font-size: 10px; color: #64748b;">• AI powered</span>' : ''}
+                        </div>
+                        <p style="color: #78350f; font-size: 13px; margin-top: 4px;">
+                            <strong>"${result.category}"</strong><br>
+                            <em>${result.reasoning}</em>
+                        </p>
+                    </div>
+                `;
+            } else {
+                analysisDiv.innerHTML = `
+                    <div style="background: #f0fdf4; border: 1px solid #22c55e; padding: 12px; border-radius: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <strong style="color: #15803d;">${aiLabel}</strong>
+                            <span style="font-size: 11px; padding: 2px 6px; background: ${confidenceColor}20; color: ${confidenceColor}; border-radius: 4px; border: 1px solid ${confidenceColor};">
+                                ${confidenceIcon} ${result.confidence}
+                            </span>
+                            ${isAI ? '<span style="font-size: 10px; color: #64748b;">• AI powered</span>' : ''}
+                        </div>
+                        <p style="color: #16a34a; font-size: 13px; margin-top: 4px;">
+                            Will add to: <strong>"${result.category}"</strong><br>
+                            <em>${result.reasoning}</em>
+                        </p>
+                    </div>
+                `;
+            }
+
+            suggestedCategory = result.category;
+        }
+
+        // Smart category matching (works offline!)
+        function smartCategoryMatch(productName, existingCategories) {
             const name = productName.toUpperCase();
             
-            // Simple keyword matching
+            // Comprehensive category rules with reasoning
             const categoryRules = {
-                'TOMATOES': ['TOMATO', 'ROMA', 'CHERRY', 'GRAPE', 'TRUSS', 'MEDLEY'],
-                'CAPSICUM (PEPPERS)': ['CAPSICUM', 'PEPPER', 'BELL PEPPER', 'CAPS'],
-                'CHILLIES': ['CHILLI', 'CHILI', 'JALAPENO', 'HABANERO', 'CAYENNE'],
-                'CUCUMBERS': ['CUCUMBER', 'CONTINENTAL', 'LEBANESE', 'TELEGRAPH'],
-                'LETTUCE & LEAFY GREENS': ['LETTUCE', 'ICEBERG', 'COS', 'ROCKET', 'SPINACH', 'KALE', 'CHARD'],
-                'EGGPLANT': ['EGGPLANT', 'AUBERGINE', 'BRINJAL'],
-                'BEANS & PEAS': ['BEAN', 'BEANS', 'PEA', 'PEAS', 'SNOW PEA', 'SNAP', 'GREEN BEAN'],
-                'ASIAN VEGETABLES': ['BOK CHOY', 'GAI LAN', 'CHINESE', 'ASIAN', 'LUFFA', 'BITTER MELON', 'OKRA'],
-                'ONIONS': ['ONION', 'BROWN ONION', 'RED ONION', 'SPANISH', 'SHALLOT', 'ESCHALOT'],
-                'GARLIC': ['GARLIC', 'PEELED GARLIC'],
-                'PUMPKINS': ['PUMPKIN', 'SQUASH', 'BUTTERNUT'],
-                'ROOT VEGETABLES': ['BEETROOT', 'CARROT', 'PARSNIP', 'TURNIP', 'RADISH', 'SWEET POTATO'],
-                'CITRUS & EGGS': ['LIME', 'LEMON', 'ORANGE', 'MANDARIN', 'EGG', 'EGGS'],
-                'HERBS': ['BASIL', 'MINT', 'CORIANDER', 'PARSLEY', 'THYME', 'ROSEMARY', 'DILL', 'CURRY LEAF'],
-                'MUSHROOMS': ['MUSHROOM', 'BUTTON', 'OYSTER', 'SHIITAKE', 'PORTOBELLO'],
-                'ZUCCHINI': ['ZUCCHINI', 'COURGETTE'],
-                'BROCCOLI & CAULIFLOWER': ['BROCCOLI', 'CAULIFLOWER', 'BROCCOLINI']
+                'TOMATOES': {
+                    keywords: ['TOMATO', 'ROMA', 'CHERRY', 'GRAPE', 'TRUSS', 'MEDLEY', 'KUMATO', 'HEIRLOOM'],
+                    reasoning: 'Tomato variety detected'
+                },
+                'CAPSICUM (PEPPERS)': {
+                    keywords: ['CAPSICUM', 'PEPPER', 'BELL PEPPER', 'CAPS', 'PAPRIKA'],
+                    reasoning: 'Capsicum/pepper variety'
+                },
+                'CHILLIES': {
+                    keywords: ['CHILLI', 'CHILI', 'JALAPENO', 'HABANERO', 'CAYENNE', 'SERRANO', 'SHISHITO', 'THAI CHILI'],
+                    reasoning: 'Chilli variety detected'
+                },
+                'CUCUMBERS': {
+                    keywords: ['CUCUMBER', 'CONTINENTAL', 'LEBANESE', 'TELEGRAPH', 'PICKLE', 'GHERKIN'],
+                    reasoning: 'Cucumber variety'
+                },
+                'LETTUCE & LEAFY GREENS': {
+                    keywords: ['LETTUCE', 'ICEBERG', 'COS', 'ROMAINE', 'ROCKET', 'ARUGULA', 'SPINACH', 'KALE', 'CHARD', 'BABY', 'LEAF', 'MESCLUN'],
+                    reasoning: 'Leafy green vegetable'
+                },
+                'EGGPLANT': {
+                    keywords: ['EGGPLANT', 'AUBERGINE', 'BRINJAL'],
+                    reasoning: 'Eggplant variety'
+                },
+                'BEANS & PEAS': {
+                    keywords: ['BEAN', 'BEANS', 'PEA', 'PEAS', 'SNOW PEA', 'SNAP', 'GREEN BEAN', 'BROAD BEAN', 'RUNNER BEAN'],
+                    reasoning: 'Bean or pea variety'
+                },
+                'ASIAN VEGETABLES': {
+                    keywords: ['BOK CHOY', 'PAK CHOY', 'GAI LAN', 'CHINESE', 'ASIAN', 'LUFFA', 'BITTER MELON', 'OKRA', 'DAIKON', 'MIZUNA'],
+                    reasoning: 'Asian vegetable variety'
+                },
+                'ONIONS': {
+                    keywords: ['ONION', 'BROWN ONION', 'RED ONION', 'SPANISH', 'SHALLOT', 'ESCHALOT', 'SPRING ONION', 'SCALLION'],
+                    reasoning: 'Onion variety'
+                },
+                'GARLIC': {
+                    keywords: ['GARLIC', 'PEELED GARLIC'],
+                    reasoning: 'Garlic product'
+                },
+                'PUMPKINS': {
+                    keywords: ['PUMPKIN', 'SQUASH', 'BUTTERNUT', 'KABOCHA', 'ACORN SQUASH'],
+                    reasoning: 'Pumpkin or squash variety'
+                },
+                'ROOT VEGETABLES': {
+                    keywords: ['BEETROOT', 'BEET', 'CARROT', 'PARSNIP', 'TURNIP', 'RADISH', 'SWEET POTATO', 'POTATO', 'YAM'],
+                    reasoning: 'Root vegetable'
+                },
+                'CITRUS & EGGS': {
+                    keywords: ['LIME', 'LEMON', 'ORANGE', 'MANDARIN', 'GRAPEFRUIT', 'EGG', 'EGGS'],
+                    reasoning: 'Citrus fruit or eggs'
+                },
+                'HERBS': {
+                    keywords: ['BASIL', 'MINT', 'CORIANDER', 'CILANTRO', 'PARSLEY', 'THYME', 'ROSEMARY', 'DILL', 'CURRY LEAF', 'SAGE', 'OREGANO'],
+                    reasoning: 'Herb variety'
+                },
+                'MUSHROOMS': {
+                    keywords: ['MUSHROOM', 'BUTTON', 'OYSTER', 'SHIITAKE', 'PORTOBELLO', 'ENOKI', 'KING OYSTER'],
+                    reasoning: 'Mushroom variety'
+                },
+                'ZUCCHINI': {
+                    keywords: ['ZUCCHINI', 'COURGETTE'],
+                    reasoning: 'Zucchini/courgette'
+                },
+                'BROCCOLI & CAULIFLOWER': {
+                    keywords: ['BROCCOLI', 'CAULIFLOWER', 'BROCCOLINI', 'ROMANESCO'],
+                    reasoning: 'Broccoli or cauliflower variety'
+                }
             };
 
-            // Find matching category
-            for (const [category, keywords] of Object.entries(categoryRules)) {
-                if (existingCategories.includes(category)) {
-                    for (const keyword of keywords) {
-                        if (name.includes(keyword)) {
-                            return { category, isNew: false };
+            // Find best matching category
+            let bestMatch = null;
+            let bestScore = 0;
+            let matchedKeyword = '';
+
+            for (const [category, data] of Object.entries(categoryRules)) {
+                // Only check categories that exist
+                if (!existingCategories.includes(category)) continue;
+
+                for (const keyword of data.keywords) {
+                    if (name.includes(keyword)) {
+                        const score = keyword.length * 10; // Longer keyword = better match
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMatch = category;
+                            matchedKeyword = keyword;
                         }
                     }
                 }
             }
 
+            // Determine confidence based on match quality
+            let confidence = 'high';
+            if (bestScore < 40) confidence = 'low';
+            else if (bestScore < 60) confidence = 'medium';
+
+            if (bestMatch) {
+                return {
+                    category: bestMatch,
+                    isNew: false,
+                    confidence: confidence,
+                    reasoning: categoryRules[bestMatch].reasoning
+                };
+            }
+
             // No match - create new category
-            const firstWord = name.split(' ')[0];
+            const words = name.split(' ').filter(w => w.length > 2);
+            const firstWord = words[0] || name;
             const newCategory = firstWord.endsWith('S') ? firstWord : firstWord + 'S';
-            return { category: newCategory, isNew: true };
+
+            return {
+                category: newCategory,
+                isNew: true,
+                confidence: 'medium',
+                reasoning: `No existing category matches, creating new category for ${productName.toLowerCase()}`
+            };
         }
+
 
         function confirmSmartAdd() {
             const productName = document.getElementById('smartProductName').value.trim();
