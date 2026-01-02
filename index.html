@@ -238,6 +238,79 @@
             margin-top: 20px;
         }
 
+        .toggle-setting {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .toggle-info {
+            flex: 1;
+        }
+
+        .toggle-label {
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 16px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .toggle-description {
+            color: #6b7280;
+            font-size: 13px;
+            margin: 0;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 56px;
+            height: 32px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: 0.3s;
+            border-radius: 32px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: #10b981;
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
         .btn {
             padding: 16px 24px;
             border: none;
@@ -612,6 +685,21 @@
                     <input type="text" id="salesmanPhone" placeholder="e.g., 0400 123 456">
                 </div>
             </div>
+            
+            <hr style="margin: 30px 0; border: none; border-top: 2px solid #e9ecef;">
+            
+            <h3>Price List Settings</h3>
+            <div class="toggle-setting">
+                <div class="toggle-info">
+                    <label class="toggle-label">Send for Next Day</label>
+                    <p class="toggle-description">When ON: Shows tomorrow's date | When OFF: Shows today's date</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="nextDayToggle" checked onchange="saveSettings()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
             <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
             
             <hr style="margin: 30px 0; border: none; border-top: 2px solid #e9ecef;">
@@ -652,7 +740,8 @@
         // Salesman information
         let salesmanInfo = {
             name: '',
-            phone: ''
+            phone: '',
+            sendForNextDay: true // Default: send for tomorrow
         };
 
         // Customer contacts
@@ -660,6 +749,15 @@
 
         // Temporary storage for generated image
         let lastGeneratedImageUrl = null;
+
+        // Get effective date based on settings
+        function getEffectiveDate() {
+            const date = new Date();
+            if (salesmanInfo.sendForNextDay) {
+                date.setDate(date.getDate() + 1); // Tomorrow
+            }
+            return date;
+        }
 
         // Initial data
         let priceData = {
@@ -746,6 +844,7 @@
                 salesmanInfo = JSON.parse(savedInfo);
                 document.getElementById('salesmanName').value = salesmanInfo.name || '';
                 document.getElementById('salesmanPhone').value = salesmanInfo.phone || '';
+                document.getElementById('nextDayToggle').checked = salesmanInfo.sendForNextDay !== false; // Default true
             }
             
             const savedContacts = localStorage.getItem('everfresh_customer_contacts');
@@ -778,6 +877,7 @@
         function saveSettings() {
             salesmanInfo.name = document.getElementById('salesmanName').value;
             salesmanInfo.phone = document.getElementById('salesmanPhone').value;
+            salesmanInfo.sendForNextDay = document.getElementById('nextDayToggle').checked;
             
             localStorage.setItem('everfresh_salesman_info', JSON.stringify(salesmanInfo));
             
@@ -1041,8 +1141,9 @@
                     ctx.fillText('Stand 275, Shed C, Sydney Markets', leftCol, y + 60);
                     
                     ctx.textAlign = 'right';
-                    const today = new Date().toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
-                    ctx.fillText('Effective: ' + today, rightCol, y + 60);
+                    const effectiveDate = getEffectiveDate();
+                    const formattedDate = effectiveDate.toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
+                    ctx.fillText('Effective: ' + formattedDate, rightCol, y + 60);
                     y += 150;
 
                     // Contact box - Very light green
@@ -1276,10 +1377,11 @@
                     throw new Error('Failed to generate image');
                 }
                 
-                // Create message with variables
-                const today = new Date().toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
+                // Create message with variables (respects toggle setting)
+                const effectiveDate = getEffectiveDate();
+                const formattedDate = effectiveDate.toLocaleDateString('en-AU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
                 const yourName = salesmanInfo.name || 'Everfresh Team';
-                const message = `Hi! ${yourName} here from Everfresh 👋 Fresh prices for ${today} - give me a call or text for your order! Thank you.`;
+                const message = `Hi! ${yourName} here from Everfresh 👋 Fresh prices for ${formattedDate} - give me a call or text for your order! Thank you.`;
                 
                 // Check if Web Share API is available (iOS/modern browsers)
                 if (navigator.share && navigator.canShare) {
@@ -1389,10 +1491,11 @@
                     throw new Error('Failed to generate image');
                 }
                 
-                // Create personalized message
-                const today = new Date().toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
+                // Create personalized message (respects toggle setting)
+                const effectiveDate = getEffectiveDate();
+                const formattedDate = effectiveDate.toLocaleDateString('en-AU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
                 const yourName = salesmanInfo.name || 'Everfresh Team';
-                const message = `Hi ${customer.name}! ${yourName} here from Everfresh 👋 Fresh prices for ${today} - give me a call or text for your order! Thank you.`;
+                const message = `Hi ${customer.name}! ${yourName} here from Everfresh 👋 Fresh prices for ${formattedDate} - give me a call or text for your order! Thank you.`;
                 
                 // Check if Web Share API is available (iOS/modern browsers)
                 if (navigator.share && navigator.canShare) {
@@ -1505,8 +1608,9 @@
                         ctx.fillText('Stand 275, Shed C, Sydney Markets', leftCol, y + 60);
                         
                         ctx.textAlign = 'right';
-                        const today = new Date().toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
-                        ctx.fillText('Effective: ' + today, rightCol, y + 60);
+                        const effectiveDate = getEffectiveDate();
+                        const formattedDate = effectiveDate.toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
+                        ctx.fillText('Effective: ' + formattedDate, rightCol, y + 60);
                         y += 150;
 
                         // Contact box - Very light green
