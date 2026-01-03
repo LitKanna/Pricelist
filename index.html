@@ -2019,18 +2019,21 @@
                 // Get margin for this category (default 15%)
                 const margin = categoryMargins[categoryName] || DEFAULT_MARGIN;
                 
+                // Encode category name for safe use in data attributes
+                const encodedCategoryName = encodeURIComponent(categoryName);
+                
                 let html = `
                     <div class="category-header">
                         <div class="category-drag-handle" title="Drag to reorder category">${dragHandleSVG}</div>
                         <div class="category-title" style="flex: 1;">${categoryName}</div>
                         <div class="category-margin">
                             <span>Margin:</span>
-                            <select onchange="updateCategoryMargin('${categoryName}', this.value)">
+                            <select class="margin-select" data-category-encoded="${encodedCategoryName}">
                                 ${getMarginOptions(margin)}
                             </select>
                         </div>
                         <div class="category-actions">
-                            <button class="icon-btn" onclick="deleteCategory('${categoryName}')" title="Delete">×</button>
+                            <button class="icon-btn category-delete-btn" data-category-encoded="${encodedCategoryName}" title="Delete">×</button>
                         </div>
                     </div>
                     <div class="table-header-with-drag">
@@ -2044,43 +2047,34 @@
                 `;
 
                 priceData[categoryName].forEach((item, idx) => {
-                    // item[0] = product name
-                    // item[1] = grade/size
-                    // item[2] = selling price
-                    // item[3] = cost (optional)
                     const cost = item[3] || '';
                     const displayPrice = selectedCustomer 
                         ? calculateCustomerPrice(item[2], item[1], selectedCustomer)
                         : item[2];
                     
-                    // Escape category name for use in HTML attributes
-                    const escapedCategoryName = categoryName.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                    
                     html += `
-                        <div class="product" draggable="${!autoSortEnabled}" data-category="${categoryName}" data-product-index="${idx}">
+                        <div class="product" draggable="${!autoSortEnabled}" data-category-encoded="${encodedCategoryName}" data-product-index="${idx}">
                             <div class="product-grid-with-drag">
                                 <div class="drag-handle" title="Drag to reorder">${dragHandleSVG}</div>
                                 <div class="product-field">
-                                    <input type="text" class="input-field" value="${item[0]}" placeholder="Product name" data-category="${categoryName}" data-row="${idx}" data-col="0">
+                                    <input type="text" class="input-field" value="${item[0]}" placeholder="Product name" data-category-encoded="${encodedCategoryName}" data-row="${idx}" data-col="0">
                                 </div>
                                 <div class="product-field">
-                                    <input type="text" class="input-field" value="${item[1]}" placeholder="Grade/size" data-category="${categoryName}" data-row="${idx}" data-col="1">
+                                    <input type="text" class="input-field" value="${item[1]}" placeholder="Grade/size" data-category-encoded="${encodedCategoryName}" data-row="${idx}" data-col="1">
                                 </div>
                                 <div class="product-field cost-field">
-                                    <input type="text" class="input-field" value="${cost}" placeholder="$0" data-category="${categoryName}" data-row="${idx}" data-col="3" onchange="calculatePriceFromCost('${escapedCategoryName}', ${idx}, this.value)">
+                                    <input type="text" class="input-field cost-input" value="${cost}" placeholder="$0" data-category-encoded="${encodedCategoryName}" data-row="${idx}" data-col="3">
                                 </div>
                                 <div class="product-field">
-                                    <input type="text" class="input-field" value="${displayPrice}" placeholder="$0.00" data-category="${categoryName}" data-row="${idx}" data-col="2" ${selectedCustomer ? 'readonly style="background: #f0fdf4; color: #15803d;"' : ''}>
+                                    <input type="text" class="input-field" value="${displayPrice}" placeholder="$0.00" data-category-encoded="${encodedCategoryName}" data-row="${idx}" data-col="2" ${selectedCustomer ? 'readonly style="background: #f0fdf4; color: #15803d;"' : ''}>
                                 </div>
-                                <button class="product-delete" data-category="${categoryName}" data-idx="${idx}">×</button>
+                                <button class="product-delete" data-category-encoded="${encodedCategoryName}" data-idx="${idx}">×</button>
                             </div>
                         </div>
                     `;
                 });
 
-                // Escape category name for add button too
-                const escapedCatName = categoryName.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                html += `<button class="add-product-btn" data-category="${categoryName}">+ Add</button>`;
+                html += `<button class="add-product-btn" data-category-encoded="${encodedCategoryName}">+ Add</button>`;
 
                 category.innerHTML = html;
                 container.appendChild(category);
@@ -2095,20 +2089,67 @@
                         setupProductDragEvents(product, categoryName);
                     });
                 }
+            });
+        }
+        
+        // Setup global event delegation (called once on page load)
+        function setupGlobalEventDelegation() {
+            const container = document.getElementById('categoriesContainer');
+            
+            container.addEventListener('click', function(e) {
+                // Handle delete product button
+                if (e.target.classList.contains('product-delete')) {
+                    const encodedCat = e.target.dataset.categoryEncoded;
+                    const idx = parseInt(e.target.dataset.idx);
+                    if (encodedCat !== undefined && !isNaN(idx)) {
+                        const categoryName = decodeURIComponent(encodedCat);
+                        deleteRow(categoryName, idx);
+                    }
+                    return;
+                }
                 
-                // Add click event listeners for delete and add buttons
-                category.querySelectorAll('.product-delete').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const cat = this.dataset.category;
-                        const idx = parseInt(this.dataset.idx);
-                        deleteRow(cat, idx);
-                    });
-                });
+                // Handle add product button
+                if (e.target.classList.contains('add-product-btn')) {
+                    const encodedCat = e.target.dataset.categoryEncoded;
+                    if (encodedCat !== undefined) {
+                        const categoryName = decodeURIComponent(encodedCat);
+                        addRow(categoryName);
+                    }
+                    return;
+                }
                 
-                category.querySelector('.add-product-btn').addEventListener('click', function() {
-                    const cat = this.dataset.category;
-                    addRow(cat);
-                });
+                // Handle category delete button
+                if (e.target.classList.contains('category-delete-btn')) {
+                    const encodedCat = e.target.dataset.categoryEncoded;
+                    if (encodedCat !== undefined) {
+                        const categoryName = decodeURIComponent(encodedCat);
+                        deleteCategory(categoryName);
+                    }
+                    return;
+                }
+            });
+            
+            // Handle margin select change
+            container.addEventListener('change', function(e) {
+                if (e.target.classList.contains('margin-select')) {
+                    const encodedCat = e.target.dataset.categoryEncoded;
+                    if (encodedCat !== undefined) {
+                        const categoryName = decodeURIComponent(encodedCat);
+                        updateCategoryMargin(categoryName, e.target.value);
+                    }
+                    return;
+                }
+                
+                // Handle cost input change
+                if (e.target.classList.contains('cost-input')) {
+                    const encodedCat = e.target.dataset.categoryEncoded;
+                    const idx = parseInt(e.target.dataset.row);
+                    if (encodedCat !== undefined && !isNaN(idx)) {
+                        const categoryName = decodeURIComponent(encodedCat);
+                        calculatePriceFromCost(categoryName, idx, e.target.value);
+                    }
+                    return;
+                }
             });
         }
         
@@ -2154,7 +2195,8 @@
             priceData[categoryName][idx][3] = costValue.toString().startsWith('$') ? costValue : `$${cost}`;
             
             // Update the price input field directly (without re-rendering)
-            const priceInput = document.querySelector(`input[data-category="${categoryName}"][data-row="${idx}"][data-col="2"]`);
+            const encodedCategoryName = encodeURIComponent(categoryName);
+            const priceInput = document.querySelector(`input[data-category-encoded="${encodedCategoryName}"][data-row="${idx}"][data-col="2"]`);
             if (priceInput) {
                 priceInput.value = formattedPrice;
             }
@@ -2290,7 +2332,8 @@
                 if (draggingProduct === productEl) return;
                 
                 // Only allow drop within same category
-                if (productEl.dataset.category !== dragSourceCategory) return;
+                const targetCategory = decodeURIComponent(productEl.dataset.categoryEncoded || '');
+                if (targetCategory !== dragSourceCategory) return;
                 
                 productEl.classList.add('drag-over');
             });
@@ -2307,7 +2350,7 @@
                 productEl.classList.remove('drag-over');
                 
                 const targetIndex = parseInt(productEl.dataset.productIndex);
-                const targetCategory = productEl.dataset.category;
+                const targetCategory = decodeURIComponent(productEl.dataset.categoryEncoded || '');
                 
                 if (dragSourceCategory !== targetCategory) return;
                 if (dragSourceIndex === targetIndex) return;
@@ -2357,11 +2400,16 @@
 
         // Collect data from inputs
         function collectData() {
-            const inputs = document.querySelectorAll('input[data-category]');
+            const inputs = document.querySelectorAll('input[data-category-encoded]');
             inputs.forEach(input => {
-                const category = input.dataset.category;
+                const encodedCategory = input.dataset.categoryEncoded;
+                if (!encodedCategory) return;
+                
+                const category = decodeURIComponent(encodedCategory);
                 const row = parseInt(input.dataset.row);
                 const col = parseInt(input.dataset.col);
+                
+                if (!priceData[category] || !priceData[category][row]) return;
                 
                 // Ensure the array has enough elements (for cost column)
                 while (priceData[category][row].length <= col) {
@@ -3924,6 +3972,7 @@ Response format (JSON only, no markdown):
         // Initialize
         loadFromLocal();
         renderCategories();
+        setupGlobalEventDelegation();
     </script>
 </body>
 </html>
