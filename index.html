@@ -4748,7 +4748,7 @@ Response format (JSON only, no markdown):
                 // Generate message
                 const message = generateShareMessage();
 
-                // On iOS, two-step process: save image, then open Messages with text
+                // On iOS, save to Photos then trigger shortcut for automation
                 if (isIOS()) {
                     loading.classList.remove('show');
 
@@ -4756,15 +4756,10 @@ Response format (JSON only, no markdown):
                         const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
 
                         if (navigator.canShare({ files: [file] })) {
-                            // Step 1: Show instructions
-                            alert(
-                                '📱 Two steps to send:\n\n' +
-                                '1. Save image: Tap "Save Image" in share sheet\n' +
-                                '2. Messages will open - attach saved image from Photos'
-                            );
+                            // Step 1: Save image to Photos
+                            alert('📱 Step 1: Tap "Save Image" to save to Photos');
 
                             try {
-                                // Share the image for saving
                                 await navigator.share({
                                     files: [file]
                                 });
@@ -4774,9 +4769,10 @@ Response format (JSON only, no markdown):
                                 }
                             }
 
-                            // Step 2: Open Messages with text pre-filled
-                            const smsUrl = `sms:&body=${encodeURIComponent(message)}`;
-                            window.location.href = smsUrl;
+                            // Step 2: Trigger shortcut - pass ASK,message so shortcut asks for contact
+                            const shortcutInput = `ASK,${message}`;
+                            const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+                            window.location.href = shortcutUrl;
                             return;
                         }
                     }
