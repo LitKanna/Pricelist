@@ -47,92 +47,305 @@
         line-height: 1.5;
     }
     
-    /* Beautiful Header */
+    /* Beautiful Header - Enhanced */
     .header {
-        background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
-        padding: 32px 24px;
+        background: linear-gradient(135deg, #15803d 0%, #16a34a 50%, #22c55e 100%);
+        padding: 0;
         text-align: center;
-        box-shadow: 0 4px 20px rgba(34, 197, 94, 0.2);
+        box-shadow: 0 8px 32px rgba(34, 197, 94, 0.15);
+        position: relative;
+        overflow: hidden;
     }
-    
+
+    .header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.03)"/></svg>');
+        opacity: 0.4;
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 1;
+        padding: 40px 24px 32px;
+    }
+
+    .header-logo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        margin-bottom: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .header-logo svg {
+        width: 36px;
+        height: 36px;
+        color: white;
+    }
+
     .header h1 {
         color: white;
-        font-size: 28px;
-        font-weight: 700;
-        margin-bottom: 6px;
-        letter-spacing: -1px;
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 8px;
+        letter-spacing: -1.5px;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
-    
+
     .header p {
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 15px;
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 16px;
         font-weight: 500;
+        letter-spacing: 0.2px;
     }
     
-    /* Modern Controls - Minimal & Clean */
-    .controls, .share-controls {
-        padding: 12px 16px;
+    /* Modern Controls - Enhanced Tab Style */
+    .controls-wrapper {
+        background: white;
+        border-bottom: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .controls {
+        position: relative;
+        z-index: 100;
+        padding: 16px 20px;
         background: white;
         display: flex;
-        gap: 8px;
+        gap: 12px;
         border-bottom: 1px solid #f1f5f9;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
+        flex-wrap: wrap;
     }
-    
+
+    .share-controls {
+        padding: 12px 20px;
+        background: #f8fafc;
+        display: flex;
+        gap: 10px;
+        border-bottom: 1px solid #e2e8f0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
     .controls::-webkit-scrollbar,
     .share-controls::-webkit-scrollbar {
         display: none;
     }
-    
-    /* Minimal Buttons - Notion/Linear Style */
+
+    /* Hide scrollbar for all browsers */
+    .controls,
+    .share-controls {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* Hide main page scrollbar on mobile */
+    @media (max-width: 480px) {
+        html, body {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            display: none;
+            width: 0;
+            background: transparent;
+        }
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .btn-divider {
+        width: 1px;
+        height: 24px;
+        background: #e2e8f0;
+        margin: 0 4px;
+    }
+
+    /* Enhanced Buttons - Modern Design System */
     .btn {
-        padding: 8px 14px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 500;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
         border: none;
         cursor: pointer;
-        transition: all 0.15s;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
-    
+
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
     .btn-success {
-        background: #0f172a;
+        background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
         color: white;
+        box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
     }
-    
+
+    .btn-success:hover {
+        box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+    }
+
     .btn-success:active {
         transform: scale(0.96);
     }
-    
+
     .btn-primary {
-        background: #f1f5f9;
-        color: #0f172a;
+        background: #0f172a;
+        color: white;
     }
-    
+
+    .btn-primary:hover {
+        background: #1e293b;
+    }
+
     .btn-secondary {
-        background: transparent;
-        color: #64748b;
-        border: 1px solid #e2e8f0;
+        background: white;
+        color: #475569;
+        border: 1.5px solid #e2e8f0;
+        box-shadow: none;
     }
-    
+
+    .btn-secondary:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+    }
+
     .btn-danger {
         background: #fef2f2;
         color: #ef4444;
+        border: 1.5px solid #fee2e2;
     }
-    
+
+    .btn-danger:hover {
+        background: #fee2e2;
+    }
+
     .btn-share {
-        background: #059669;
-        color: white;
-        padding: 8px 14px;
-        font-size: 13px;
+        background: white;
+        color: var(--green-600);
+        padding: 10px 16px;
+        font-size: 14px;
+        font-weight: 600;
         flex: 1;
+        justify-content: center;
+        border: 1.5px solid var(--green-200);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
-    
+
+    .btn-share:hover {
+        background: var(--green-50);
+        border-color: var(--green-300);
+    }
+
     .btn-small {
         padding: 6px 12px;
         font-size: 12px;
+    }
+
+    /* Modern Dropdown Menu System */
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .dropdown-toggle .chevron {
+        width: 14px;
+        height: 14px;
+        transition: transform 0.2s ease;
+    }
+
+    .dropdown.active .chevron {
+        transform: rotate(180deg);
+    }
+
+    .dropdown-menu {
+        position: fixed;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
+        min-width: 200px;
+        padding: 6px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-8px);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 9999;
+    }
+
+    .dropdown.active .dropdown-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #334155;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        border: none;
+        background: transparent;
+        width: 100%;
+        text-align: left;
+    }
+
+    .dropdown-item:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+    }
+
+    .dropdown-item svg {
+        width: 18px;
+        height: 18px;
+        opacity: 0.7;
+    }
+
+    .dropdown-divider {
+        height: 1px;
+        background: #e2e8f0;
+        margin: 6px 0;
     }
     
     /* Content Area */
@@ -479,8 +692,142 @@
         .category-margin span {
             display: none;
         }
+
+        /* Mobile controls - modern compact design */
+        .controls {
+            padding: 10px 12px;
+            gap: 6px;
+            flex-wrap: nowrap;
+            justify-content: space-between;
+            overflow: visible;
+        }
+
+        .controls .btn-group {
+            gap: 6px;
+            overflow: visible;
+        }
+
+        .controls .btn {
+            padding: 8px 12px;
+            font-size: 12px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .controls .btn svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
+
+        /* Hide text on secondary buttons, show only icons */
+        .controls .btn-secondary {
+            padding: 10px;
+        }
+
+        .controls .btn-secondary .btn-text {
+            display: none;
+        }
+
+        .controls .btn-secondary svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Keep dropdown chevron visible */
+        .controls .dropdown-toggle .chevron {
+            width: 10px;
+            height: 10px;
+            display: block;
+            flex-shrink: 0;
+        }
+
+        /* Fix button overflow */
+        .controls .btn {
+            overflow: visible;
+        }
+
+        .controls .dropdown-toggle {
+            padding-right: 8px;
+        }
+
+        /* Ensure btn-divider doesn't cause issues */
+        .btn-divider {
+            height: 20px;
+            margin: 0 2px;
+        }
+
+        /* Fix dropdown menu overflow on mobile */
+        .dropdown-menu {
+            min-width: 140px;
+            max-width: calc(100vw - 24px);
+            padding: 6px;
+        }
+
+        /* More dropdown aligns to right edge */
+        #moreMenu .dropdown-menu {
+            right: 12px !important;
+            left: auto !important;
+        }
+
+        /* Add dropdown aligns under the button */
+        #addMenu .dropdown-menu {
+            left: 12px !important;
+            right: auto !important;
+        }
+
+        /* Compact dropdown items on mobile */
+        .dropdown-item {
+            padding: 8px 12px;
+            font-size: 13px;
+            gap: 8px;
+        }
+
+        .dropdown-item svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .dropdown-divider {
+            margin: 4px 0;
+        }
+
+        /* Share buttons - compact icon buttons */
+        .share-controls {
+            padding: 10px 12px;
+            gap: 8px;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-bottom: 1px solid #bbf7d0;
+            justify-content: center;
+        }
+
+        .btn-share {
+            padding: 10px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 24px;
+            gap: 6px;
+            flex: 1;
+            max-width: 170px;
+            border: none;
+            background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-share:hover {
+            background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
+        }
+
+        .btn-share svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
     }
-    
+
     /* Extra small screens */
     @media (max-width: 380px) {
         .product-grid-with-drag {
@@ -657,63 +1004,75 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 20px;
+        padding: 16px 20px;
         background: var(--green-50);
         border-radius: 12px;
-        margin-bottom: 24px;
+        margin-bottom: 12px;
+        gap: 16px;
     }
-    
+
+    .toggle-info {
+        flex: 1;
+        min-width: 0;
+    }
+
     .toggle-label {
         font-weight: 600;
-        font-size: 16px;
+        font-size: 15px;
+        color: var(--slate-800);
+        margin-bottom: 2px;
     }
-    
+
     .toggle-description {
-        color: var(--slate-700);
-        font-size: 14px;
-        margin-top: 4px;
+        color: var(--slate-600);
+        font-size: 12px;
+        margin: 0;
+        line-height: 1.4;
     }
-    
+
     .toggle-switch {
         position: relative;
+        display: inline-block;
         width: 52px;
-        height: 30px;
+        min-width: 52px;
+        height: 28px;
+        flex-shrink: 0;
     }
-    
+
     .toggle-switch input {
         opacity: 0;
         width: 0;
         height: 0;
     }
-    
+
     .toggle-slider {
         position: absolute;
         cursor: pointer;
         inset: 0;
-        background: var(--slate-200);
-        border-radius: 30px;
-        transition: 0.3s;
+        background: var(--slate-300);
+        border-radius: 28px;
+        transition: 0.3s ease;
     }
-    
+
     .toggle-slider:before {
         content: "";
         position: absolute;
-        height: 24px;
-        width: 24px;
+        height: 22px;
+        width: 22px;
         left: 3px;
         bottom: 3px;
         background: white;
         border-radius: 50%;
-        transition: 0.3s;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        transition: 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     }
-    
+
     .toggle-switch input:checked + .toggle-slider {
         background: var(--green-500);
     }
-    
+
     .toggle-switch input:checked + .toggle-slider:before {
-        transform: translateX(22px);
+        transform: translateX(24px);
     }
     
     /* Customer Items */
@@ -764,7 +1123,67 @@
         font-weight: 700;
         margin-bottom: 20px;
     }
-    
+
+    /* Share Options */
+    .share-options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .share-option {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        background: #f8fafc;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid #e2e8f0;
+    }
+
+    .share-option:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        transform: translateX(4px);
+    }
+
+    .share-option:active {
+        transform: scale(0.98);
+    }
+
+    .share-option-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .share-option-info {
+        flex: 1;
+    }
+
+    .share-option-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 2px;
+    }
+
+    .share-option-desc {
+        font-size: 13px;
+        color: #64748b;
+    }
+
+    .share-option-arrow {
+        color: #94a3b8;
+        flex-shrink: 0;
+    }
+
     /* Loading */
     .loading {
         position: fixed;
@@ -829,39 +1248,218 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🌿 Everfresh Produce</h1>
-            <p>Wholesale Price List System</p>
+            <div class="header-content">
+                <div class="header-logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 20h10"/>
+                        <path d="M10 20c5.5-2.5.8-6.4 3-10"/>
+                        <path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/>
+                        <path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/>
+                    </svg>
+                </div>
+                <h1>Everfresh Produce</h1>
+                <p>Wholesale Price List System</p>
+            </div>
         </div>
 
         <div class="controls">
-            <button class="btn btn-success" onclick="downloadImage()">
-                Download
-            </button>
-            <button class="btn btn-primary" onclick="showSmartAddProduct()">
-                Add Product
-            </button>
-            <button class="btn btn-warning" onclick="document.getElementById('xpsFileInput').click()" style="background: #f59e0b; color: white;">
-                Import XPS
-            </button>
-            <input type="file" id="xpsFileInput" accept=".xps" style="display: none;" onchange="handleXPSUpload(event)">
-            <button class="btn btn-secondary" onclick="saveToLocal()">
-                Save
-            </button>
-            <button class="btn btn-secondary" onclick="toggleSettings()">
-                Settings
-            </button>
-            <button class="btn btn-secondary" onclick="toggleCustomerPricing()" id="customerPricingBtn">
-                Pricing
-            </button>
+            <div class="btn-group">
+                <!-- Primary Action: Export -->
+                <button class="btn btn-success" onclick="downloadImage()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Export
+                </button>
+
+                <!-- Add Menu -->
+                <div class="dropdown" id="addMenu">
+                    <button class="btn btn-primary dropdown-toggle" onclick="toggleDropdown('addMenu')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Add
+                        <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                    <div class="dropdown-menu">
+                        <button class="dropdown-item" onclick="showSmartAddProduct(); closeAllDropdowns()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="8" x2="12" y2="16"/>
+                                <line x1="8" y1="12" x2="16" y2="12"/>
+                            </svg>
+                            New Product
+                        </button>
+                        <button class="dropdown-item" onclick="document.getElementById('xpsFileInput').click(); closeAllDropdowns()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            Import File
+                        </button>
+                        <input type="file" id="xpsFileInput" accept=".xps" style="display: none;" onchange="handleXPSUpload(event)">
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-divider"></div>
+
+            <div class="btn-group">
+                <!-- Save Button -->
+                <button class="btn btn-secondary" onclick="saveToLocal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                        <polyline points="17 21 17 13 7 13 7 21"/>
+                        <polyline points="7 3 7 8 15 8"/>
+                    </svg>
+                    <span class="btn-text">Save</span>
+                </button>
+
+                <!-- More Menu -->
+                <div class="dropdown" id="moreMenu">
+                    <button class="btn btn-secondary dropdown-toggle" onclick="toggleDropdown('moreMenu')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="1"/>
+                            <circle cx="19" cy="12" r="1"/>
+                            <circle cx="5" cy="12" r="1"/>
+                        </svg>
+                        <span class="btn-text">More</span>
+                        <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                    <div class="dropdown-menu">
+                        <button class="dropdown-item" onclick="toggleSettings(); closeAllDropdowns()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08 4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m5.08-5.08 4.24-4.24"/>
+                            </svg>
+                            Settings
+                        </button>
+                        <button class="dropdown-item" onclick="toggleCustomerPricing(); closeAllDropdowns()" id="customerPricingBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="1" x2="12" y2="23"/>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                            </svg>
+                            Pricing
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="share-controls">
-            <button class="btn btn-share" onclick="quickShareWhatsApp()">
-                Share Image
+            <button class="btn btn-share" onclick="showShareMenu()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="18" cy="5" r="3"/>
+                    <circle cx="6" cy="12" r="3"/>
+                    <circle cx="18" cy="19" r="3"/>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+                Share Price List
             </button>
-            <button class="btn btn-share" onclick="showCustomerShareMenu()">
-                Send to Customer
-            </button>
+        </div>
+
+        <!-- Share Menu Modal -->
+        <div class="customer-share-menu" id="shareMenu">
+            <h3>Share Price List</h3>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Choose how you'd like to share your price list</p>
+
+            <div class="share-options">
+                <!-- iMessage Option (iOS) -->
+                <div class="share-option" onclick="shareViaIMessage()">
+                    <div class="share-option-icon" style="background: linear-gradient(135deg, #34C759 0%, #30D158 100%);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
+                            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/>
+                        </svg>
+                    </div>
+                    <div class="share-option-info">
+                        <div class="share-option-title">iMessage</div>
+                        <div class="share-option-desc">Auto-send via iOS Shortcut (requires setup)</div>
+                    </div>
+                    <svg class="share-option-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </div>
+
+                <!-- WhatsApp Option -->
+                <div class="share-option" onclick="shareViaWhatsAppEnhanced()">
+                    <div class="share-option-icon" style="background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                    </div>
+                    <div class="share-option-info">
+                        <div class="share-option-title">WhatsApp</div>
+                        <div class="share-option-desc">Copy image & open chat directly</div>
+                    </div>
+                    <svg class="share-option-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </div>
+
+                <!-- Send to Customer Option -->
+                <div class="share-option" onclick="closeShareMenu(); showCustomerShareMenu();">
+                    <div class="share-option-icon" style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <div class="share-option-info">
+                        <div class="share-option-title">Send to Customer</div>
+                        <div class="share-option-desc">Share to saved customer contacts</div>
+                    </div>
+                    <svg class="share-option-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </div>
+
+                <!-- Download Option -->
+                <div class="share-option" onclick="closeShareMenu(); downloadImage();">
+                    <div class="share-option-icon" style="background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                    </div>
+                    <div class="share-option-info">
+                        <div class="share-option-title">Download Image</div>
+                        <div class="share-option-desc">Save as PNG to your device</div>
+                    </div>
+                    <svg class="share-option-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- iOS Shortcut Setup Info -->
+            <div id="shortcutSetupInfo" style="display: none; margin-top: 20px; padding: 16px; background: #FEF3C7; border-radius: 12px; border: 1px solid #FCD34D;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <strong style="color: #92400E;">iOS Shortcut Required</strong>
+                </div>
+                <p style="color: #78350F; font-size: 13px; margin-bottom: 12px;">To use iMessage auto-send, you need to install the "Everfresh Pricelist" shortcut first.</p>
+                <button class="btn btn-small" onclick="window.open('https://www.icloud.com/shortcuts/', '_blank')" style="background: #D97706; color: white; border: none;">
+                    Install Shortcut
+                </button>
+            </div>
+
+            <button class="btn btn-secondary" onclick="closeShareMenu()" style="margin-top: 20px; width: 100%;">Cancel</button>
         </div>
         
         <div class="customer-share-menu" id="customerShareMenu">
@@ -1053,14 +1651,61 @@
         // Temporary storage for generated image
         let lastGeneratedImageUrl = null;
 
-        // Get effective date based on settings
+        // Get effective date based on settings - uses Sydney timezone
         function getEffectiveDate() {
-            const date = new Date();
+            // Get current date in Sydney timezone
+            const sydneyNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
+
             if (salesmanInfo.sendForNextDay) {
-                date.setDate(date.getDate() + 1); // Tomorrow
+                sydneyNow.setDate(sydneyNow.getDate() + 1); // Tomorrow in Sydney
             }
-            return date;
+            return sydneyNow;
         }
+
+        // Dropdown menu functions
+        function toggleDropdown(menuId) {
+            const dropdown = document.getElementById(menuId);
+            const isActive = dropdown.classList.contains('active');
+
+            // Close all dropdowns first
+            closeAllDropdowns();
+
+            // Toggle the clicked dropdown (if it wasn't active)
+            if (!isActive) {
+                dropdown.classList.add('active');
+
+                // Position the dropdown menu using fixed positioning
+                const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+                const button = dropdown.querySelector('.dropdown-toggle');
+                const rect = button.getBoundingClientRect();
+
+                // On mobile, use consistent positioning from controls row
+                const isMobile = window.innerWidth <= 480;
+                if (isMobile) {
+                    // Find the controls row for consistent vertical positioning
+                    const controls = document.querySelector('.controls');
+                    const controlsRect = controls.getBoundingClientRect();
+                    dropdownMenu.style.top = `${controlsRect.bottom + 4}px`;
+                } else {
+                    // Position dropdown below the button
+                    dropdownMenu.style.top = `${rect.bottom + 8}px`;
+                }
+                dropdownMenu.style.left = `${rect.left}px`;
+            }
+        }
+
+        function closeAllDropdowns() {
+            document.querySelectorAll('.dropdown').forEach(dropdown => {
+                dropdown.classList.remove('active');
+            });
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('.dropdown')) {
+                closeAllDropdowns();
+            }
+        });
 
         // Initial data
         let priceData = {
@@ -1104,7 +1749,7 @@
                 ["Sugar Snaps", "4kg", "$40"],
                 ["Snow Peas", "4kg", "$40"],
             ],
-            "SPECIALTY VEGETABLES": [
+            "SPECIALITY VEGETABLES": [
                 ["Indian Bittermelon", "-", "$30"],
                 ["Okra", "Small 6kg", "$48"],
                 ["Curry Leaf", "per kg", "$22"],
@@ -1267,11 +1912,13 @@
         }
 
         // Save to localStorage
-        function saveToLocal(showNotification = true) {
-            collectData();
+        function saveToLocal(showNotification = true, skipCollect = false) {
+            if (!skipCollect) {
+                collectData();
+            }
             localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
             localStorage.setItem('everfresh_category_margins', JSON.stringify(categoryMargins));
-            
+
             // Show toast notification only if requested
             if (showNotification) {
                 const toast = document.getElementById('toast');
@@ -2040,7 +2687,7 @@
                         <div class="table-header-cell"></div>
                         <div class="table-header-cell">Product</div>
                         <div class="table-header-cell">Grade/Size</div>
-                        <div class="table-header-cell cost-header">Cost (Internal)</div>
+                        <div class="table-header-cell cost-header">Cost</div>
                         <div class="table-header-cell">Price${selectedCustomer ? ' (Adj.)' : ''}</div>
                         <div class="table-header-cell"></div>
                     </div>
@@ -2053,7 +2700,7 @@
                         : item[2];
                     
                     html += `
-                        <div class="product" draggable="${!autoSortEnabled}" data-category-encoded="${encodedCategoryName}" data-product-index="${idx}">
+                        <div class="product" data-category-encoded="${encodedCategoryName}" data-product-index="${idx}">
                             <div class="product-grid-with-drag">
                                 <div class="drag-handle" title="Drag to reorder">${dragHandleSVG}</div>
                                 <div class="product-field">
@@ -2084,7 +2731,7 @@
                     setupCategoryDragEvents(category, categoryName);
                     
                     // Add drag event listeners for products within this category
-                    const products = category.querySelectorAll('.product[draggable="true"]');
+                    const products = category.querySelectorAll('.product');
                     products.forEach(product => {
                         setupProductDragEvents(product, categoryName);
                     });
@@ -2216,185 +2863,510 @@
         
         function setupCategoryDragEvents(categoryEl, categoryName) {
             const handle = categoryEl.querySelector('.category-drag-handle');
-            
-            // Start drag only from handle
-            handle.addEventListener('mousedown', () => {
-                categoryEl.draggable = true;
-            });
-            
-            handle.addEventListener('mouseup', () => {
-                if (!draggedElement) categoryEl.draggable = false;
-            });
-            
-            categoryEl.addEventListener('dragstart', (e) => {
-                if (autoSortEnabled) {
-                    e.preventDefault();
-                    return;
-                }
-                
-                // Only allow drag from handle
-                if (!e.target.closest('.category-drag-handle') && e.target.classList.contains('category')) {
-                    // Check if drag started from product
-                    if (e.target.closest('.product')) return;
-                }
-                
+
+            // Mouse-based drag and drop
+            let mouseStartY = 0;
+            let mouseIsDragging = false;
+            let clone = null;
+            let initialLeft = 0;
+            let initialTop = 0;
+
+            handle.addEventListener('mousedown', (e) => {
+                if (autoSortEnabled) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                mouseStartY = e.clientY;
+                mouseIsDragging = true;
+
                 draggedElement = categoryEl;
                 dragType = 'category';
                 dragSourceCategory = categoryName;
                 dragSourceIndex = parseInt(categoryEl.dataset.categoryIndex);
-                
+
                 categoryEl.classList.add('dragging');
-                e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/plain', categoryName);
+
+                // Store initial position
+                const rect = categoryEl.getBoundingClientRect();
+                initialLeft = rect.left;
+                initialTop = rect.top;
+
+                // Create a clone for visual feedback
+                clone = categoryEl.cloneNode(true);
+                clone.style.cssText = `
+                    position: fixed;
+                    pointer-events: none;
+                    opacity: 0.8;
+                    z-index: 10000;
+                    width: ${categoryEl.offsetWidth}px;
+                    background: #fff;
+                    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+                    border-radius: 12px;
+                    left: ${initialLeft}px;
+                    top: ${initialTop}px;
+                    transform: scale(1.02);
+                `;
+                document.body.appendChild(clone);
+
+                document.addEventListener('mousemove', handleCategoryMouseMove);
+                document.addEventListener('mouseup', handleCategoryMouseUp);
             });
-            
-            categoryEl.addEventListener('dragend', () => {
+
+            function handleCategoryMouseMove(e) {
+                if (!mouseIsDragging || autoSortEnabled) return;
+
+                e.preventDefault();
+
+                // Move clone to follow mouse
+                if (clone) {
+                    clone.style.top = (initialTop + e.clientY - mouseStartY) + 'px';
+                }
+
+                // Find element under mouse
+                if (clone) clone.style.display = 'none';
+                const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
+                if (clone) clone.style.display = '';
+
+                // Clear all category drag-over classes
+                document.querySelectorAll('.category.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+                // Find the category element under the mouse
+                if (elementBelow) {
+                    const targetCategory = elementBelow.closest('.category');
+                    if (targetCategory && targetCategory !== categoryEl) {
+                        targetCategory.classList.add('drag-over');
+                    }
+                }
+            }
+
+            function handleCategoryMouseUp(e) {
+                if (!mouseIsDragging || autoSortEnabled) {
+                    cleanupCategory();
+                    return;
+                }
+
+                // Find the target category
+                if (clone) clone.style.display = 'none';
+                const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
+                if (clone) clone.style.display = '';
+
+                document.querySelectorAll('.category.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+                if (elementBelow) {
+                    const targetCategory = elementBelow.closest('.category');
+                    if (targetCategory && targetCategory !== categoryEl) {
+                        const targetCategoryName = targetCategory.dataset.categoryName;
+
+                        if (dragSourceCategory !== targetCategoryName) {
+                            reorderCategories(dragSourceCategory, targetCategoryName);
+                        }
+                    }
+                }
+
+                cleanupCategory();
+            }
+
+            function cleanupCategory() {
+                mouseIsDragging = false;
                 categoryEl.classList.remove('dragging');
-                document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                if (clone && clone.parentNode) {
+                    clone.parentNode.removeChild(clone);
+                }
+                clone = null;
+                initialLeft = 0;
+                initialTop = 0;
                 draggedElement = null;
                 dragType = null;
                 dragSourceCategory = null;
                 dragSourceIndex = null;
-            });
-            
-            categoryEl.addEventListener('dragover', (e) => {
-                if (dragType !== 'category' || autoSortEnabled) return;
+                document.removeEventListener('mousemove', handleCategoryMouseMove);
+                document.removeEventListener('mouseup', handleCategoryMouseUp);
+            }
+
+            // Touch events for mobile category drag and drop
+            let touchStartY = 0;
+            let touchIsDragging = false;
+
+            handle.addEventListener('touchstart', (e) => {
+                if (autoSortEnabled) return;
+
                 e.preventDefault();
-                
-                const draggingCategory = document.querySelector('.category.dragging');
-                if (draggingCategory === categoryEl) return;
-                
-                categoryEl.classList.add('drag-over');
-            });
-            
-            categoryEl.addEventListener('dragleave', () => {
-                categoryEl.classList.remove('drag-over');
-            });
-            
-            categoryEl.addEventListener('drop', (e) => {
-                if (dragType !== 'category' || autoSortEnabled) return;
+                e.stopPropagation();
+
+                const touch = e.touches[0];
+                touchStartY = touch.clientY;
+                touchIsDragging = true;
+
+                draggedElement = categoryEl;
+                dragType = 'category';
+                dragSourceCategory = categoryName;
+                dragSourceIndex = parseInt(categoryEl.dataset.categoryIndex);
+
+                categoryEl.classList.add('dragging');
+                categoryEl.style.position = 'relative';
+                categoryEl.style.zIndex = '1000';
+                categoryEl.style.opacity = '0.8';
+            }, { passive: false });
+
+            handle.addEventListener('touchmove', (e) => {
+                if (!touchIsDragging || autoSortEnabled) return;
+
                 e.preventDefault();
-                
-                categoryEl.classList.remove('drag-over');
-                
-                const targetCategoryName = categoryEl.dataset.categoryName;
-                if (dragSourceCategory === targetCategoryName) return;
-                
-                // Reorder categories
-                reorderCategories(dragSourceCategory, targetCategoryName);
-            });
+                e.stopPropagation();
+
+                const touch = e.touches[0];
+                const deltaY = touch.clientY - touchStartY;
+
+                categoryEl.style.transform = `translateY(${deltaY}px)`;
+
+                // Find element under touch point
+                categoryEl.style.pointerEvents = 'none';
+                const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                categoryEl.style.pointerEvents = '';
+
+                // Clear all drag-over classes
+                document.querySelectorAll('.category.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+                // Find the category element under the touch
+                if (elementBelow) {
+                    const targetCategory = elementBelow.closest('.category');
+                    if (targetCategory && targetCategory !== categoryEl) {
+                        targetCategory.classList.add('drag-over');
+                    }
+                }
+            }, { passive: false });
+
+            handle.addEventListener('touchend', (e) => {
+                if (!touchIsDragging || autoSortEnabled) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Reset styles
+                categoryEl.style.transform = '';
+                categoryEl.style.position = '';
+                categoryEl.style.zIndex = '';
+                categoryEl.style.opacity = '';
+                categoryEl.classList.remove('dragging');
+
+                // Find the target category
+                const touch = e.changedTouches[0];
+                categoryEl.style.pointerEvents = 'none';
+                const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                categoryEl.style.pointerEvents = '';
+
+                document.querySelectorAll('.category.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+                if (elementBelow) {
+                    const targetCategory = elementBelow.closest('.category');
+                    if (targetCategory && targetCategory !== categoryEl) {
+                        const targetCategoryName = targetCategory.dataset.categoryName;
+
+                        if (dragSourceCategory !== targetCategoryName) {
+                            reorderCategories(dragSourceCategory, targetCategoryName);
+                        }
+                    }
+                }
+
+                // Reset drag state
+                touchIsDragging = false;
+                draggedElement = null;
+                dragType = null;
+                dragSourceCategory = null;
+                dragSourceIndex = null;
+            }, { passive: false });
         }
         
         function setupProductDragEvents(productEl, categoryName) {
             const handle = productEl.querySelector('.drag-handle');
-            
-            handle.addEventListener('mousedown', () => {
-                productEl.draggable = true;
-            });
-            
-            handle.addEventListener('mouseup', () => {
-                if (!draggedElement) productEl.draggable = false;
-            });
-            
-            productEl.addEventListener('dragstart', (e) => {
-                if (autoSortEnabled) {
-                    e.preventDefault();
-                    return;
-                }
-                
-                e.stopPropagation(); // Prevent category drag
-                
+
+            // Mouse-based drag and drop (same approach as categories)
+            let mouseStartY = 0;
+            let mouseIsDragging = false;
+            let clone = null;
+            let initialLeft = 0;
+            let initialTop = 0;
+
+            handle.addEventListener('mousedown', (e) => {
+                if (autoSortEnabled) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                mouseStartY = e.clientY;
+                mouseIsDragging = true;
+
                 draggedElement = productEl;
                 dragType = 'product';
                 dragSourceCategory = categoryName;
                 dragSourceIndex = parseInt(productEl.dataset.productIndex);
-                
+
                 productEl.classList.add('dragging');
-                e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/plain', `${categoryName}:${dragSourceIndex}`);
+
+                // Store initial position
+                const rect = productEl.getBoundingClientRect();
+                initialLeft = rect.left;
+                initialTop = rect.top;
+
+                // Create a clone for visual feedback
+                clone = productEl.cloneNode(true);
+                clone.style.cssText = `
+                    position: fixed;
+                    pointer-events: none;
+                    opacity: 0.8;
+                    z-index: 10000;
+                    width: ${productEl.offsetWidth}px;
+                    background: #fff;
+                    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+                    border-radius: 8px;
+                    left: ${initialLeft}px;
+                    top: ${initialTop}px;
+                    transform: scale(1.02);
+                `;
+                document.body.appendChild(clone);
+
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
             });
-            
-            productEl.addEventListener('dragend', () => {
+
+            function handleMouseMove(e) {
+                if (!mouseIsDragging || autoSortEnabled) return;
+
+                e.preventDefault();
+
+                // Move clone to follow mouse
+                if (clone) {
+                    clone.style.top = (initialTop + e.clientY - mouseStartY) + 'px';
+                }
+
+                // Find element under mouse (hide clone temporarily)
+                if (clone) clone.style.display = 'none';
+                const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
+                if (clone) clone.style.display = '';
+
+                // Clear all drag-over classes
+                document.querySelectorAll('.product.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+                // Find the product element under the mouse
+                if (elementBelow) {
+                    const targetProduct = elementBelow.closest('.product');
+                    if (targetProduct && targetProduct !== productEl) {
+                        const targetCategory = decodeURIComponent(targetProduct.dataset.categoryEncoded || '');
+                        if (targetCategory === dragSourceCategory) {
+                            targetProduct.classList.add('drag-over');
+                        }
+                    }
+                }
+            }
+
+            function handleMouseUp(e) {
+                if (!mouseIsDragging || autoSortEnabled) {
+                    cleanup();
+                    return;
+                }
+
+                // Find the target product
+                if (clone) clone.style.display = 'none';
+                const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
+                if (clone) clone.style.display = '';
+
+                document.querySelectorAll('.product.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+                if (elementBelow) {
+                    const targetProduct = elementBelow.closest('.product');
+
+                    if (targetProduct && targetProduct !== productEl) {
+                        const targetIndex = parseInt(targetProduct.dataset.productIndex);
+                        const targetCategory = decodeURIComponent(targetProduct.dataset.categoryEncoded || '');
+
+                        if (targetCategory === dragSourceCategory && dragSourceIndex !== targetIndex) {
+                            reorderProducts(dragSourceCategory, dragSourceIndex, targetIndex);
+                        }
+                    }
+                }
+
+                cleanup();
+            }
+
+            function cleanup() {
+                mouseIsDragging = false;
                 productEl.classList.remove('dragging');
-                document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                if (clone && clone.parentNode) {
+                    clone.parentNode.removeChild(clone);
+                }
+                clone = null;
+                initialLeft = 0;
+                initialTop = 0;
+                draggedElement = null;
+                dragType = null;
+                dragSourceCategory = null;
+                dragSourceIndex = null;
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+            }
+
+            // Touch events for mobile drag and drop
+            let touchStartY = 0;
+            let touchCurrentY = 0;
+            let isDragging = false;
+            let placeholder = null;
+            let originalRect = null;
+
+            handle.addEventListener('touchstart', (e) => {
+                if (autoSortEnabled) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const touch = e.touches[0];
+                touchStartY = touch.clientY;
+                touchCurrentY = touch.clientY;
+                isDragging = true;
+
+                draggedElement = productEl;
+                dragType = 'product';
+                dragSourceCategory = categoryName;
+                dragSourceIndex = parseInt(productEl.dataset.productIndex);
+
+                originalRect = productEl.getBoundingClientRect();
+                productEl.classList.add('dragging');
+                productEl.style.position = 'relative';
+                productEl.style.zIndex = '1000';
+                productEl.style.opacity = '0.8';
+            }, { passive: false });
+
+            handle.addEventListener('touchmove', (e) => {
+                if (!isDragging || autoSortEnabled) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const touch = e.touches[0];
+                touchCurrentY = touch.clientY;
+                const deltaY = touchCurrentY - touchStartY;
+
+                productEl.style.transform = `translateY(${deltaY}px)`;
+
+                // Find element under touch point
+                productEl.style.pointerEvents = 'none';
+                const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                productEl.style.pointerEvents = '';
+
+                // Clear all drag-over classes
+                document.querySelectorAll('.product.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+                // Find the product element under the touch
+                if (elementBelow) {
+                    const targetProduct = elementBelow.closest('.product');
+                    if (targetProduct && targetProduct !== productEl) {
+                        const targetCategory = decodeURIComponent(targetProduct.dataset.categoryEncoded || '');
+                        if (targetCategory === dragSourceCategory) {
+                            targetProduct.classList.add('drag-over');
+                        }
+                    }
+                }
+            }, { passive: false });
+
+            handle.addEventListener('touchend', (e) => {
+                if (!isDragging || autoSortEnabled) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Reset styles
+                productEl.style.transform = '';
+                productEl.style.position = '';
+                productEl.style.zIndex = '';
+                productEl.style.opacity = '';
+                productEl.classList.remove('dragging');
+
+                // Find the target product
+                const touch = e.changedTouches[0];
+                productEl.style.pointerEvents = 'none';
+                const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                productEl.style.pointerEvents = '';
+
+                document.querySelectorAll('.product.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+                if (elementBelow) {
+                    const targetProduct = elementBelow.closest('.product');
+                    if (targetProduct && targetProduct !== productEl) {
+                        const targetIndex = parseInt(targetProduct.dataset.productIndex);
+                        const targetCategory = decodeURIComponent(targetProduct.dataset.categoryEncoded || '');
+
+                        if (targetCategory === dragSourceCategory && dragSourceIndex !== targetIndex) {
+                            reorderProducts(dragSourceCategory, dragSourceIndex, targetIndex);
+                        }
+                    }
+                }
+
+                // Reset drag state
+                isDragging = false;
+                draggedElement = null;
+                dragType = null;
+                dragSourceCategory = null;
+                dragSourceIndex = null;
+            }, { passive: false });
+
+            handle.addEventListener('touchcancel', () => {
+                // Reset everything on cancel
+                productEl.style.transform = '';
+                productEl.style.position = '';
+                productEl.style.zIndex = '';
+                productEl.style.opacity = '';
+                productEl.classList.remove('dragging');
+                document.querySelectorAll('.product.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+                isDragging = false;
                 draggedElement = null;
                 dragType = null;
                 dragSourceCategory = null;
                 dragSourceIndex = null;
             });
-            
-            productEl.addEventListener('dragover', (e) => {
-                if (dragType !== 'product' || autoSortEnabled) return;
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const draggingProduct = document.querySelector('.product.dragging');
-                if (draggingProduct === productEl) return;
-                
-                // Only allow drop within same category
-                const targetCategory = decodeURIComponent(productEl.dataset.categoryEncoded || '');
-                if (targetCategory !== dragSourceCategory) return;
-                
-                productEl.classList.add('drag-over');
-            });
-            
-            productEl.addEventListener('dragleave', () => {
-                productEl.classList.remove('drag-over');
-            });
-            
-            productEl.addEventListener('drop', (e) => {
-                if (dragType !== 'product' || autoSortEnabled) return;
-                e.preventDefault();
-                e.stopPropagation();
-                
-                productEl.classList.remove('drag-over');
-                
-                const targetIndex = parseInt(productEl.dataset.productIndex);
-                const targetCategory = decodeURIComponent(productEl.dataset.categoryEncoded || '');
-                
-                if (dragSourceCategory !== targetCategory) return;
-                if (dragSourceIndex === targetIndex) return;
-                
-                // Reorder products within category
-                reorderProducts(dragSourceCategory, dragSourceIndex, targetIndex);
-            });
         }
         
         function reorderCategories(fromCategory, toCategory) {
-            collectData(); // Save current input values
-            
+            // Remove any cloned elements before collecting data to avoid duplicates
+            document.querySelectorAll('body > .category').forEach(clone => clone.remove());
+
+            collectData(); // Save current input values first
+
             const categoryNames = Object.keys(priceData);
             const fromIndex = categoryNames.indexOf(fromCategory);
             const toIndex = categoryNames.indexOf(toCategory);
-            
+
             if (fromIndex === -1 || toIndex === -1) return;
-            
+
             // Create new ordered object
             const newPriceData = {};
             const reorderedNames = [...categoryNames];
-            
+
             // Remove from old position and insert at new position
             reorderedNames.splice(fromIndex, 1);
             reorderedNames.splice(toIndex, 0, fromCategory);
-            
+
             // Rebuild priceData in new order
             reorderedNames.forEach(name => {
                 newPriceData[name] = priceData[name];
             });
-            
+
             priceData = newPriceData;
-            saveToLocal(false); // No toast notification
+            saveToLocal(false, true); // No toast, skip collectData (we already did it)
             renderCategories();
         }
         
         function reorderProducts(categoryName, fromIndex, toIndex) {
-            collectData(); // Save current input values
-            
+            // Remove any cloned elements before collecting data to avoid duplicates
+            document.querySelectorAll('body > .product').forEach(clone => clone.remove());
+
+            collectData(); // Save current input values first
+
             const products = priceData[categoryName];
             const [movedProduct] = products.splice(fromIndex, 1);
             products.splice(toIndex, 0, movedProduct);
-            
-            saveToLocal(false); // No toast notification
+
+            saveToLocal(false, true); // No toast, skip collectData (we already did it)
             renderCategories();
         }
 
@@ -2584,7 +3556,7 @@ COMPREHENSIVE CATEGORY MAPPING:
 🥒 ZUCCHINI:
 - Green Zucchini, Yellow Zucchini, Baby Zucchini, Tromboncino, Pattypan, Squash Blossom
 
-🫑 SPECIALTY VEGETABLES:
+🫑 SPECIALITY VEGETABLES:
 - Okra, Artichoke, Globe Artichoke, Asparagus, Fennel, Celery, Celeriac, Cardoon
 
 🍋 CITRUS:
@@ -2922,8 +3894,8 @@ Response format (JSON only, no markdown):
                 reasoning: 'Zucchini variety'
             },
             
-            // 🫑 SPECIALTY VEGETABLES
-            'SPECIALTY VEGETABLES': {
+            // 🫑 SPECIALITY VEGETABLES
+            'SPECIALITY VEGETABLES': {
                 products: [
                     'okra', 'lady finger', 'bhindi', 'gumbo',
                     'artichoke', 'globe artichoke', 'baby artichoke',
@@ -3235,6 +4207,38 @@ Response format (JSON only, no markdown):
             }
         }
 
+        // Helper: Truncate text with ellipsis if it exceeds max width
+        function truncateText(ctx, text, maxWidth) {
+            if (!text) return '';
+            text = text.toString();
+
+            // Check if text fits
+            if (ctx.measureText(text).width <= maxWidth) {
+                return text;
+            }
+
+            // Binary search for the right truncation point
+            let truncated = text;
+            const ellipsis = '...';
+            const ellipsisWidth = ctx.measureText(ellipsis).width;
+            const targetWidth = maxWidth - ellipsisWidth;
+
+            // Start removing characters from the end
+            while (truncated.length > 0 && ctx.measureText(truncated).width > targetWidth) {
+                truncated = truncated.slice(0, -1);
+            }
+
+            return truncated.length > 0 ? truncated + ellipsis : text.charAt(0) + ellipsis;
+        }
+
+        // Helper: Get Sydney timezone date
+        function getSydneyDate() {
+            const date = new Date();
+            // Create a date string in Sydney timezone
+            const sydneyTime = new Date(date.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
+            return sydneyTime;
+        }
+
         // Download as image
         function downloadImage() {
             console.log('Starting image generation...');
@@ -3257,10 +4261,20 @@ Response format (JSON only, no markdown):
                 }
             }
             
-            // Show error if empty prices found
+            // Show error if empty prices found - smart notification for many errors
             if (hasEmptyPrices) {
-                const productList = emptyPriceProducts.join('\n- ');
-                alert(`ERROR: Cannot generate image!\n\nThe following products have empty prices:\n\n- ${productList}\n\nPlease fill in all prices or mark as "NA" if not available.`);
+                let errorMessage;
+                if (emptyPriceProducts.length > 5) {
+                    // Smart summary for many empty prices
+                    const firstFive = emptyPriceProducts.slice(0, 5).join('\n- ');
+                    const remaining = emptyPriceProducts.length - 5;
+                    errorMessage = `ERROR: Cannot generate image!\n\n${emptyPriceProducts.length} products have empty prices:\n\n- ${firstFive}\n\n...and ${remaining} more.\n\nPlease fill in all prices or mark as "NA" if not available.`;
+                } else {
+                    // Show full list for 5 or fewer
+                    const productList = emptyPriceProducts.join('\n- ');
+                    errorMessage = `ERROR: Cannot generate image!\n\nThe following products have empty prices:\n\n- ${productList}\n\nPlease fill in all prices or mark as "NA" if not available.`;
+                }
+                alert(errorMessage);
                 return; // Stop here, don't generate image
             }
             
@@ -3300,24 +4314,24 @@ Response format (JSON only, no markdown):
 
                     // Company name - Forest green
                     ctx.fillStyle = '#2d6a4f';
-                    ctx.font = 'bold 168px Arial';
+                    ctx.font = 'bold 168px Arial, Helvetica, sans-serif';
                     ctx.textAlign = 'center';
                     ctx.fillText('EVERFRESH PRODUCE GROUP', canvas.width / 2, y + 150);
                     y += 240;
 
                     // Title - Fresh green
                     ctx.fillStyle = '#52b788';
-                    ctx.font = 'bold 144px Arial';
+                    ctx.font = 'bold 144px Arial, Helvetica, sans-serif';
                     ctx.fillText('WHOLESALE PRICE LIST', canvas.width / 2, y + 120);
                     y += 210;
 
                     // Address and Date
                     const leftCol = 300;
                     const rightCol = canvas.width - 300;
-                    
+
                     ctx.textAlign = 'left';
                     ctx.fillStyle = '#2d6a4f';
-                    ctx.font = 'bold 66px Arial';
+                    ctx.font = 'bold 66px Arial, Helvetica, sans-serif';
                     ctx.fillText('Stand 275, Shed C, Sydney Markets', leftCol, y + 60);
                     
                     ctx.textAlign = 'right';
@@ -3336,7 +4350,7 @@ Response format (JSON only, no markdown):
                         
                         ctx.textAlign = 'left';
                         ctx.fillStyle = '#1b4332';
-                        ctx.font = 'bold 72px Arial';
+                        ctx.font = 'bold 72px Arial, Helvetica, sans-serif';
                         
                         if (salesmanInfo.name && salesmanInfo.phone) {
                             ctx.fillText('Sales Contact: ' + salesmanInfo.name, leftCol, y + 60);
@@ -3403,7 +4417,7 @@ Response format (JSON only, no markdown):
                         ctx.lineWidth = 6;
                         ctx.strokeRect(margin, y, tableWidth, 150);
                         ctx.fillStyle = '#ffffff';
-                        ctx.font = 'bold 102px Arial';
+                        ctx.font = 'bold 102px Arial, Helvetica, sans-serif';
                         ctx.fillText(categoryName, col1 + 60, y + 108);
                         y += 150;
 
@@ -3412,7 +4426,7 @@ Response format (JSON only, no markdown):
                         ctx.fillRect(margin, y, tableWidth, rowHeight);
                         ctx.strokeRect(margin, y, tableWidth, rowHeight);
                         ctx.fillStyle = '#ffffff';
-                        ctx.font = 'bold 78px Arial';
+                        ctx.font = 'bold 78px Arial, Helvetica, sans-serif';
                         ctx.fillText('Product', col1 + 60, y + 84);
                         ctx.fillText('Grade/Size', col2 + 60, y + 84);
                         ctx.fillText('Price', col3 + 60, y + 84);
@@ -3447,16 +4461,21 @@ Response format (JSON only, no markdown):
                             ctx.lineTo(col3, y + rowHeight);
                             ctx.stroke();
 
-                            // Text - Dark for readability
+                            // Calculate column widths for text truncation (with padding)
+                            const productMaxWidth = col2 - col1 - 90;  // 60px left padding + 30px right padding
+                            const gradeMaxWidth = col3 - col2 - 90;
+                            const priceMaxWidth = (margin + tableWidth) - col3 - 90;
+
+                            // Text - Dark for readability (with truncation to prevent overflow)
                             ctx.fillStyle = '#212529';
-                            ctx.font = '72px Arial';
-                            ctx.fillText(item[0], col1 + 60, y + 84);
-                            ctx.fillText(item[1], col2 + 60, y + 84);
-                            
-                            // Price - Deep forest green
+                            ctx.font = '72px Arial, Helvetica, sans-serif';
+                            ctx.fillText(truncateText(ctx, item[0], productMaxWidth), col1 + 60, y + 84);
+                            ctx.fillText(truncateText(ctx, item[1], gradeMaxWidth), col2 + 60, y + 84);
+
+                            // Price - Deep forest green (with truncation)
                             ctx.fillStyle = '#1b4332';
-                            ctx.font = 'bold 78px Arial';
-                            ctx.fillText(item[2], col3 + 60, y + 84);
+                            ctx.font = 'bold 78px Arial, Helvetica, sans-serif';
+                            ctx.fillText(truncateText(ctx, item[2], priceMaxWidth), col3 + 60, y + 84);
                             
                             y += rowHeight;
                         }
@@ -3466,12 +4485,12 @@ Response format (JSON only, no markdown):
                     // Notes
                     y += 45;
                     ctx.fillStyle = '#2d6a4f';
-                    ctx.font = 'bold 96px Arial';
+                    ctx.font = 'bold 96px Arial, Helvetica, sans-serif';
                     ctx.fillText('NOTES:', margin, y + 90);
                     y += 150;
 
                     ctx.fillStyle = '#495057';
-                    ctx.font = '60px Arial';
+                    ctx.font = '60px Arial, Helvetica, sans-serif';
                     const notes = [
                         '• All prices are wholesale rates',
                         '• Prices subject to availability and market conditions',
@@ -3506,7 +4525,9 @@ Response format (JSON only, no markdown):
                         const a = document.createElement('a');
                         a.href = url;
                         const dateStr = new Date().toISOString().split('T')[0];
-                        a.download = 'everfresh-price-list-' + dateStr + '.png';
+                        const filename = 'everfresh-price-list-' + dateStr + '.png';
+                        a.download = filename;
+                        a.type = 'image/png';
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);
@@ -3601,6 +4622,213 @@ Response format (JSON only, no markdown):
             }
         }
 
+        // ========================================
+        // SHARE MENU FUNCTIONS
+        // ========================================
+
+        // Show share menu modal
+        function showShareMenu() {
+            collectData();
+
+            // Check for empty prices first
+            let emptyPriceProducts = [];
+            for (const categoryName in priceData) {
+                const items = priceData[categoryName];
+                for (let i = 0; i < items.length; i++) {
+                    const price = (items[i][2] || '').toString().trim();
+                    if (price === '') {
+                        emptyPriceProducts.push(`${categoryName}: ${items[i][0]}`);
+                    }
+                }
+            }
+
+            if (emptyPriceProducts.length > 0) {
+                if (emptyPriceProducts.length > 5) {
+                    alert(`Cannot share: ${emptyPriceProducts.length} products have empty prices.\n\n` +
+                          `First 5:\n- ${emptyPriceProducts.slice(0, 5).join('\n- ')}\n\n` +
+                          `...and ${emptyPriceProducts.length - 5} more.\n\n` +
+                          `Please fill all prices or mark as "NA".`);
+                } else {
+                    alert(`Cannot share: ${emptyPriceProducts.length} products have empty prices:\n\n` +
+                          `- ${emptyPriceProducts.join('\n- ')}\n\n` +
+                          `Please fill all prices or mark as "NA".`);
+                }
+                return;
+            }
+
+            document.getElementById('shareMenu').classList.add('show');
+        }
+
+        // Close share menu modal
+        function closeShareMenu() {
+            document.getElementById('shareMenu').classList.remove('show');
+            document.getElementById('shortcutSetupInfo').style.display = 'none';
+        }
+
+        // Copy image blob to clipboard
+        async function copyImageToClipboard(blob) {
+            try {
+                await navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]);
+                return { success: true };
+            } catch (error) {
+                console.error('Clipboard write failed:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Generate share message
+        function generateShareMessage() {
+            const effectiveDate = getEffectiveDate();
+            const formattedDate = effectiveDate.toLocaleDateString('en-AU', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            const yourName = salesmanInfo.name || 'Everfresh Team';
+            return `Hi! ${yourName} here from Everfresh 👋 Fresh prices for ${formattedDate} - give me a call or text for your order! Thank you.`;
+        }
+
+        // Share via iMessage (iOS Shortcut)
+        async function shareViaIMessage() {
+            closeShareMenu();
+
+            const loading = document.getElementById('loading');
+            loading.classList.add('show');
+
+            try {
+                // Generate image blob
+                const blob = await generateImageBlob();
+
+                if (!blob) {
+                    throw new Error('Failed to generate image');
+                }
+
+                // Copy image to clipboard
+                const clipboardResult = await copyImageToClipboard(blob);
+
+                if (!clipboardResult.success) {
+                    loading.classList.remove('show');
+                    alert('Could not copy image to clipboard. This feature requires iOS Safari with clipboard permissions enabled.');
+                    return;
+                }
+
+                // Generate message
+                const message = generateShareMessage();
+
+                // Create shortcut URL - using just message (phone will be selected in shortcut)
+                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(message)}`;
+
+                loading.classList.remove('show');
+
+                // Show instructions and trigger shortcut
+                const userConfirm = confirm(
+                    '✅ Image copied to clipboard!\n\n' +
+                    'The Everfresh Pricelist shortcut will open.\n' +
+                    'It will send the image via iMessage.\n\n' +
+                    'Tap OK to continue.'
+                );
+
+                if (userConfirm) {
+                    // Track if user returns quickly (shortcut not installed)
+                    const startTime = Date.now();
+
+                    // Trigger the shortcut
+                    window.location.href = shortcutUrl;
+
+                    // Check if user bounces back quickly (shortcut not installed)
+                    setTimeout(() => {
+                        if (document.hasFocus() && (Date.now() - startTime) < 2000) {
+                            document.getElementById('shareMenu').classList.add('show');
+                            document.getElementById('shortcutSetupInfo').style.display = 'block';
+                        }
+                    }, 500);
+                }
+
+            } catch (error) {
+                loading.classList.remove('show');
+                console.error('iMessage share error:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Share via WhatsApp (enhanced with clipboard)
+        async function shareViaWhatsAppEnhanced() {
+            closeShareMenu();
+
+            const loading = document.getElementById('loading');
+            loading.classList.add('show');
+
+            try {
+                // Generate image blob
+                const blob = await generateImageBlob();
+
+                if (!blob) {
+                    throw new Error('Failed to generate image');
+                }
+
+                // Try to copy image to clipboard
+                const clipboardResult = await copyImageToClipboard(blob);
+
+                // Generate message
+                const message = generateShareMessage();
+
+                loading.classList.remove('show');
+
+                if (clipboardResult.success) {
+                    // Success path - image is in clipboard
+                    const userConfirm = confirm(
+                        '✅ Image copied to clipboard!\n\n' +
+                        'WhatsApp will open. In the chat:\n' +
+                        '1. Long-press the message box\n' +
+                        '2. Tap "Paste"\n' +
+                        '3. Send the image\n\n' +
+                        'Tap OK to open WhatsApp.'
+                    );
+
+                    if (userConfirm) {
+                        // Open WhatsApp with the message
+                        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                        window.open(whatsappUrl, '_blank');
+                    }
+                } else {
+                    // Fallback - clipboard failed, offer download
+                    const userConfirm = confirm(
+                        '⚠️ Could not copy image to clipboard.\n\n' +
+                        'This can happen on some browsers.\n\n' +
+                        'Would you like to download the image instead?\n' +
+                        'You can then share it from your Photos app.'
+                    );
+
+                    if (userConfirm) {
+                        // Download the image
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        const dateStr = new Date().toISOString().split('T')[0];
+                        a.download = 'everfresh-price-list-' + dateStr + '.png';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+
+                        // Open WhatsApp after download
+                        setTimeout(() => {
+                            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                            window.open(whatsappUrl, '_blank');
+                        }, 500);
+                    }
+                }
+
+            } catch (error) {
+                loading.classList.remove('show');
+                console.error('WhatsApp share error:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+
         // Show customer share menu
         function showCustomerShareMenu() {
             if (customerContacts.length === 0) {
@@ -3634,12 +4862,25 @@ Response format (JSON only, no markdown):
             
             customerContacts.forEach((customer, index) => {
                 html += `
-                    <div class="customer-item">
+                    <div class="customer-item" style="flex-wrap: wrap;">
                         <div class="customer-info">
                             <div class="customer-name">${customer.name}</div>
                             <div class="customer-phone">${customer.phone}</div>
                         </div>
-                        <button class="btn btn-primary btn-small" onclick="sendToCustomer(${index})">Send</button>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="btn btn-small" onclick="sendToCustomerVia(${index}, 'imessage')" style="background: #34C759; color: white; padding: 6px 10px; font-size: 12px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="white" style="margin-right: 4px;">
+                                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/>
+                                </svg>
+                                iMessage
+                            </button>
+                            <button class="btn btn-small" onclick="sendToCustomerVia(${index}, 'whatsapp')" style="background: #25D366; color: white; padding: 6px 10px; font-size: 12px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="white" style="margin-right: 4px;">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                </svg>
+                                WhatsApp
+                            </button>
+                        </div>
                     </div>
                 `;
             });
@@ -3723,6 +4964,123 @@ Response format (JSON only, no markdown):
             }
         }
 
+        // Send to specific customer via chosen method (iMessage or WhatsApp)
+        async function sendToCustomerVia(index, method) {
+            const customer = customerContacts[index];
+            const phone = customer.phone.replace(/\D/g, ''); // Remove non-digits
+
+            closeCustomerShareMenu();
+
+            const loading = document.getElementById('loading');
+            loading.classList.add('show');
+
+            try {
+                // Generate image blob
+                const blob = await generateImageBlob();
+
+                if (!blob) {
+                    throw new Error('Failed to generate image');
+                }
+
+                // Create personalized message
+                const effectiveDate = getEffectiveDate();
+                const formattedDate = effectiveDate.toLocaleDateString('en-AU', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                const yourName = salesmanInfo.name || 'Everfresh Team';
+                const message = `Hi ${customer.name}! ${yourName} here from Everfresh 👋 Fresh prices for ${formattedDate} - give me a call or text for your order! Thank you.`;
+
+                // Copy image to clipboard
+                const clipboardResult = await copyImageToClipboard(blob);
+
+                loading.classList.remove('show');
+
+                if (method === 'imessage') {
+                    // iMessage via iOS Shortcut
+                    if (!clipboardResult.success) {
+                        alert('Could not copy image to clipboard. iMessage sharing requires iOS Safari with clipboard permissions.');
+                        return;
+                    }
+
+                    const userConfirm = confirm(
+                        `✅ Image copied to clipboard!\n\n` +
+                        `Sending to: ${customer.name}\n` +
+                        `Phone: ${customer.phone}\n\n` +
+                        `The Everfresh Pricelist shortcut will open and send the image via iMessage.\n\n` +
+                        `Tap OK to continue.`
+                    );
+
+                    if (userConfirm) {
+                        // Shortcut URL with phone and message
+                        const shortcutInput = `${phone},${message}`;
+                        const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+
+                        const startTime = Date.now();
+                        window.location.href = shortcutUrl;
+
+                        // Check if shortcut is not installed
+                        setTimeout(() => {
+                            if (document.hasFocus() && (Date.now() - startTime) < 2000) {
+                                document.getElementById('shareMenu').classList.add('show');
+                                document.getElementById('shortcutSetupInfo').style.display = 'block';
+                            }
+                        }, 500);
+                    }
+
+                } else if (method === 'whatsapp') {
+                    // WhatsApp with clipboard
+                    if (clipboardResult.success) {
+                        const userConfirm = confirm(
+                            `✅ Image copied to clipboard!\n\n` +
+                            `Sending to: ${customer.name}\n\n` +
+                            `WhatsApp will open with ${customer.name}'s chat.\n` +
+                            `1. Long-press the message box\n` +
+                            `2. Tap "Paste"\n` +
+                            `3. Send the image\n\n` +
+                            `Tap OK to open WhatsApp.`
+                        );
+
+                        if (userConfirm) {
+                            const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+                            window.open(whatsappUrl, '_blank');
+                        }
+                    } else {
+                        // Fallback - download image
+                        const userConfirm = confirm(
+                            `⚠️ Could not copy image to clipboard.\n\n` +
+                            `Download the image and share it manually?\n` +
+                            `WhatsApp will open with ${customer.name}'s chat.`
+                        );
+
+                        if (userConfirm) {
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            const dateStr = new Date().toISOString().split('T')[0];
+                            a.download = 'everfresh-price-list-' + dateStr + '.png';
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+
+                            setTimeout(() => {
+                                const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+                                window.open(whatsappUrl, '_blank');
+                            }, 500);
+                        }
+                    }
+                }
+
+            } catch (error) {
+                loading.classList.remove('show');
+                console.error('Share error:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+
         // Generate image blob (helper function)
         function generateImageBlob() {
             return new Promise((resolve, reject) => {
@@ -3767,14 +5125,14 @@ Response format (JSON only, no markdown):
 
                         // Company name - Forest green
                         ctx.fillStyle = '#2d6a4f';
-                        ctx.font = 'bold 168px Arial';
+                        ctx.font = 'bold 168px Arial, Helvetica, sans-serif';
                         ctx.textAlign = 'center';
                         ctx.fillText('EVERFRESH PRODUCE GROUP', canvas.width / 2, y + 150);
                         y += 240;
 
                         // Title - Fresh green
                         ctx.fillStyle = '#52b788';
-                        ctx.font = 'bold 144px Arial';
+                        ctx.font = 'bold 144px Arial, Helvetica, sans-serif';
                         ctx.fillText('WHOLESALE PRICE LIST', canvas.width / 2, y + 120);
                         y += 210;
 
@@ -3784,7 +5142,7 @@ Response format (JSON only, no markdown):
                         
                         ctx.textAlign = 'left';
                         ctx.fillStyle = '#2d6a4f';
-                        ctx.font = 'bold 66px Arial';
+                        ctx.font = 'bold 66px Arial, Helvetica, sans-serif';
                         ctx.fillText('Stand 275, Shed C, Sydney Markets', leftCol, y + 60);
                         
                         ctx.textAlign = 'right';
@@ -3803,7 +5161,7 @@ Response format (JSON only, no markdown):
                             
                             ctx.textAlign = 'left';
                             ctx.fillStyle = '#1b4332';
-                            ctx.font = 'bold 72px Arial';
+                            ctx.font = 'bold 72px Arial, Helvetica, sans-serif';
                             
                             if (salesmanInfo.name && salesmanInfo.phone) {
                                 ctx.fillText('Sales Contact: ' + salesmanInfo.name, leftCol, y + 60);
@@ -3873,7 +5231,7 @@ Response format (JSON only, no markdown):
                             ctx.lineWidth = 6;
                             ctx.strokeRect(margin, y, tableWidth, 150);
                             ctx.fillStyle = '#ffffff';
-                            ctx.font = 'bold 102px Arial';
+                            ctx.font = 'bold 102px Arial, Helvetica, sans-serif';
                             ctx.fillText(categoryName, col1 + 60, y + 108);
                             y += 150;
 
@@ -3882,7 +5240,7 @@ Response format (JSON only, no markdown):
                             ctx.fillRect(margin, y, tableWidth, rowHeight);
                             ctx.strokeRect(margin, y, tableWidth, rowHeight);
                             ctx.fillStyle = '#ffffff';
-                            ctx.font = 'bold 78px Arial';
+                            ctx.font = 'bold 78px Arial, Helvetica, sans-serif';
                             ctx.fillText('Product', col1 + 60, y + 84);
                             ctx.fillText('Grade/Size', col2 + 60, y + 84);
                             ctx.fillText('Price', col3 + 60, y + 84);
@@ -3917,16 +5275,21 @@ Response format (JSON only, no markdown):
                                 ctx.lineTo(col3, y + rowHeight);
                                 ctx.stroke();
 
-                                // Text - Dark for readability
+                                // Calculate column widths for text truncation (with padding)
+                                const productMaxWidth = col2 - col1 - 90;  // 60px left padding + 30px right padding
+                                const gradeMaxWidth = col3 - col2 - 90;
+                                const priceMaxWidth = (margin + tableWidth) - col3 - 90;
+
+                                // Text - Dark for readability (with truncation to prevent overflow)
                                 ctx.fillStyle = '#212529';
-                                ctx.font = '72px Arial';
-                                ctx.fillText(item[0], col1 + 60, y + 84);
-                                ctx.fillText(item[1], col2 + 60, y + 84);
-                                
-                                // Price - Deep forest green
+                                ctx.font = '72px Arial, Helvetica, sans-serif';
+                                ctx.fillText(truncateText(ctx, item[0], productMaxWidth), col1 + 60, y + 84);
+                                ctx.fillText(truncateText(ctx, item[1], gradeMaxWidth), col2 + 60, y + 84);
+
+                                // Price - Deep forest green (with truncation)
                                 ctx.fillStyle = '#1b4332';
-                                ctx.font = 'bold 78px Arial';
-                                ctx.fillText(item[2], col3 + 60, y + 84);
+                                ctx.font = 'bold 78px Arial, Helvetica, sans-serif';
+                                ctx.fillText(truncateText(ctx, item[2], priceMaxWidth), col3 + 60, y + 84);
                                 
                                 y += rowHeight;
                             }
@@ -3936,12 +5299,12 @@ Response format (JSON only, no markdown):
                         // Notes
                         y += 45;
                         ctx.fillStyle = '#2d6a4f';
-                        ctx.font = 'bold 96px Arial';
+                        ctx.font = 'bold 96px Arial, Helvetica, sans-serif';
                         ctx.fillText('NOTES:', margin, y + 90);
                         y += 150;
 
                         ctx.fillStyle = '#495057';
-                        ctx.font = '60px Arial';
+                        ctx.font = '60px Arial, Helvetica, sans-serif';
                         const notes = [
                             '• All prices are wholesale rates',
                             '• Prices subject to availability and market conditions',
