@@ -4748,22 +4748,31 @@ Response format (JSON only, no markdown):
                 // Generate message
                 const message = generateShareMessage();
 
-                // STRATEGY: On iOS use Web Share, on other platforms try clipboard first
+                // STRATEGY: On iOS, save image first then trigger shortcut
                 if (isIOS()) {
-                    // iOS: Use Web Share API (clipboard doesn't work on iOS)
+                    loading.classList.remove('show');
+
+                    // Step 1: Ask user to save image to Photos via Share Sheet
+                    const saveFirst = confirm(
+                        '📱 iOS Auto-Send via Shortcut\n\n' +
+                        'Step 1: Save image to Photos\n' +
+                        '• Share sheet will open\n' +
+                        '• Tap "Save Image" to save to Photos\n\n' +
+                        'Tap OK to continue.'
+                    );
+
+                    if (!saveFirst) return;
+
+                    // Show share sheet so user can save to Photos
                     if (navigator.share && navigator.canShare) {
                         const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
 
                         if (navigator.canShare({ files: [file] })) {
-                            loading.classList.remove('show');
-
                             try {
                                 await navigator.share({
                                     title: 'Everfresh Price List',
-                                    text: message,
                                     files: [file]
                                 });
-                                return; // Success!
                             } catch (shareError) {
                                 if (shareError.name === 'AbortError') {
                                     return; // User cancelled
@@ -4771,10 +4780,18 @@ Response format (JSON only, no markdown):
                             }
                         }
                     }
-                    // If Web Share failed on iOS, download as fallback
-                    loading.classList.remove('show');
-                    if (confirm('Share not available. Download image instead?')) {
-                        downloadBlob(blob);
+
+                    // Step 2: After saving, trigger the shortcut
+                    const triggerShortcut = confirm(
+                        '✅ Step 2: Send via Shortcut\n\n' +
+                        'Did you save the image to Photos?\n\n' +
+                        'If yes, tap OK to run the shortcut.\n' +
+                        'The shortcut will grab the latest photo and send it!'
+                    );
+
+                    if (triggerShortcut) {
+                        const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(message)}`;
+                        window.location.href = shortcutUrl;
                     }
                     return;
                 }
@@ -5099,13 +5116,59 @@ Response format (JSON only, no markdown):
                 const yourName = salesmanInfo.name || 'Everfresh Team';
                 const message = `Hi ${customer.name}! ${yourName} here from Everfresh 👋 Fresh prices for ${formattedDate} - give me a call or text for your order! Thank you.`;
 
-                // Try Web Share API first (works best on iOS)
+                loading.classList.remove('show');
+
+                // iOS with iMessage: Save to Photos first, then trigger shortcut
+                if (isIOS() && method === 'imessage') {
+                    // Step 1: Save image to Photos via Share Sheet
+                    const saveFirst = confirm(
+                        `📱 Send to ${customer.name} via iMessage\n\n` +
+                        `Step 1: Save image to Photos\n` +
+                        `• Share sheet will open\n` +
+                        `• Tap "Save Image"\n\n` +
+                        `Tap OK to continue.`
+                    );
+
+                    if (!saveFirst) return;
+
+                    // Show share sheet
+                    if (navigator.share && navigator.canShare) {
+                        const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
+
+                        if (navigator.canShare({ files: [file] })) {
+                            try {
+                                await navigator.share({
+                                    title: `Price List for ${customer.name}`,
+                                    files: [file]
+                                });
+                            } catch (shareError) {
+                                if (shareError.name === 'AbortError') {
+                                    return;
+                                }
+                            }
+                        }
+                    }
+
+                    // Step 2: Trigger shortcut with phone number
+                    const triggerShortcut = confirm(
+                        `✅ Step 2: Auto-Send to ${customer.name}\n\n` +
+                        `Did you save the image?\n\n` +
+                        `Tap OK to send via iMessage shortcut.`
+                    );
+
+                    if (triggerShortcut) {
+                        const shortcutInput = `${phone},${message}`;
+                        const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+                        window.location.href = shortcutUrl;
+                    }
+                    return;
+                }
+
+                // iOS with WhatsApp or non-iOS: Use Web Share
                 if (navigator.share && navigator.canShare) {
                     const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
 
                     if (navigator.canShare({ files: [file] })) {
-                        loading.classList.remove('show');
-
                         try {
                             await navigator.share({
                                 title: `Price List for ${customer.name}`,
@@ -5115,18 +5178,14 @@ Response format (JSON only, no markdown):
                             return; // Success - user picks app from share sheet
                         } catch (shareError) {
                             if (shareError.name === 'AbortError') {
-                                return; // User cancelled
+                                return;
                             }
-                            // Fall through to other methods
                         }
                     }
                 }
 
-                // Fallback methods if Web Share not available
-                loading.classList.remove('show');
-
-                if (method === 'imessage') {
-                    // Try clipboard + shortcut
+                // Fallback for non-iOS iMessage (clipboard method)
+                if (method === 'imessage' && !isIOS()) {
                     const clipboardResult = await copyImageToClipboard(blob);
 
                     if (clipboardResult.success) {
@@ -5134,7 +5193,7 @@ Response format (JSON only, no markdown):
                             `✅ Image copied to clipboard!\n\n` +
                             `Sending to: ${customer.name}\n` +
                             `Phone: ${customer.phone}\n\n` +
-                            `The Everfresh Pricelist shortcut will open and send the image via iMessage.\n\n` +
+                            `The shortcut will open and send via iMessage.\n\n` +
                             `Tap OK to continue.`
                         );
 
@@ -5143,17 +5202,12 @@ Response format (JSON only, no markdown):
                             const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
                             window.location.href = shortcutUrl;
                         }
-                    } else {
-                        // Download fallback
-                        const userConfirm = confirm(
-                            `Download the image and share manually to ${customer.name}?`
-                        );
-                        if (userConfirm) {
-                            downloadBlob(blob);
-                        }
+                        return;
                     }
+                }
 
-                } else if (method === 'whatsapp') {
+                // Final fallback: Download
+                if (method === 'whatsapp') {
                     // Download and open WhatsApp
                     const userConfirm = confirm(
                         `Sending to: ${customer.name}\n\n` +
