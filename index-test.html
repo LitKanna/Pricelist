@@ -4748,7 +4748,7 @@ Response format (JSON only, no markdown):
                 // Generate message
                 const message = generateShareMessage();
 
-                // On iOS, use share sheet directly (no shortcut for general share - no phone number)
+                // On iOS, two-step process: save image, then open Messages with text
                 if (isIOS()) {
                     loading.classList.remove('show');
 
@@ -4756,17 +4756,28 @@ Response format (JSON only, no markdown):
                         const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
 
                         if (navigator.canShare({ files: [file] })) {
+                            // Step 1: Show instructions
+                            alert(
+                                '📱 Two steps to send:\n\n' +
+                                '1. Save image: Tap "Save Image" in share sheet\n' +
+                                '2. Messages will open - attach saved image from Photos'
+                            );
+
                             try {
-                                // Share ONLY the file - text interferes with image attachment on iOS
+                                // Share the image for saving
                                 await navigator.share({
                                     files: [file]
                                 });
-                                return;
                             } catch (shareError) {
                                 if (shareError.name === 'AbortError') {
                                     return; // User cancelled
                                 }
                             }
+
+                            // Step 2: Open Messages with text pre-filled
+                            const smsUrl = `sms:&body=${encodeURIComponent(message)}`;
+                            window.location.href = smsUrl;
+                            return;
                         }
                     }
 
