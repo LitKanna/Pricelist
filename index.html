@@ -4678,15 +4678,41 @@ Response format (JSON only, no markdown):
             URL.revokeObjectURL(url);
         }
 
-        // Copy image blob to clipboard
+        // Detect iOS device
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+
+        // Copy image blob to clipboard (works on Chrome desktop/Android)
         async function copyImageToClipboard(blob) {
             try {
-                await navigator.clipboard.write([
-                    new ClipboardItem({ 'image/png': blob })
-                ]);
+                // Check if ClipboardItem is available
+                if (typeof ClipboardItem === 'undefined') {
+                    console.log('ClipboardItem not supported in this browser');
+                    return { success: false, error: 'ClipboardItem not supported' };
+                }
+
+                // Check if clipboard API is available
+                if (!navigator.clipboard || !navigator.clipboard.write) {
+                    console.log('Clipboard API not available');
+                    return { success: false, error: 'Clipboard API not available' };
+                }
+
+                // Create clipboard item and write
+                const item = new ClipboardItem({ 'image/png': blob });
+                await navigator.clipboard.write([item]);
+                console.log('Clipboard write successful!');
                 return { success: true };
+
             } catch (error) {
                 console.error('Clipboard write failed:', error);
+
+                // On iOS, clipboard for images often fails - this is expected
+                if (isIOS()) {
+                    console.log('iOS detected - clipboard image write not supported');
+                }
+
                 return { success: false, error: error.message };
             }
         }
@@ -4722,30 +4748,38 @@ Response format (JSON only, no markdown):
                 // Generate message
                 const message = generateShareMessage();
 
-                // Try Web Share API first (best for iOS)
-                if (navigator.share && navigator.canShare) {
-                    const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
+                // STRATEGY: On iOS use Web Share, on other platforms try clipboard first
+                if (isIOS()) {
+                    // iOS: Use Web Share API (clipboard doesn't work on iOS)
+                    if (navigator.share && navigator.canShare) {
+                        const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
 
-                    if (navigator.canShare({ files: [file] })) {
-                        loading.classList.remove('show');
+                        if (navigator.canShare({ files: [file] })) {
+                            loading.classList.remove('show');
 
-                        try {
-                            await navigator.share({
-                                title: 'Everfresh Price List',
-                                text: message,
-                                files: [file]
-                            });
-                            return; // Success!
-                        } catch (shareError) {
-                            if (shareError.name === 'AbortError') {
-                                return; // User cancelled, that's fine
+                            try {
+                                await navigator.share({
+                                    title: 'Everfresh Price List',
+                                    text: message,
+                                    files: [file]
+                                });
+                                return; // Success!
+                            } catch (shareError) {
+                                if (shareError.name === 'AbortError') {
+                                    return; // User cancelled
+                                }
                             }
-                            // Fall through to shortcut method
                         }
                     }
+                    // If Web Share failed on iOS, download as fallback
+                    loading.classList.remove('show');
+                    if (confirm('Share not available. Download image instead?')) {
+                        downloadBlob(blob);
+                    }
+                    return;
                 }
 
-                // Fallback: Try clipboard + shortcut method
+                // NON-iOS: Try clipboard + shortcut method (works on Chrome desktop/Android)
                 const clipboardResult = await copyImageToClipboard(blob);
 
                 loading.classList.remove('show');
@@ -4823,30 +4857,56 @@ Response format (JSON only, no markdown):
                 // Generate message
                 const message = generateShareMessage();
 
-                // Try Web Share API first (best for iOS)
-                if (navigator.share && navigator.canShare) {
-                    const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
+                // STRATEGY: On iOS use Web Share, on other platforms try clipboard first
+                if (isIOS()) {
+                    // iOS: Use Web Share API
+                    if (navigator.share && navigator.canShare) {
+                        const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
 
-                    if (navigator.canShare({ files: [file] })) {
-                        loading.classList.remove('show');
+                        if (navigator.canShare({ files: [file] })) {
+                            loading.classList.remove('show');
 
-                        try {
-                            await navigator.share({
-                                title: 'Everfresh Price List',
-                                text: message,
-                                files: [file]
-                            });
-                            return; // Success - user can choose WhatsApp from share sheet
-                        } catch (shareError) {
-                            if (shareError.name === 'AbortError') {
-                                return; // User cancelled
+                            try {
+                                await navigator.share({
+                                    title: 'Everfresh Price List',
+                                    text: message,
+                                    files: [file]
+                                });
+                                return; // Success - user picks WhatsApp from share sheet
+                            } catch (shareError) {
+                                if (shareError.name === 'AbortError') {
+                                    return; // User cancelled
+                                }
                             }
-                            // Fall through to other methods
                         }
                     }
                 }
 
-                // Fallback: Download and open WhatsApp link
+                // NON-iOS: Try clipboard first (works on Chrome desktop/Android)
+                if (!isIOS()) {
+                    const clipboardResult = await copyImageToClipboard(blob);
+
+                    if (clipboardResult.success) {
+                        loading.classList.remove('show');
+
+                        const userConfirm = confirm(
+                            '✅ Image copied to clipboard!\n\n' +
+                            'WhatsApp will open. In the chat:\n' +
+                            '1. Long-press the message box\n' +
+                            '2. Tap "Paste" (Ctrl+V on desktop)\n' +
+                            '3. Send the image\n\n' +
+                            'Tap OK to open WhatsApp.'
+                        );
+
+                        if (userConfirm) {
+                            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                            window.open(whatsappUrl, '_blank');
+                        }
+                        return;
+                    }
+                }
+
+                // Final fallback: Download and open WhatsApp link
                 loading.classList.remove('show');
 
                 const userConfirm = confirm(
@@ -4859,16 +4919,7 @@ Response format (JSON only, no markdown):
                 );
 
                 if (userConfirm) {
-                    // Download the image
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    const dateStr = new Date().toISOString().split('T')[0];
-                    a.download = 'everfresh-price-list-' + dateStr + '.png';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
+                    downloadBlob(blob);
 
                     // Open WhatsApp after download
                     setTimeout(() => {
