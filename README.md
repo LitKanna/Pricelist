@@ -27,6 +27,12 @@ A wholesale produce price list management system for Everfresh Produce Group (Sy
 3. Once verified, copy `index-test.html` to `index.html`
 4. Commit and push to deploy
 
+## Usage
+
+Visit the live app: [Everfresh Pricelist App](https://litkanna.github.io/Pricelist/)
+
+Simply open, edit, and download!
+
 ## Technologies
 
 - Vanilla JavaScript (ES6+)
@@ -34,3 +40,6 @@ A wholesale produce price list management system for Everfresh Produce Group (Sy
 - LocalStorage for persistence
 - Claude AI for smart categorization
 - WhatsApp Web API integration
+
+---
+Created for Everfresh Produce Group - Sydney Markets Flemington
