@@ -1,0 +1,3978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Everfresh Price List Editor</title>
+    
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- JSZip for XPS file parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <style>
+    /* Premium Fresh Design System */
+    :root {
+        --green-50: #f0fdf4;
+        --green-100: #dcfce7;
+        --green-500: #22c55e;
+        --green-600: #16a34a;
+        --green-700: #15803d;
+        --slate-50: #f8fafc;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --slate-700: #334155;
+        --slate-800: #1e293b;
+        --slate-900: #0f172a;
+    }
+    
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+        background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+        color: var(--slate-900);
+        line-height: 1.5;
+    }
+    
+    /* Beautiful Header */
+    .header {
+        background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+        padding: 32px 24px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(34, 197, 94, 0.2);
+    }
+    
+    .header h1 {
+        color: white;
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        letter-spacing: -1px;
+    }
+    
+    .header p {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 15px;
+        font-weight: 500;
+    }
+    
+    /* Modern Controls - Minimal & Clean */
+    .controls, .share-controls {
+        padding: 12px 16px;
+        background: white;
+        display: flex;
+        gap: 8px;
+        border-bottom: 1px solid #f1f5f9;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .controls::-webkit-scrollbar,
+    .share-controls::-webkit-scrollbar {
+        display: none;
+    }
+    
+    /* Minimal Buttons - Notion/Linear Style */
+    .btn {
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+    }
+    
+    .btn-success {
+        background: #0f172a;
+        color: white;
+    }
+    
+    .btn-success:active {
+        transform: scale(0.96);
+    }
+    
+    .btn-primary {
+        background: #f1f5f9;
+        color: #0f172a;
+    }
+    
+    .btn-secondary {
+        background: transparent;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .btn-danger {
+        background: #fef2f2;
+        color: #ef4444;
+    }
+    
+    .btn-share {
+        background: #059669;
+        color: white;
+        padding: 8px 14px;
+        font-size: 13px;
+        flex: 1;
+    }
+    
+    .btn-small {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    /* Content Area */
+    .content {
+        padding: 24px 20px;
+        background: var(--slate-50);
+    }
+    
+    /* Category Cards - Clean & Modern */
+    .category {
+        background: white;
+        border-radius: 16px;
+        margin-bottom: 16px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .category-header {
+        background: white;
+        padding: 16px 20px;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .category-title {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.2px;
+        color: #64748b;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+        flex: 1;
+    }
+    
+    .category-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .icon-btn {
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 18px;
+        transition: all 0.15s;
+    }
+    
+    .icon-btn:hover {
+        background: #f8fafc;
+        color: #ef4444;
+    }
+    
+    .icon-btn:active {
+        transform: scale(0.95);
+    }
+    
+    /* Modern Product Cards - Notion/Linear Style */
+    .product {
+        padding: 0;
+        border: none;
+        margin: 0;
+        background: white;
+        position: relative;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .product:last-child {
+        border-bottom: none;
+    }
+    
+    .product:hover {
+        background: #fafafa;
+    }
+    
+    .product-grid {
+        display: grid;
+        grid-template-columns: 2fr 1.5fr 1fr 32px;
+        gap: 16px;
+        padding: 12px 16px;
+        align-items: center;
+    }
+    
+    .product-field {
+        position: relative;
+        min-height: 32px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .product-label {
+        display: none;
+    }
+    
+    .input-field {
+        width: 100%;
+        padding: 6px 8px;
+        border: none;
+        background: transparent;
+        font-size: 14px;
+        font-weight: 500;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        color: #0f172a;
+        border-radius: 6px;
+        transition: background 0.15s;
+    }
+    
+    .input-field:hover {
+        background: #f8fafc;
+    }
+    
+    .input-field:focus {
+        outline: none;
+        background: #f1f5f9;
+    }
+    
+    .input-field::placeholder {
+        color: #cbd5e1;
+        font-weight: 400;
+    }
+    
+    /* Price field */
+    .product-field:nth-child(3) .input-field {
+        font-weight: 600;
+        color: #059669;
+    }
+    
+    /* Delete Button - Minimal */
+    .product-delete {
+        width: 32px;
+        height: 32px;
+        background: transparent;
+        color: #cbd5e1;
+        border: none;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.15s;
+        opacity: 0;
+    }
+    
+    .product:hover .product-delete {
+        opacity: 1;
+    }
+    
+    .product-delete:hover {
+        background: #fef2f2;
+        color: #ef4444;
+    }
+    
+    .product-delete:active {
+        transform: scale(0.9);
+    }
+    
+    /* Drag and Drop Styles */
+    .drag-handle {
+        width: 24px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: grab;
+        color: #cbd5e1;
+        opacity: 0;
+        transition: all 0.15s;
+        flex-shrink: 0;
+    }
+    
+    .drag-handle:active {
+        cursor: grabbing;
+    }
+    
+    .product:hover .drag-handle,
+    .category-header:hover .drag-handle {
+        opacity: 1;
+    }
+    
+    .drag-handle:hover {
+        color: #94a3b8;
+    }
+    
+    .drag-handle svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    /* Category drag handle */
+    .category-drag-handle {
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: grab;
+        color: #94a3b8;
+        opacity: 0;
+        transition: all 0.15s;
+        border-radius: 6px;
+    }
+    
+    .category-drag-handle:active {
+        cursor: grabbing;
+    }
+    
+    .category-header:hover .category-drag-handle {
+        opacity: 1;
+    }
+    
+    .category-drag-handle:hover {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+    
+    /* Dragging states */
+    .dragging {
+        opacity: 0.5;
+        transform: scale(0.98);
+    }
+    
+    .drag-over {
+        border-top: 3px solid #22c55e !important;
+    }
+    
+    .category.drag-over {
+        box-shadow: 0 -3px 0 0 #22c55e;
+    }
+    
+    .product.drag-over {
+        background: #f0fdf4;
+    }
+    
+    /* Hide drag handles when auto-sort is enabled */
+    .auto-sort-enabled .drag-handle,
+    .auto-sort-enabled .category-drag-handle {
+        display: none !important;
+    }
+    
+    /* Adjust product grid for drag handle + cost column */
+    .product-grid-with-drag {
+        display: grid;
+        grid-template-columns: 24px 2fr 1.2fr 0.8fr 0.8fr 32px;
+        gap: 10px;
+        padding: 12px 16px;
+        align-items: center;
+    }
+    
+    .table-header-with-drag {
+        display: grid;
+        grid-template-columns: 24px 2fr 1.2fr 0.8fr 0.8fr 32px;
+        gap: 10px;
+        padding: 8px 16px;
+        background: #fafafa;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    /* When auto-sort is on, hide drag column */
+    .auto-sort-enabled .product-grid-with-drag {
+        grid-template-columns: 2fr 1.2fr 0.8fr 0.8fr 32px;
+    }
+    
+    .auto-sort-enabled .table-header-with-drag {
+        grid-template-columns: 2fr 1.2fr 0.8fr 0.8fr 32px;
+    }
+    
+    /* Hide the drag handle column space when auto-sort is enabled */
+    .auto-sort-enabled .table-header-with-drag > .table-header-cell:first-child,
+    .auto-sort-enabled .product-grid-with-drag > .drag-handle {
+        display: none;
+    }
+    
+    /* Mobile responsive - iPhone and small screens */
+    @media (max-width: 480px) {
+        .product-grid-with-drag {
+            grid-template-columns: 20px 1.5fr 1fr 0.7fr 0.7fr 28px;
+            gap: 6px;
+            padding: 10px 10px;
+        }
+        
+        .table-header-with-drag {
+            grid-template-columns: 20px 1.5fr 1fr 0.7fr 0.7fr 28px;
+            gap: 6px;
+            padding: 6px 10px;
+        }
+        
+        .auto-sort-enabled .product-grid-with-drag {
+            grid-template-columns: 1.5fr 1fr 0.7fr 0.7fr 28px;
+        }
+        
+        .auto-sort-enabled .table-header-with-drag {
+            grid-template-columns: 1.5fr 1fr 0.7fr 0.7fr 28px;
+        }
+        
+        .input-field {
+            padding: 4px 6px;
+            font-size: 13px;
+        }
+        
+        .table-header-cell {
+            font-size: 9px;
+        }
+        
+        .cost-header {
+            font-size: 8px;
+        }
+        
+        .product-delete {
+            width: 28px;
+            height: 28px;
+            font-size: 14px;
+        }
+        
+        .drag-handle {
+            width: 20px;
+        }
+        
+        .category-header {
+            padding: 12px 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .category-margin {
+            font-size: 11px;
+        }
+        
+        .category-margin select {
+            padding: 3px 6px;
+            font-size: 11px;
+        }
+        
+        .category-margin span {
+            display: none;
+        }
+    }
+    
+    /* Extra small screens */
+    @media (max-width: 380px) {
+        .product-grid-with-drag {
+            grid-template-columns: 18px 1.4fr 0.9fr 0.65fr 0.65fr 26px;
+            gap: 4px;
+            padding: 8px 8px;
+        }
+        
+        .table-header-with-drag {
+            grid-template-columns: 18px 1.4fr 0.9fr 0.65fr 0.65fr 26px;
+            gap: 4px;
+            padding: 6px 8px;
+        }
+        
+        .auto-sort-enabled .product-grid-with-drag {
+            grid-template-columns: 1.4fr 0.9fr 0.65fr 0.65fr 26px;
+        }
+        
+        .auto-sort-enabled .table-header-with-drag {
+            grid-template-columns: 1.4fr 0.9fr 0.65fr 0.65fr 26px;
+        }
+        
+        .input-field {
+            padding: 3px 4px;
+            font-size: 12px;
+        }
+        
+        .table-header-cell {
+            font-size: 8px;
+        }
+    }
+    
+    /* Cost field styling - distinct internal look */
+    .cost-field .input-field {
+        background: #fef3c7;
+        border: 1px dashed #f59e0b;
+        color: #92400e;
+        font-weight: 500;
+    }
+    
+    .cost-field .input-field:hover {
+        background: #fef3c7;
+    }
+    
+    .cost-field .input-field:focus {
+        background: #fef9c3;
+        border-color: #f59e0b;
+    }
+    
+    /* Cost header styling */
+    .cost-header {
+        color: #92400e;
+        font-size: 10px;
+    }
+    
+    /* Category margin selector */
+    .category-margin {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #64748b;
+    }
+    
+    .category-margin select {
+        padding: 4px 8px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 12px;
+        background: white;
+        color: #334155;
+        cursor: pointer;
+    }
+    
+    .category-margin select:hover {
+        border-color: #cbd5e1;
+    }
+    
+    .category-margin select:focus {
+        outline: none;
+        border-color: #22c55e;
+    }
+    
+    /* Add Product Button - Minimal */
+    .add-product-btn {
+        margin: 0;
+        width: 100%;
+        padding: 10px 16px;
+        background: transparent;
+        color: #64748b;
+        border: none;
+        border-top: 1px solid #f1f5f9;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 6px;
+        transition: all 0.15s;
+    }
+    
+    .add-product-btn:hover {
+        background: #fafafa;
+        color: #0f172a;
+    }
+    
+    .add-product-btn:active {
+        background: #f5f5f5;
+    }
+    
+    /* Table Header - Subtle */
+    .table-header {
+        display: grid;
+        grid-template-columns: 2fr 1.5fr 1fr 32px;
+        gap: 16px;
+        padding: 8px 16px;
+        background: #fafafa;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .table-header-cell {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #94a3b8;
+    }
+    
+    /* Settings Panel */
+    .settings-panel {
+        position: fixed;
+        inset: 0;
+        background: white;
+        z-index: 1000;
+        transform: translateY(100%);
+        transition: transform 0.3s;
+        overflow-y: auto;
+        padding: 32px 24px;
+    }
+    
+    .settings-panel.show {
+        transform: translateY(0);
+    }
+    
+    .settings-panel h3 {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 24px;
+    }
+    
+    .input-group {
+        margin-bottom: 20px;
+    }
+    
+    .input-group label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--slate-700);
+    }
+    
+    .input-group input {
+        width: 100%;
+        padding: 14px;
+        border: 1.5px solid var(--slate-200);
+        border-radius: 10px;
+        font-size: 15px;
+    }
+    
+    /* Toggle */
+    .toggle-setting {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        background: var(--green-50);
+        border-radius: 12px;
+        margin-bottom: 24px;
+    }
+    
+    .toggle-label {
+        font-weight: 600;
+        font-size: 16px;
+    }
+    
+    .toggle-description {
+        color: var(--slate-700);
+        font-size: 14px;
+        margin-top: 4px;
+    }
+    
+    .toggle-switch {
+        position: relative;
+        width: 52px;
+        height: 30px;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background: var(--slate-200);
+        border-radius: 30px;
+        transition: 0.3s;
+    }
+    
+    .toggle-slider:before {
+        content: "";
+        position: absolute;
+        height: 24px;
+        width: 24px;
+        left: 3px;
+        bottom: 3px;
+        background: white;
+        border-radius: 50%;
+        transition: 0.3s;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .toggle-switch input:checked + .toggle-slider {
+        background: var(--green-500);
+    }
+    
+    .toggle-switch input:checked + .toggle-slider:before {
+        transform: translateX(22px);
+    }
+    
+    /* Customer Items */
+    .customer-item {
+        background: white;
+        padding: 16px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid var(--slate-100);
+    }
+    
+    .customer-name {
+        font-weight: 600;
+        font-size: 16px;
+    }
+    
+    .customer-phone {
+        color: var(--slate-700);
+        font-size: 14px;
+        margin-top: 2px;
+    }
+    
+    /* Modal */
+    .customer-share-menu {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 32px;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        z-index: 1001;
+        max-width: 90%;
+        min-width: 300px;
+    }
+    
+    .customer-share-menu.show {
+        display: block;
+    }
+    
+    .customer-share-menu h3 {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+    
+    /* Loading */
+    .loading {
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.95);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .loading.show {
+        display: flex;
+    }
+    
+    .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid var(--green-100);
+        border-top-color: var(--green-500);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--slate-700);
+    }
+    
+    /* Toast */
+    .toast {
+        position: fixed;
+        bottom: -100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--slate-900);
+        color: white;
+        padding: 16px 28px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: bottom 0.3s;
+        z-index: 1500;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+    
+    .toast.show {
+        bottom: 40px;
+    }
+    
+    #downloadCanvas {
+        display: none;
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌿 Everfresh Produce</h1>
+            <p>Wholesale Price List System</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-success" onclick="downloadImage()">
+                Download
+            </button>
+            <button class="btn btn-primary" onclick="showSmartAddProduct()">
+                Add Product
+            </button>
+            <button class="btn btn-warning" onclick="document.getElementById('xpsFileInput').click()" style="background: #f59e0b; color: white;">
+                Import XPS
+            </button>
+            <input type="file" id="xpsFileInput" accept=".xps" style="display: none;" onchange="handleXPSUpload(event)">
+            <button class="btn btn-secondary" onclick="saveToLocal()">
+                Save
+            </button>
+            <button class="btn btn-secondary" onclick="toggleSettings()">
+                Settings
+            </button>
+            <button class="btn btn-secondary" onclick="toggleCustomerPricing()" id="customerPricingBtn">
+                Pricing
+            </button>
+        </div>
+        
+        <div class="share-controls">
+            <button class="btn btn-share" onclick="quickShareWhatsApp()">
+                Share Image
+            </button>
+            <button class="btn btn-share" onclick="showCustomerShareMenu()">
+                Send to Customer
+            </button>
+        </div>
+        
+        <div class="customer-share-menu" id="customerShareMenu">
+            <h3>Select Customer</h3>
+            <div id="customerShareList"></div>
+            <button class="btn btn-secondary" onclick="closeCustomerShareMenu()" style="margin-top: 15px;">Cancel</button>
+        </div>
+
+        <!-- XPS Import Modal -->
+        <div class="customer-share-menu" id="xpsImportModal" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+            <h3>Import Products from XPS</h3>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Review the products extracted from your sales report. Select which ones to import.</p>
+            
+            <div id="xpsPreviewList" style="margin-bottom: 20px;"></div>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeXPSImport()">Cancel</button>
+                <button class="btn btn-success" onclick="confirmXPSImport()">Import Selected</button>
+            </div>
+        </div>
+
+        <!-- Smart Add Product Modal -->
+        <div class="customer-share-menu" id="smartAddModal" style="max-width: 600px;">
+            <h3>Smart Add Product</h3>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Just type the product name - I'll figure out where it belongs!</p>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b;">Product Name</label>
+                <input type="text" id="smartProductName" placeholder="e.g., Red Onion, Cherry Tomato, Long Green Chilli..." 
+                       style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px;"
+                       onkeyup="analyzeProduct()">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b;">Grade/Size</label>
+                <input type="text" id="smartProductGrade" placeholder="e.g., 10kg, per kg, BOX, piece..." 
+                       style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b;">Price</label>
+                <input type="text" id="smartProductPrice" placeholder="e.g., $25, $0.80..." 
+                       style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px;">
+            </div>
+
+            <div id="smartAnalysis" style="margin-bottom: 20px;"></div>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeSmartAdd()">Cancel</button>
+                <button class="btn btn-success" onclick="confirmSmartAdd()">Add Product</button>
+            </div>
+        </div>
+
+        <div class="settings-panel" id="settingsPanel">
+            <h3>Salesman Information</h3>
+            <div class="settings-grid">
+                <div class="input-group">
+                    <label>Your Name</label>
+                    <input type="text" id="salesmanName" placeholder="e.g., John Smith">
+                </div>
+                <div class="input-group">
+                    <label>Phone Number</label>
+                    <input type="text" id="salesmanPhone" placeholder="e.g., 0400 123 456">
+                </div>
+            </div>
+            
+            <hr style="margin: 30px 0; border: none; border-top: 2px solid #e9ecef;">
+            
+            <h3>Price List Settings</h3>
+            <div class="toggle-setting">
+                <div class="toggle-info">
+                    <label class="toggle-label">Send for Next Day</label>
+                    <p class="toggle-description">When ON: Shows tomorrow's date | When OFF: Shows today's date</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="nextDayToggle" checked onchange="saveSettings()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
+            <div class="toggle-setting" style="margin-top: 16px;">
+                <div class="toggle-info">
+                    <label class="toggle-label">Auto-Sort A-Z</label>
+                    <p class="toggle-description">When ON: Categories & products sort alphabetically | When OFF: Drag to reorder manually</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="autoSortToggle" onchange="toggleAutoSort()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
+            <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+            
+            <hr style="margin: 30px 0; border: none; border-top: 2px solid #e9ecef;">
+            
+            <h3>Customer Contacts</h3>
+            <div class="customer-contacts-section">
+                <div class="settings-grid">
+                    <div class="input-group">
+                        <label>Customer Name</label>
+                        <input type="text" id="customerName" placeholder="e.g., Mario's Restaurant">
+                    </div>
+                    <div class="input-group">
+                        <label>WhatsApp Number</label>
+                        <input type="text" id="customerPhone" placeholder="e.g., 0400123456">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="addCustomerContact()">Add Customer</button>
+                
+                <div id="customersList" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+
+        <!-- Customer Pricing Panel -->
+        <div class="settings-panel" id="customerPricingPanel">
+            <h3>Customer Pricing Tiers</h3>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 24px;">Set automatic price adjustments for different customer groups. Bulk items round to whole dollars, individual pieces keep cents.</p>
+            
+            <div class="settings-grid">
+                <div class="input-group">
+                    <label>Customer/Tier Name</label>
+                    <input type="text" id="tierName" placeholder="e.g., VIP Customers, Tony's Restaurant">
+                </div>
+                <div class="input-group">
+                    <label>Adjustment Type</label>
+                    <select id="adjustmentType" style="width: 100%; padding: 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 15px;">
+                        <option value="percentage">Percentage (%)</option>
+                        <option value="fixed">Fixed Amount ($)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label id="adjustmentLabel">Adjustment (-10 for discount, +5 for markup)</label>
+                    <input type="number" id="adjustmentValue" placeholder="e.g., -10" step="0.1">
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="addCustomerTier()">Add Pricing Tier</button>
+            
+            <div id="customerTiersList" style="margin-top: 24px;"></div>
+            
+            <hr style="margin: 30px 0; border: none; border-top: 2px solid #e9ecef;">
+            
+            <div style="background: #f8fafc; padding: 16px; border-radius: 10px; margin-bottom: 20px;">
+                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Preview Pricing Logic:</h4>
+                <div style="font-size: 13px; color: #64748b; line-height: 1.6;">
+                    <strong>Bulk items</strong> (BAG, BOX, CARTON, KG) → Round to whole dollars<br>
+                    Example: $10.80 → <strong>$11</strong><br><br>
+                    <strong>Individual items</strong> (PIECE, EACH) → Keep cents<br>
+                    Example: $2.25 → <strong>$2.25</strong>
+                </div>
+            </div>
+            
+            <button class="btn btn-secondary" onclick="toggleCustomerPricing()">Close</button>
+        </div>
+
+        <div class="content" id="categoriesContainer">
+            <!-- Categories will be loaded here -->
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Generating your price list...</div>
+    </div>
+
+    <div class="toast" id="toast">Saved successfully!</div>
+
+    <canvas id="downloadCanvas"></canvas>
+
+    <script>
+        // Salesman information
+        let salesmanInfo = {
+            name: '',
+            phone: '',
+            sendForNextDay: true // Default: send for tomorrow
+        };
+
+        // Customer contacts
+        let customerContacts = [];
+        
+        // Auto-sort setting (default OFF for manual control)
+        let autoSortEnabled = false;
+        
+        // Category margins (percentage markup on cost)
+        // Default 15% for all categories
+        let categoryMargins = {};
+        const DEFAULT_MARGIN = 15;
+
+        // Temporary storage for generated image
+        let lastGeneratedImageUrl = null;
+
+        // Get effective date based on settings
+        function getEffectiveDate() {
+            const date = new Date();
+            if (salesmanInfo.sendForNextDay) {
+                date.setDate(date.getDate() + 1); // Tomorrow
+            }
+            return date;
+        }
+
+        // Initial data
+        let priceData = {
+            "TOMATOES": [
+                ["Tomato", "Premium Extra Large", "$24"],
+                ["Tomato", "Premium Large", "$20"],
+                ["Tomato", "Premium Small-Mediums", "$18"],
+                ["Roma Tomato", "Premium", "$26"],
+                ["Roma Tomato", "No.2", "$15"],
+                ["Truss Tomatoes", "-", "$20"],
+                ["Cherry Tomatoes", "-", "$24"],
+                ["Cherry Truss", "-", "$24"],
+            ],
+            "CAPSICUM (PEPPERS)": [
+                ["Red Caps", "5kg", "$52"],
+                ["Yellow Caps", "5kg", "$50"],
+                ["Green Caps", "5kg", "$25"],
+                ["Green Caps", "10kg", "$50"],
+                ["Green Bullhorn", "5kg", "$36"],
+            ],
+            "CHILLIES": [
+                ["Long Red Chilli", "6kg", "$45"],
+                ["Long Green Chilli", "6kg", "$45"],
+                ["Thai Green Chilli", "6kg", "$90"],
+            ],
+            "EGGPLANTS": [
+                ["Eggplants 7kg", "Premium", "$18"],
+                ["Eggplants 7kg", "Standard", "$14"],
+                ["Eggplants 7kg", "No.2", "$10"],
+                ["Purple Stripe Eggplant", "Medium", "$27"],
+                ["Purple Stripe Eggplant", "Large", "$24"],
+                ["Lebanese Eggplants", "-", "$16"],
+            ],
+            "CUCUMBERS": [
+                ["Lebanese Cucumbers", "Premium", "$30"],
+                ["Lebanese Cucumbers", "No.2", "$15"],
+                ["Tele Cucumbers", "Bags", "$11"],
+            ],
+            "BEANS & PEAS": [
+                ["Flat Beans", "5kg", "$32"],
+                ["Sugar Snaps", "4kg", "$40"],
+                ["Snow Peas", "4kg", "$40"],
+            ],
+            "SPECIALTY VEGETABLES": [
+                ["Indian Bittermelon", "-", "$30"],
+                ["Okra", "Small 6kg", "$48"],
+                ["Curry Leaf", "per kg", "$22"],
+            ],
+            "ONIONS": [
+                ["Brown Onion", "20kg", "$26"],
+                ["Spanish/Red Onion", "10kg", "$13"],
+            ],
+            "GARLIC": [
+                ["Organic Garlic", "5kg", "$72"],
+                ["Organic Garlic", "10kg", "$140"],
+                ["Peeled Garlic", "250g", "$27"],
+                ["Peeled Garlic", "1kg", "$28"],
+                ["Prepack Garlic", "-", "$26"],
+            ],
+            "PUMPKINS": [
+                ["Grey/White Pumpkin", "per kg", "$0.60"],
+                ["Butternut Pumpkin", "per kg", "$0.80"],
+            ],
+            "ROOT VEGETABLES": [
+                ["Beetroot", "Small", "$11"],
+                ["Beetroot", "Large", "$18"],
+            ],
+            "CITRUS & EGGS": [
+                ["Lime", "10kg", "$26"],
+                ["Eggs", "600g", "$30"],
+                ["Eggs", "700g", "$34"],
+            ],
+        };
+
+        // Customer Pricing System
+        let customers = [];
+        let selectedCustomer = null; // For applying custom pricing
+
+        // Smart rounding logic
+        function shouldRoundToWholeDollar(gradeSize) {
+            if (!gradeSize || gradeSize === '-') return true;
+            
+            const grade = gradeSize.toLowerCase();
+            
+            // Keywords that should KEEP CENTS (not round)
+            const keepCentsKeywords = [
+                'per kg', 'per kilo', '/kg', 'per kilogram',
+                'per gram', 'per g', '/g',
+                'piece', 'pieces', 'each', 'ea', 'unit', 'units', 'pc', 'pcs', 'per '
+            ];
+            
+            // Check if it should keep cents
+            const shouldKeepCents = keepCentsKeywords.some(keyword => grade.includes(keyword));
+            
+            // If should keep cents, return false (don't round)
+            if (shouldKeepCents) return false;
+            
+            // Everything else rounds to whole dollars (bags, boxes, cartons, etc)
+            return true;
+        }
+
+        // Smart price rounding
+        function smartRoundPrice(price, gradeSize) {
+            if (shouldRoundToWholeDollar(gradeSize)) {
+                // Round to whole dollar
+                return Math.round(price);
+            } else {
+                // Round to nearest 5 cents (0.05)
+                // Examples: $2.37 → $2.35, $0.83 → $0.85, $1.22 → $1.20
+                return Math.round(price * 20) / 20;
+            }
+        }
+
+        // Calculate customer-specific price with smart rounding
+        function calculateCustomerPrice(basePrice, gradeSize, customer) {
+            if (!customer || !customer.adjustmentValue) {
+                return basePrice;
+            }
+
+            // Parse base price
+            let priceStr = basePrice.toString().replace('$', '').replace(',', '');
+            let price = parseFloat(priceStr);
+            if (isNaN(price)) return basePrice;
+
+            // Apply adjustment
+            if (customer.adjustmentType === 'percentage') {
+                price = price * (1 + customer.adjustmentValue / 100);
+            } else if (customer.adjustmentType === 'fixed') {
+                price = price + customer.adjustmentValue;
+            }
+
+            // Apply smart rounding (whole dollars OR nearest 5 cents)
+            price = smartRoundPrice(price, gradeSize);
+            
+            // Format price
+            if (shouldRoundToWholeDollar(gradeSize)) {
+                return '$' + price;
+            } else {
+                return '$' + price.toFixed(2);
+            }
+        }
+
+        // Get adjusted price data for selected customer
+        function getAdjustedPriceData() {
+            if (!selectedCustomer) return priceData;
+
+            const adjustedData = {};
+            for (const categoryName in priceData) {
+                adjustedData[categoryName] = priceData[categoryName].map(item => {
+                    return [
+                        item[0], // Product name
+                        item[1], // Grade/Size
+                        calculateCustomerPrice(item[2], item[1], selectedCustomer) // Adjusted price
+                    ];
+                });
+            }
+            return adjustedData;
+        }
+
+        // Save customers to localStorage
+        function saveCustomers() {
+            localStorage.setItem('everfresh_customers', JSON.stringify(customers));
+        }
+
+        // Load from localStorage if available
+        function loadFromLocal() {
+            const saved = localStorage.getItem('everfresh_price_data');
+            if (saved) {
+                priceData = JSON.parse(saved);
+            }
+            
+            const savedInfo = localStorage.getItem('everfresh_salesman_info');
+            if (savedInfo) {
+                salesmanInfo = JSON.parse(savedInfo);
+                document.getElementById('salesmanName').value = salesmanInfo.name || '';
+                document.getElementById('salesmanPhone').value = salesmanInfo.phone || '';
+                document.getElementById('nextDayToggle').checked = salesmanInfo.sendForNextDay !== false; // Default true
+            }
+            
+            // Load auto-sort setting
+            const savedAutoSort = localStorage.getItem('everfresh_auto_sort');
+            if (savedAutoSort !== null) {
+                autoSortEnabled = savedAutoSort === 'true';
+            }
+            document.getElementById('autoSortToggle').checked = autoSortEnabled;
+            updateAutoSortUI();
+            
+            // Load category margins
+            const savedMargins = localStorage.getItem('everfresh_category_margins');
+            if (savedMargins) {
+                categoryMargins = JSON.parse(savedMargins);
+            }
+            
+            const savedContacts = localStorage.getItem('everfresh_customer_contacts');
+            if (savedContacts) {
+                customerContacts = JSON.parse(savedContacts);
+                renderCustomersList();
+            }
+            
+            const savedCustomers = localStorage.getItem('everfresh_customers');
+            if (savedCustomers) {
+                customers = JSON.parse(savedCustomers);
+            }
+        }
+
+        // Save to localStorage
+        function saveToLocal(showNotification = true) {
+            collectData();
+            localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
+            localStorage.setItem('everfresh_category_margins', JSON.stringify(categoryMargins));
+            
+            // Show toast notification only if requested
+            if (showNotification) {
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+        }
+        
+        // Toggle auto-sort setting
+        function toggleAutoSort() {
+            autoSortEnabled = document.getElementById('autoSortToggle').checked;
+            localStorage.setItem('everfresh_auto_sort', autoSortEnabled);
+            updateAutoSortUI();
+            
+            if (autoSortEnabled) {
+                // First collect any unsaved changes from DOM
+                collectData();
+                // Then sort the data
+                sortPriceDataAlphabetically();
+                // Save directly (don't call saveToLocal as it would collectData again)
+                localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
+            }
+            
+            renderCategories();
+        }
+        
+        // Update UI based on auto-sort setting
+        function updateAutoSortUI() {
+            const container = document.getElementById('categoriesContainer');
+            if (autoSortEnabled) {
+                container.classList.add('auto-sort-enabled');
+            } else {
+                container.classList.remove('auto-sort-enabled');
+            }
+        }
+        
+        // Sort priceData alphabetically (categories and products)
+        function sortPriceDataAlphabetically() {
+            // Sort categories
+            const sortedCategories = Object.keys(priceData).sort((a, b) => 
+                a.localeCompare(b, undefined, { sensitivity: 'base' })
+            );
+            
+            const sortedData = {};
+            for (const category of sortedCategories) {
+                // Sort products within each category by product name
+                sortedData[category] = [...priceData[category]].sort((a, b) => 
+                    a[0].localeCompare(b[0], undefined, { sensitivity: 'base' })
+                );
+            }
+            
+            priceData = sortedData;
+        }
+
+        // Toggle settings panel
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('show');
+            // Close customer pricing if open
+            document.getElementById('customerPricingPanel').classList.remove('show');
+        }
+
+        // Toggle customer pricing panel
+        function toggleCustomerPricing() {
+            const panel = document.getElementById('customerPricingPanel');
+            panel.classList.toggle('show');
+            // Close settings if open
+            document.getElementById('settingsPanel').classList.remove('show');
+            
+            if (panel.classList.contains('show')) {
+                renderCustomerTiersList();
+            }
+        }
+
+        // Add customer pricing tier
+        function addCustomerTier() {
+            const name = document.getElementById('tierName').value.trim();
+            const type = document.getElementById('adjustmentType').value;
+            const value = parseFloat(document.getElementById('adjustmentValue').value);
+
+            if (!name) {
+                alert('Please enter a customer/tier name');
+                return;
+            }
+
+            if (isNaN(value)) {
+                alert('Please enter a valid adjustment value');
+                return;
+            }
+
+            customers.push({
+                id: Date.now(),
+                name: name,
+                adjustmentType: type,
+                adjustmentValue: value
+            });
+
+            saveCustomers();
+            renderCustomerTiersList();
+
+            // Clear inputs
+            document.getElementById('tierName').value = '';
+            document.getElementById('adjustmentValue').value = '';
+
+            showToast('Customer tier added!');
+        }
+
+        // Render customer tiers list
+        function renderCustomerTiersList() {
+            const container = document.getElementById('customerTiersList');
+            
+            if (customers.length === 0) {
+                container.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 20px;">No pricing tiers yet. Add one above!</p>';
+                return;
+            }
+
+            container.innerHTML = customers.map(customer => {
+                const adjustmentText = customer.adjustmentType === 'percentage' 
+                    ? `${customer.adjustmentValue > 0 ? '+' : ''}${customer.adjustmentValue}%`
+                    : `${customer.adjustmentValue > 0 ? '+' : ''}$${Math.abs(customer.adjustmentValue)}`;
+                
+                const isActive = selectedCustomer && selectedCustomer.id === customer.id;
+                
+                return `
+                    <div class="customer-item" style="background: ${isActive ? '#f0fdf4' : 'white'}; border: 1px solid ${isActive ? '#22c55e' : '#e2e8f0'};">
+                        <div class="customer-info">
+                            <div class="customer-name">${customer.name}</div>
+                            <div class="customer-phone">Adjustment: ${adjustmentText}</div>
+                        </div>
+                        <div class="customer-actions">
+                            <button class="btn btn-small ${isActive ? 'btn-success' : 'btn-secondary'}" onclick="applyCustomerPricing(${customer.id})">
+                                ${isActive ? '✓ Active' : 'Apply'}
+                            </button>
+                            <button class="btn btn-small btn-danger" onclick="deleteCustomerTier(${customer.id})">×</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Apply customer pricing
+        function applyCustomerPricing(customerId) {
+            if (selectedCustomer && selectedCustomer.id === customerId) {
+                // Deactivate
+                selectedCustomer = null;
+                showToast('Standard pricing restored');
+            } else {
+                // Activate
+                selectedCustomer = customers.find(c => c.id === customerId);
+                showToast(`Applied pricing for ${selectedCustomer.name}`);
+            }
+            
+            renderCustomerTiersList();
+            renderCategories();
+        }
+
+        // Delete customer tier
+        function deleteCustomerTier(customerId) {
+            if (!confirm('Delete this pricing tier?')) return;
+            
+            customers = customers.filter(c => c.id !== customerId);
+            
+            if (selectedCustomer && selectedCustomer.id === customerId) {
+                selectedCustomer = null;
+                renderCategories();
+            }
+            
+            saveCustomers();
+            renderCustomerTiersList();
+            showToast('Pricing tier deleted');
+        }
+
+        // Helper to show toast
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // XPS Import functionality
+        let xpsExtractedProducts = [];
+
+        // Normalize product names for matching
+        function normalizeProductName(name) {
+            let normalized = name.toUpperCase().trim();
+            
+            // Remove common filler words
+            const fillers = ['PREMIUM', 'FRESH', 'NO.1', 'NO.2', 'NO1', 'NO2', 'GRADE', 'QUALITY', 'SELECT'];
+            fillers.forEach(filler => {
+                normalized = normalized.replace(new RegExp('\\b' + filler + '\\b', 'g'), '');
+            });
+            
+            // Handle plurals - remove trailing S
+            normalized = normalized.replace(/S\b/g, '');
+            
+            // Remove extra spaces
+            normalized = normalized.replace(/\s+/g, ' ').trim();
+            
+            return normalized;
+        }
+
+        // Calculate similarity score between two product names
+        function calculateSimilarity(name1, name2) {
+            const norm1 = normalizeProductName(name1);
+            const norm2 = normalizeProductName(name2);
+            
+            // Exact match
+            if (norm1 === norm2) return 100;
+            
+            // One contains the other
+            if (norm1.includes(norm2) || norm2.includes(norm1)) return 90;
+            
+            // Split into words and check overlap
+            const words1 = norm1.split(' ');
+            const words2 = norm2.split(' ');
+            
+            const commonWords = words1.filter(w => words2.includes(w) && w.length > 2);
+            const totalWords = Math.max(words1.length, words2.length);
+            
+            if (commonWords.length === 0) return 0;
+            
+            const wordScore = (commonWords.length / totalWords) * 100;
+            
+            // Boost score if key words match
+            const keyWords = ['TOMATO', 'CHILLI', 'CAPSICUM', 'CUCUMBER', 'LETTUCE', 'EGGPLANT'];
+            const hasKeyMatch = keyWords.some(kw => norm1.includes(kw) && norm2.includes(kw));
+            
+            return hasKeyMatch ? wordScore : wordScore * 0.7;
+        }
+
+        // Smart extraction of unit price from concatenated format
+        function extractUnitPrice(line) {
+            // Format: [docket][size][qty][price][total]
+            // Example: "376081LGE1014.00140.00" → qty=10, price=14.00, total=140.00
+            
+            const allNumbers = line.match(/(\d+\.\d{2})/g);
+            if (!allNumbers || allNumbers.length < 2) return null;
+            
+            const total = parseFloat(allNumbers[allNumbers.length - 1]);
+            const concatenated = allNumbers[allNumbers.length - 2];
+            
+            if (allNumbers.length === 2) {
+                // Try to split concatenated qty+price
+                const clean = concatenated.replace('.', '');
+                
+                // Try different split positions to find qty * price = total
+                for (let splitPos = 1; splitPos < clean.length - 2; splitPos++) {
+                    const qtyStr = clean.substring(0, splitPos);
+                    const priceStr = clean.substring(splitPos);
+                    
+                    if (!qtyStr || !priceStr) continue;
+                    
+                    try {
+                        const qty = parseInt(qtyStr);
+                        // Re-add decimal (last 2 digits are cents)
+                        const price = parseFloat(
+                            priceStr.substring(0, priceStr.length - 2) + '.' + 
+                            priceStr.substring(priceStr.length - 2)
+                        );
+                        
+                        // Check if qty * price ≈ total
+                        const calculatedTotal = qty * price;
+                        if (Math.abs(calculatedTotal - total) < 0.01) {
+                            return price;
+                        }
+                    } catch (e) {
+                        continue;
+                    }
+                }
+            }
+            
+            // Fallback: return as-is
+            return parseFloat(concatenated);
+        }
+
+        async function handleXPSUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showToast('Parsing XPS file...');
+
+            try {
+                console.log('Starting XPS parse...');
+                console.log('File:', file.name, 'Size:', file.size);
+                
+                const products = await parseXPSFile(file);
+                
+                console.log('Parse complete. Products:', products.length);
+                
+                if (products.length === 0) {
+                    alert('No products found in XPS file. The file may be empty or in an unexpected format.');
+                    return;
+                }
+                
+                xpsExtractedProducts = products;
+                showXPSPreview(products);
+            } catch (error) {
+                console.error('XPS parsing error:', error);
+                console.error('Error stack:', error.stack);
+                alert('Error parsing XPS file: ' + error.message + '\n\nCheck browser console (F12) for details.');
+            }
+
+            // Reset file input
+            event.target.value = '';
+        }
+
+        async function parseXPSFile(file) {
+            console.log('Loading ZIP...');
+            const zip = await JSZip.loadAsync(file);
+            console.log('ZIP loaded successfully');
+            
+            const products = {};
+
+            // Find all .fpage files
+            const fpageFiles = [];
+            zip.forEach((relativePath, zipEntry) => {
+                if (relativePath.endsWith('.fpage') && !zipEntry.dir) {
+                    fpageFiles.push({path: relativePath, file: zipEntry});
+                }
+            });
+
+            console.log(`Found ${fpageFiles.length} pages in XPS`);
+            
+            if (fpageFiles.length === 0) {
+                throw new Error('No .fpage files found in XPS. File may be corrupted.');
+            }
+
+            // Parse each page
+            for (const fpageInfo of fpageFiles) {
+                try {
+                    console.log(`Parsing ${fpageInfo.path}...`);
+                    const content = await fpageInfo.file.async('text');
+                    
+                    // Parse XML
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(content, 'text/xml');
+                    
+                    // Check for parse errors
+                    const parseError = xmlDoc.getElementsByTagName('parsererror');
+                    if (parseError.length > 0) {
+                        console.error('XML parse error:', parseError[0].textContent);
+                        continue;
+                    }
+                    
+                    // Extract all UnicodeString attributes
+                    const glyphs = xmlDoc.getElementsByTagName('Glyphs');
+                    const texts = [];
+                    
+                    for (let glyph of glyphs) {
+                        const unicodeStr = glyph.getAttribute('UnicodeString');
+                        if (unicodeStr) {
+                            texts.push(unicodeStr.replace(/&amp;/g, '&'));
+                        }
+                    }
+                    
+                    console.log(`  Found ${texts.length} text elements`);
+
+                    // Find product patterns
+                    const productKeywords = ['LETTUCE', 'EGGPLANT', 'BEETROOT', 'MELON', 'TOMATO', 
+                                            'CAPSICUM', 'CHILLI', 'CUCUMBER', 'BEANS', 'OKRA', 
+                                            'ONION', 'GARLIC', 'PUMPKIN', 'CARROT', 'LUFFA',
+                                            'MANGO', 'LIME', 'POMEGRANATE', 'GUAVA', 'COCONUT',
+                                            'BASIL', 'MINT', 'CORIANDER', 'GINGER', 'POTATO',
+                                            'ZUCCHINI', 'BROCCOLI', 'CAULIFLOWER', 'SPINACH',
+                                            'MUSHROOM', 'CELERY', 'PARSLEY', 'KALE', 'PEA', 'SNAP'];
+
+                    for (let i = 0; i < texts.length; i++) {
+                        const text = texts[i].trim();
+                        
+                        // STRICT product detection criteria:
+                        const hasKeyword = productKeywords.some(kw => text.toUpperCase().includes(kw));
+                        const hasHyphen = text.includes(' - ');
+                        const isNotTotal = !text.includes('Total');
+                        const isNotCustomer = !text.includes('EPG') && !text.includes('FARMS') && 
+                                            !text.includes('PTY') && !text.includes('P/L') &&
+                                            !text.includes('CASH') && !text.includes('MARKET');
+                        
+                        if (hasKeyword && hasHyphen && isNotTotal && isNotCustomer) {
+                            const productLine = text;
+                            
+                            // Look for prices in next few lines
+                            for (let j = i + 1; j < Math.min(i + 8, texts.length); j++) {
+                                const line = texts[j];
+                                
+                                // Skip lines that are clearly not price data
+                                if (line.includes('Total') || line.includes('EPG') || 
+                                    line.includes('MARKET') || line.includes('FRESH')) {
+                                    continue;
+                                }
+                                
+                                // Use smart extraction to handle concatenated qty+price+total
+                                const unitPrice = extractUnitPrice(line);
+                                
+                                if (unitPrice && unitPrice > 0 && unitPrice < 1000) {
+                                    if (!products[productLine]) {
+                                        products[productLine] = [];
+                                    }
+                                    products[productLine].push(unitPrice);
+                                    console.log(`    Found: ${productLine} → $${unitPrice}`);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error(`Error parsing page ${fpageInfo.path}:`, err);
+                    console.error('Stack:', err.stack);
+                }
+            }
+
+            console.log(`Extracted ${Object.keys(products).length} unique products`);
+
+            // Format products
+            const finalProducts = [];
+            for (const [fullName, prices] of Object.entries(products)) {
+                if (prices.length === 0) continue;
+
+                const parts = fullName.split(' - ');
+                const name = parts[0].trim();
+                const grade = parts.length > 1 ? parts[1].trim() : '-';
+
+                const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+
+                // Use smart rounding (whole dollars OR nearest 5 cents)
+                const suggestedPrice = smartRoundPrice(avgPrice, grade);
+
+                finalProducts.push({
+                    product: name,
+                    grade: grade,
+                    pricesSold: prices,
+                    avgPrice: Math.round(avgPrice * 100) / 100,
+                    suggestedPrice: suggestedPrice,
+                    salesCount: prices.length,
+                    selected: true
+                });
+            }
+
+            return finalProducts.sort((a, b) => a.product.localeCompare(b.product));
+        }
+
+        function showXPSPreview(products) {
+            const modal = document.getElementById('xpsImportModal');
+            const list = document.getElementById('xpsPreviewList');
+
+            if (products.length === 0) {
+                list.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 40px;">No products found in XPS file.</p>';
+                modal.classList.add('show');
+                return;
+            }
+
+            // Match XPS products to existing products with better fuzzy matching
+            const matches = [];
+            const unmatched = [];
+
+            products.forEach(xpsProduct => {
+                let bestMatch = null;
+                let bestScore = 0;
+
+                // Search through all categories
+                for (const categoryName in priceData) {
+                    const items = priceData[categoryName];
+                    
+                    for (let i = 0; i < items.length; i++) {
+                        const existingProduct = items[i][0]; // Product name
+                        const existingGrade = items[i][1];   // Grade/Size
+                        const existingPrice = items[i][2];   // Current price
+
+                        // Calculate similarity score
+                        const score = calculateSimilarity(xpsProduct.product, existingProduct);
+
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMatch = {
+                                categoryName: categoryName,
+                                itemIndex: i,
+                                existingProduct: existingProduct,
+                                existingGrade: existingGrade,
+                                currentPrice: existingPrice,
+                                xpsProduct: xpsProduct,
+                                matchScore: score,
+                                selected: score >= 70  // Auto-select if score >= 70%
+                            };
+                        }
+                    }
+                }
+
+                // Only consider it a match if score is decent
+                if (bestMatch && bestScore >= 60) {
+                    matches.push(bestMatch);
+                } else {
+                    unmatched.push(xpsProduct);
+                }
+            });
+
+            // Sort matches by score (best first)
+            matches.sort((a, b) => b.matchScore - a.matchScore);
+
+            list.innerHTML = `
+                <div style="background: #f0fdf4; border: 1px solid #22c55e; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                    <strong style="color: #15803d;">Found ${matches.length} matching products in your price list</strong>
+                    <p style="color: #16a34a; font-size: 13px; margin-top: 4px;">Prices will be updated based on your sales data. Review matches below.</p>
+                </div>
+                ${unmatched.length > 0 ? `
+                    <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                        <strong style="color: #92400e;">${unmatched.length} products from XPS not found in your list</strong>
+                        <p style="color: #78350f; font-size: 13px; margin-top: 4px;">Add these manually if needed</p>
+                    </div>
+                ` : ''}
+                <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+                    <button class="btn btn-small btn-secondary" onclick="selectAllXPSMatches(true)">Select All</button>
+                    <button class="btn btn-small btn-secondary" onclick="selectAllXPSMatches(false)">Deselect All</button>
+                </div>
+                <div style="max-height: 450px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    ${matches.map((m, idx) => {
+                        const matchQuality = m.matchScore >= 90 ? 'Excellent' : 
+                                            m.matchScore >= 80 ? 'Good' :
+                                            m.matchScore >= 70 ? 'Fair' : 'Weak';
+                        
+                        return `
+                            <div style="padding: 12px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px; background: ${m.matchScore < 70 ? '#fef3c7' : 'white'};">
+                                <input type="checkbox" id="xps_match_${idx}" ${m.selected ? 'checked' : ''} 
+                                       onchange="xpsMatches[${idx}].selected = this.checked"
+                                       style="width: 18px; height: 18px; cursor: pointer;">
+                                <label for="xps_match_${idx}" style="flex: 1; cursor: pointer;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px;">
+                                        <div style="flex: 1;">
+                                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                                <span style="font-size: 11px; padding: 2px 6px; background: #f1f5f9; border-radius: 4px;">${matchQuality}</span>
+                                                <span style="font-size: 11px; color: #94a3b8;">${m.matchScore.toFixed(0)}% match</span>
+                                            </div>
+                                            <div style="font-weight: 600; color: #1e293b; margin-bottom: 2px;">${m.existingProduct}</div>
+                                            <div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">${m.existingGrade}</div>
+                                            <div style="font-size: 12px; color: #94a3b8;">
+                                                XPS: "${m.xpsProduct.product}" → ${m.xpsProduct.pricesSold.map(p => '$' + p.toFixed(2)).join(', ')}
+                                            </div>
+                                        </div>
+                                        <div style="text-align: right; min-width: 120px;">
+                                            <div style="font-size: 13px; color: #94a3b8; text-decoration: line-through;">Was: ${m.currentPrice}</div>
+                                            <div style="font-weight: 700; color: #15803d; font-size: 20px; margin: 4px 0;">
+                                                $${m.xpsProduct.suggestedPrice.toFixed(shouldRoundToWholeDollar(m.existingGrade) ? 0 : 2)}
+                                            </div>
+                                            <div style="font-size: 11px; color: #64748b;">${m.xpsProduct.salesCount} sale${m.xpsProduct.salesCount > 1 ? 's' : ''}</div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        `;
+                    }).join('')}
+                    ${unmatched.length > 0 ? `
+                        <div style="padding: 16px; background: #fafafa;">
+                            <div style="font-weight: 600; color: #64748b; margin-bottom: 8px;">Not Found in Your List (${unmatched.length}):</div>
+                            ${unmatched.map(u => `
+                                <div style="font-size: 13px; color: #94a3b8; padding: 6px 0; border-bottom: 1px solid #f1f5f9;">
+                                    ${u.product} - ${u.grade} → $${u.suggestedPrice.toFixed(2)} (${u.salesCount} sales)
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            // Store matches globally
+            window.xpsMatches = matches;
+            modal.classList.add('show');
+        }
+
+        // Levenshtein distance for fuzzy matching
+
+        function selectAllXPSMatches(selected) {
+            if (window.xpsMatches) {
+                window.xpsMatches.forEach((m, idx) => {
+                    m.selected = selected;
+                    const checkbox = document.getElementById(`xps_match_${idx}`);
+                    if (checkbox) checkbox.checked = selected;
+                });
+            }
+        }
+
+        function closeXPSImport() {
+            document.getElementById('xpsImportModal').classList.remove('show');
+            xpsExtractedProducts = [];
+            window.xpsMatches = null;
+        }
+
+        function confirmXPSImport() {
+            const matches = window.xpsMatches;
+            if (!matches) return;
+
+            const selected = matches.filter(m => m.selected);
+            
+            if (selected.length === 0) {
+                alert('Please select at least one product to update');
+                return;
+            }
+
+            // Update prices in priceData
+            selected.forEach(match => {
+                const price = '$' + match.xpsProduct.suggestedPrice.toFixed(
+                    shouldRoundToWholeDollar(match.existingGrade) ? 0 : 2
+                );
+                
+                // Update the price directly
+                priceData[match.categoryName][match.itemIndex][2] = price;
+            });
+
+            saveToLocal();
+            renderCategories();
+            closeXPSImport();
+
+            showToast(`Updated ${selected.length} product prices!`);
+        }
+
+        // Save settings
+        function saveSettings() {
+            salesmanInfo.name = document.getElementById('salesmanName').value;
+            salesmanInfo.phone = document.getElementById('salesmanPhone').value;
+            salesmanInfo.sendForNextDay = document.getElementById('nextDayToggle').checked;
+            
+            localStorage.setItem('everfresh_salesman_info', JSON.stringify(salesmanInfo));
+            
+            const toast = document.getElementById('toast');
+            toast.innerHTML = 'Settings saved!';
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.innerHTML = 'Saved successfully!';
+            }, 2000);
+            
+            toggleSettings();
+        }
+
+        // Add customer contact
+        function addCustomerContact() {
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            
+            if (!name || !phone) {
+                alert('Please enter both customer name and phone number');
+                return;
+            }
+            
+            customerContacts.push({ name, phone });
+            localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
+            
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerPhone').value = '';
+            
+            renderCustomersList();
+            
+            const toast = document.getElementById('toast');
+            toast.innerHTML = 'Customer added!';
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.innerHTML = 'Saved successfully!';
+            }, 2000);
+        }
+
+        // Delete customer contact
+        function deleteCustomerContact(index) {
+            if (confirm('Delete this customer contact?')) {
+                customerContacts.splice(index, 1);
+                localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
+                renderCustomersList();
+            }
+        }
+
+        // Render customers list
+        function renderCustomersList() {
+            const container = document.getElementById('customersList');
+            if (customerContacts.length === 0) {
+                container.innerHTML = '<p style="color: #6b7280; font-size: 14px; margin-top: 10px;">No customers added yet</p>';
+                return;
+            }
+            
+            let html = '<div style="margin-top: 15px;">';
+            customerContacts.forEach((customer, index) => {
+                html += `
+                    <div class="customer-item">
+                        <div class="customer-info">
+                            <div class="customer-name">${customer.name}</div>
+                            <div class="customer-phone">${customer.phone}</div>
+                        </div>
+                        <div class="customer-actions">
+                            <button class="btn btn-danger btn-small" onclick="deleteCustomerContact(${index})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Render categories
+        function renderCategories() {
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = '';
+            
+            // Update auto-sort UI class
+            updateAutoSortUI();
+
+            // Show active pricing info
+            if (selectedCustomer) {
+                const adjustmentText = selectedCustomer.adjustmentType === 'percentage' 
+                    ? `${selectedCustomer.adjustmentValue > 0 ? '+' : ''}${selectedCustomer.adjustmentValue}%`
+                    : `${selectedCustomer.adjustmentValue > 0 ? '+' : ''}$${Math.abs(selectedCustomer.adjustmentValue)}`;
+                
+                container.innerHTML = `
+                    <div style="background: #f0fdf4; border: 1px solid #22c55e; padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="color: #15803d; font-size: 15px;">${selectedCustomer.name} Pricing Active</strong>
+                                <p style="color: #16a34a; font-size: 13px; margin-top: 4px;">Adjustment: ${adjustmentText} (Bulk items to whole $, Pieces with cents)</p>
+                            </div>
+                            <button class="btn btn-small btn-secondary" onclick="applyCustomerPricing(${selectedCustomer.id})">Reset to Standard</button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Drag handle SVG icon
+            const dragHandleSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>`;
+            
+            // Generate margin options HTML (15% to 100% in steps of 5)
+            function getMarginOptions(selectedMargin) {
+                let options = '';
+                for (let i = 15; i <= 100; i += 5) {
+                    options += `<option value="${i}" ${selectedMargin === i ? 'selected' : ''}>${i}%</option>`;
+                }
+                return options;
+            }
+
+            Object.keys(priceData).forEach((categoryName, catIndex) => {
+                const category = document.createElement('div');
+                category.className = 'category';
+                category.draggable = !autoSortEnabled;
+                category.dataset.categoryName = categoryName;
+                category.dataset.categoryIndex = catIndex;
+                
+                // Get margin for this category (default 15%)
+                const margin = categoryMargins[categoryName] || DEFAULT_MARGIN;
+                
+                // Encode category name for safe use in data attributes
+                const encodedCategoryName = encodeURIComponent(categoryName);
+                
+                let html = `
+                    <div class="category-header">
+                        <div class="category-drag-handle" title="Drag to reorder category">${dragHandleSVG}</div>
+                        <div class="category-title" style="flex: 1;">${categoryName}</div>
+                        <div class="category-margin">
+                            <span>Margin:</span>
+                            <select class="margin-select" data-category-encoded="${encodedCategoryName}">
+                                ${getMarginOptions(margin)}
+                            </select>
+                        </div>
+                        <div class="category-actions">
+                            <button class="icon-btn category-delete-btn" data-category-encoded="${encodedCategoryName}" title="Delete">×</button>
+                        </div>
+                    </div>
+                    <div class="table-header-with-drag">
+                        <div class="table-header-cell"></div>
+                        <div class="table-header-cell">Product</div>
+                        <div class="table-header-cell">Grade/Size</div>
+                        <div class="table-header-cell cost-header">Cost (Internal)</div>
+                        <div class="table-header-cell">Price${selectedCustomer ? ' (Adj.)' : ''}</div>
+                        <div class="table-header-cell"></div>
+                    </div>
+                `;
+
+                priceData[categoryName].forEach((item, idx) => {
+                    const cost = item[3] || '';
+                    const displayPrice = selectedCustomer 
+                        ? calculateCustomerPrice(item[2], item[1], selectedCustomer)
+                        : item[2];
+                    
+                    html += `
+                        <div class="product" draggable="${!autoSortEnabled}" data-category-encoded="${encodedCategoryName}" data-product-index="${idx}">
+                            <div class="product-grid-with-drag">
+                                <div class="drag-handle" title="Drag to reorder">${dragHandleSVG}</div>
+                                <div class="product-field">
+                                    <input type="text" class="input-field" value="${item[0]}" placeholder="Product name" data-category-encoded="${encodedCategoryName}" data-row="${idx}" data-col="0">
+                                </div>
+                                <div class="product-field">
+                                    <input type="text" class="input-field" value="${item[1]}" placeholder="Grade/size" data-category-encoded="${encodedCategoryName}" data-row="${idx}" data-col="1">
+                                </div>
+                                <div class="product-field cost-field">
+                                    <input type="text" class="input-field cost-input" value="${cost}" placeholder="$0" data-category-encoded="${encodedCategoryName}" data-row="${idx}" data-col="3">
+                                </div>
+                                <div class="product-field">
+                                    <input type="text" class="input-field" value="${displayPrice}" placeholder="$0.00" data-category-encoded="${encodedCategoryName}" data-row="${idx}" data-col="2" ${selectedCustomer ? 'readonly style="background: #f0fdf4; color: #15803d;"' : ''}>
+                                </div>
+                                <button class="product-delete" data-category-encoded="${encodedCategoryName}" data-idx="${idx}">×</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `<button class="add-product-btn" data-category-encoded="${encodedCategoryName}">+ Add</button>`;
+
+                category.innerHTML = html;
+                container.appendChild(category);
+                
+                // Add drag event listeners for category
+                if (!autoSortEnabled) {
+                    setupCategoryDragEvents(category, categoryName);
+                    
+                    // Add drag event listeners for products within this category
+                    const products = category.querySelectorAll('.product[draggable="true"]');
+                    products.forEach(product => {
+                        setupProductDragEvents(product, categoryName);
+                    });
+                }
+            });
+        }
+        
+        // Setup global event delegation (called once on page load)
+        function setupGlobalEventDelegation() {
+            const container = document.getElementById('categoriesContainer');
+            
+            container.addEventListener('click', function(e) {
+                // Handle delete product button
+                if (e.target.classList.contains('product-delete')) {
+                    const encodedCat = e.target.dataset.categoryEncoded;
+                    const idx = parseInt(e.target.dataset.idx);
+                    if (encodedCat !== undefined && !isNaN(idx)) {
+                        const categoryName = decodeURIComponent(encodedCat);
+                        deleteRow(categoryName, idx);
+                    }
+                    return;
+                }
+                
+                // Handle add product button
+                if (e.target.classList.contains('add-product-btn')) {
+                    const encodedCat = e.target.dataset.categoryEncoded;
+                    if (encodedCat !== undefined) {
+                        const categoryName = decodeURIComponent(encodedCat);
+                        addRow(categoryName);
+                    }
+                    return;
+                }
+                
+                // Handle category delete button
+                if (e.target.classList.contains('category-delete-btn')) {
+                    const encodedCat = e.target.dataset.categoryEncoded;
+                    if (encodedCat !== undefined) {
+                        const categoryName = decodeURIComponent(encodedCat);
+                        deleteCategory(categoryName);
+                    }
+                    return;
+                }
+            });
+            
+            // Handle margin select change
+            container.addEventListener('change', function(e) {
+                if (e.target.classList.contains('margin-select')) {
+                    const encodedCat = e.target.dataset.categoryEncoded;
+                    if (encodedCat !== undefined) {
+                        const categoryName = decodeURIComponent(encodedCat);
+                        updateCategoryMargin(categoryName, e.target.value);
+                    }
+                    return;
+                }
+                
+                // Handle cost input change
+                if (e.target.classList.contains('cost-input')) {
+                    const encodedCat = e.target.dataset.categoryEncoded;
+                    const idx = parseInt(e.target.dataset.row);
+                    if (encodedCat !== undefined && !isNaN(idx)) {
+                        const categoryName = decodeURIComponent(encodedCat);
+                        calculatePriceFromCost(categoryName, idx, e.target.value);
+                    }
+                    return;
+                }
+            });
+        }
+        
+        // Update category margin
+        function updateCategoryMargin(categoryName, margin) {
+            categoryMargins[categoryName] = parseInt(margin);
+            localStorage.setItem('everfresh_category_margins', JSON.stringify(categoryMargins));
+            
+            // Recalculate all prices in this category that have costs
+            priceData[categoryName].forEach((item, idx) => {
+                if (item[3]) {
+                    calculatePriceFromCost(categoryName, idx, item[3]);
+                }
+            });
+        }
+        
+        // Calculate selling price from cost + margin
+        function calculatePriceFromCost(categoryName, idx, costValue) {
+            // Parse cost value
+            let cost = parseFloat(costValue.toString().replace('$', '').replace(',', ''));
+            
+            if (isNaN(cost) || cost <= 0) {
+                return; // Don't update price if cost is invalid
+            }
+            
+            // Get category margin
+            const margin = categoryMargins[categoryName] || DEFAULT_MARGIN;
+            
+            // Calculate selling price: cost * (1 + margin/100)
+            let sellingPrice = cost * (1 + margin / 100);
+            
+            // Get grade to determine rounding
+            const grade = priceData[categoryName][idx][1];
+            
+            // Apply smart rounding
+            sellingPrice = smartRoundPrice(sellingPrice, grade);
+            
+            // Format price
+            const formattedPrice = sellingPrice % 1 === 0 ? `$${sellingPrice}` : `$${sellingPrice.toFixed(2)}`;
+            
+            // Update priceData
+            priceData[categoryName][idx][2] = formattedPrice;
+            priceData[categoryName][idx][3] = costValue.toString().startsWith('$') ? costValue : `$${cost}`;
+            
+            // Update the price input field directly (without re-rendering)
+            const encodedCategoryName = encodeURIComponent(categoryName);
+            const priceInput = document.querySelector(`input[data-category-encoded="${encodedCategoryName}"][data-row="${idx}"][data-col="2"]`);
+            if (priceInput) {
+                priceInput.value = formattedPrice;
+            }
+            
+            // Save
+            localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
+        }
+        
+        // ========================================
+        // DRAG AND DROP FUNCTIONALITY
+        // ========================================
+        
+        let draggedElement = null;
+        let dragType = null; // 'category' or 'product'
+        let dragSourceCategory = null;
+        let dragSourceIndex = null;
+        
+        function setupCategoryDragEvents(categoryEl, categoryName) {
+            const handle = categoryEl.querySelector('.category-drag-handle');
+            
+            // Start drag only from handle
+            handle.addEventListener('mousedown', () => {
+                categoryEl.draggable = true;
+            });
+            
+            handle.addEventListener('mouseup', () => {
+                if (!draggedElement) categoryEl.draggable = false;
+            });
+            
+            categoryEl.addEventListener('dragstart', (e) => {
+                if (autoSortEnabled) {
+                    e.preventDefault();
+                    return;
+                }
+                
+                // Only allow drag from handle
+                if (!e.target.closest('.category-drag-handle') && e.target.classList.contains('category')) {
+                    // Check if drag started from product
+                    if (e.target.closest('.product')) return;
+                }
+                
+                draggedElement = categoryEl;
+                dragType = 'category';
+                dragSourceCategory = categoryName;
+                dragSourceIndex = parseInt(categoryEl.dataset.categoryIndex);
+                
+                categoryEl.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', categoryName);
+            });
+            
+            categoryEl.addEventListener('dragend', () => {
+                categoryEl.classList.remove('dragging');
+                document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                draggedElement = null;
+                dragType = null;
+                dragSourceCategory = null;
+                dragSourceIndex = null;
+            });
+            
+            categoryEl.addEventListener('dragover', (e) => {
+                if (dragType !== 'category' || autoSortEnabled) return;
+                e.preventDefault();
+                
+                const draggingCategory = document.querySelector('.category.dragging');
+                if (draggingCategory === categoryEl) return;
+                
+                categoryEl.classList.add('drag-over');
+            });
+            
+            categoryEl.addEventListener('dragleave', () => {
+                categoryEl.classList.remove('drag-over');
+            });
+            
+            categoryEl.addEventListener('drop', (e) => {
+                if (dragType !== 'category' || autoSortEnabled) return;
+                e.preventDefault();
+                
+                categoryEl.classList.remove('drag-over');
+                
+                const targetCategoryName = categoryEl.dataset.categoryName;
+                if (dragSourceCategory === targetCategoryName) return;
+                
+                // Reorder categories
+                reorderCategories(dragSourceCategory, targetCategoryName);
+            });
+        }
+        
+        function setupProductDragEvents(productEl, categoryName) {
+            const handle = productEl.querySelector('.drag-handle');
+            
+            handle.addEventListener('mousedown', () => {
+                productEl.draggable = true;
+            });
+            
+            handle.addEventListener('mouseup', () => {
+                if (!draggedElement) productEl.draggable = false;
+            });
+            
+            productEl.addEventListener('dragstart', (e) => {
+                if (autoSortEnabled) {
+                    e.preventDefault();
+                    return;
+                }
+                
+                e.stopPropagation(); // Prevent category drag
+                
+                draggedElement = productEl;
+                dragType = 'product';
+                dragSourceCategory = categoryName;
+                dragSourceIndex = parseInt(productEl.dataset.productIndex);
+                
+                productEl.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', `${categoryName}:${dragSourceIndex}`);
+            });
+            
+            productEl.addEventListener('dragend', () => {
+                productEl.classList.remove('dragging');
+                document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                draggedElement = null;
+                dragType = null;
+                dragSourceCategory = null;
+                dragSourceIndex = null;
+            });
+            
+            productEl.addEventListener('dragover', (e) => {
+                if (dragType !== 'product' || autoSortEnabled) return;
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const draggingProduct = document.querySelector('.product.dragging');
+                if (draggingProduct === productEl) return;
+                
+                // Only allow drop within same category
+                const targetCategory = decodeURIComponent(productEl.dataset.categoryEncoded || '');
+                if (targetCategory !== dragSourceCategory) return;
+                
+                productEl.classList.add('drag-over');
+            });
+            
+            productEl.addEventListener('dragleave', () => {
+                productEl.classList.remove('drag-over');
+            });
+            
+            productEl.addEventListener('drop', (e) => {
+                if (dragType !== 'product' || autoSortEnabled) return;
+                e.preventDefault();
+                e.stopPropagation();
+                
+                productEl.classList.remove('drag-over');
+                
+                const targetIndex = parseInt(productEl.dataset.productIndex);
+                const targetCategory = decodeURIComponent(productEl.dataset.categoryEncoded || '');
+                
+                if (dragSourceCategory !== targetCategory) return;
+                if (dragSourceIndex === targetIndex) return;
+                
+                // Reorder products within category
+                reorderProducts(dragSourceCategory, dragSourceIndex, targetIndex);
+            });
+        }
+        
+        function reorderCategories(fromCategory, toCategory) {
+            collectData(); // Save current input values
+            
+            const categoryNames = Object.keys(priceData);
+            const fromIndex = categoryNames.indexOf(fromCategory);
+            const toIndex = categoryNames.indexOf(toCategory);
+            
+            if (fromIndex === -1 || toIndex === -1) return;
+            
+            // Create new ordered object
+            const newPriceData = {};
+            const reorderedNames = [...categoryNames];
+            
+            // Remove from old position and insert at new position
+            reorderedNames.splice(fromIndex, 1);
+            reorderedNames.splice(toIndex, 0, fromCategory);
+            
+            // Rebuild priceData in new order
+            reorderedNames.forEach(name => {
+                newPriceData[name] = priceData[name];
+            });
+            
+            priceData = newPriceData;
+            saveToLocal(false); // No toast notification
+            renderCategories();
+        }
+        
+        function reorderProducts(categoryName, fromIndex, toIndex) {
+            collectData(); // Save current input values
+            
+            const products = priceData[categoryName];
+            const [movedProduct] = products.splice(fromIndex, 1);
+            products.splice(toIndex, 0, movedProduct);
+            
+            saveToLocal(false); // No toast notification
+            renderCategories();
+        }
+
+        // Collect data from inputs
+        function collectData() {
+            const inputs = document.querySelectorAll('input[data-category-encoded]');
+            inputs.forEach(input => {
+                const encodedCategory = input.dataset.categoryEncoded;
+                if (!encodedCategory) return;
+                
+                const category = decodeURIComponent(encodedCategory);
+                const row = parseInt(input.dataset.row);
+                const col = parseInt(input.dataset.col);
+                
+                if (!priceData[category] || !priceData[category][row]) return;
+                
+                // Ensure the array has enough elements (for cost column)
+                while (priceData[category][row].length <= col) {
+                    priceData[category][row].push('');
+                }
+                
+                priceData[category][row][col] = input.value;
+            });
+        }
+
+        // Add new row
+        function addRow(categoryName) {
+            collectData(); // Save current changes first
+            priceData[categoryName].push(['New Product', '-', '$0', '']);
+            saveToLocal(false); // No toast notification
+            renderCategories();
+        }
+
+        // Delete row
+        function deleteRow(categoryName, idx) {
+            collectData(); // Save current changes first
+            priceData[categoryName].splice(idx, 1);
+            saveToLocal(false); // No toast notification
+            renderCategories();
+        }
+
+        // Add category
+        function addCategory() {
+            const name = prompt('Enter category name:');
+            if (name && name.trim()) {
+                collectData(); // Save current changes first
+                priceData[name.trim().toUpperCase()] = [['New Product', '-', '$0', '']];
+                saveToLocal(false); // No toast notification
+                renderCategories();
+            }
+        }
+
+        // Smart Add Product System
+        let suggestedCategory = null;
+
+        function showSmartAddProduct() {
+            document.getElementById('smartAddModal').classList.add('show');
+            document.getElementById('smartProductName').value = '';
+            document.getElementById('smartProductGrade').value = '';
+            document.getElementById('smartProductPrice').value = '';
+            document.getElementById('smartAnalysis').innerHTML = '';
+            suggestedCategory = null;
+            
+            // Focus on product name
+            setTimeout(() => document.getElementById('smartProductName').focus(), 100);
+        }
+
+        function closeSmartAdd() {
+            document.getElementById('smartAddModal').classList.remove('show');
+        }
+
+        function analyzeProduct() {
+            const productName = document.getElementById('smartProductName').value.trim();
+            const analysisDiv = document.getElementById('smartAnalysis');
+            
+            if (!productName || productName.length < 2) {
+                analysisDiv.innerHTML = '';
+                suggestedCategory = null;
+                return;
+            }
+
+            // Show analyzing state
+            analysisDiv.innerHTML = `
+                <div style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px;">
+                    <strong style="color: #475569;">Analyzing with AI...</strong>
+                </div>
+            `;
+
+            // Get existing categories
+            const existingCategories = Object.keys(priceData);
+
+            // Try AI analysis first, fallback to smart matching if it fails
+            analyzeWithAI(productName, existingCategories);
+        }
+
+        async function analyzeWithAI(productName, existingCategories) {
+            const analysisDiv = document.getElementById('smartAnalysis');
+            
+            // Your Cloudflare Worker URL
+            const WORKER_URL = 'https://pricelist.maruthi4a5.workers.dev/';
+            
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 1000,
+                        messages: [{
+                            role: 'user',
+                            content: `You are an expert wholesale fresh produce categorization system for Sydney Markets.
+
+Product to categorize: "${productName}"
+
+Existing categories in this price list:
+${existingCategories.length > 0 ? existingCategories.map(c => `- ${c}`).join('\n') : '(No categories yet)'}
+
+COMPREHENSIVE CATEGORY MAPPING:
+
+🥬 LETTUCE & LEAFY GREENS:
+- Lettuce types: Iceberg, Cos, Romaine, Butter, Oakleaf, Coral, Mignonette, Little Gem, Frisée, Endive, Radicchio
+- Leafy greens: Spinach, Baby Spinach, English Spinach, Rocket, Arugula, Kale, Silverbeet, Swiss Chard, Mesclun, Mixed Leaves, Spring Mix, Sorrel, Watercress, Mizuna
+
+🍅 TOMATOES:
+- Varieties: Roma, Truss, Cherry, Grape, Cocktail, Medley, Kumato, Heirloom, Beefsteak, Campari, San Marzano, Green Tomato, Yellow Tomato, Ox Heart
+- Note: ANY tomato variety belongs here
+
+🌶️ CAPSICUM (PEPPERS):
+- Bell Peppers: Red Caps, Green Caps, Yellow Caps, Orange Caps
+- Specialty: Bullhorn, Long Sweet, Banana Pepper, Pimiento, Sweet Pointed
+
+🔥 CHILLIES:
+- Hot peppers: Long Red/Green Chilli, Thai Chilli, Bird's Eye, Jalapeño, Habanero, Serrano, Cayenne, Scotch Bonnet, Ghost Pepper
+- Mild peppers: Shishito, Padrón, Poblano, Anaheim
+- Note: If it's hot/spicy pepper = CHILLIES
+
+🍆 EGGPLANTS:
+- Varieties: Lebanese, Japanese, Thai, Purple Stripe, Graffiti, White, Indian, Baby, Globe, Fairy Tale, Rosa Bianca
+
+🥒 CUCUMBERS:
+- Types: Lebanese, Continental, Telegraph, Mini, Baby, Persian, Burpless, English, Gherkin, Pickle
+
+🥦 BROCCOLI & CAULIFLOWER:
+- Broccoli, Broccolini, Baby Broccoli, Tenderstem, Romanesco, Cauliflower, Purple Cauliflower, Orange Cauliflower
+
+🫛 BEANS & PEAS:
+- Beans: Green Beans, Flat Beans, Runner Beans, Broad Beans, Butter Beans, Snake Beans, Yard Long Beans, Borlotti
+- Peas: Snow Peas, Sugar Snap, Green Peas, Split Peas
+
+🥬 ASIAN VEGETABLES:
+- Bok Choy, Pak Choy, Choy Sum, Gai Lan, Chinese Broccoli, Wombok, Napa Cabbage, Chinese Cabbage, Shanghai Bok Choy, Baby Bok Choy
+- Specialty: Luffa, Bitter Melon, Winter Melon, Daikon, Lotus Root, Galangal, Water Spinach, Morning Glory, Taro, Kohlrabi
+
+🧅 ONIONS:
+- Types: Brown, Red, Spanish, White, Pickling, Pearl
+- Spring varieties: Spring Onion, Shallots, Eschalots, Scallions, Green Onion, Leek
+
+🧄 GARLIC:
+- Fresh Garlic, Peeled Garlic, Organic Garlic, Elephant Garlic, Black Garlic, Garlic Chives
+
+🎃 PUMPKINS:
+- Types: Butternut, Grey, White, Queensland Blue, Kent, Jap, Kabocha, Crown, Golden Nugget
+- Squash: Acorn, Delicata, Spaghetti Squash, Gem Squash
+
+🥕 ROOT VEGETABLES:
+- Carrot, Baby Carrot, Dutch Carrot, Parsnip, Turnip, Swede, Rutabaga
+- Beetroot, Baby Beetroot, Golden Beetroot, Candy Beetroot
+- Radish, Daikon, Horseradish
+- Sweet Potato, Potato, Kipfler, Sebago, Desiree, Pontiac, Coliban
+
+🌿 HERBS:
+- Common: Basil, Mint, Coriander, Parsley (Flat/Curly), Dill, Chives
+- Mediterranean: Rosemary, Thyme, Oregano, Sage, Marjoram, Bay Leaves
+- Specialty: Curry Leaf, Kaffir Lime Leaf, Lemongrass, Thai Basil, Vietnamese Mint, Tarragon, Chervil
+
+🍄 MUSHROOMS:
+- Common: Button, Cup, Flat, Swiss Brown, Cremini, Portobello
+- Asian: Shiitake, Oyster, King Oyster, Enoki, Shimeji, Wood Ear, Maitake
+- Specialty: Chanterelle, Porcini, Morel, Truffle, Lion's Mane
+
+🥬 CABBAGE & BRASSICAS:
+- Cabbage: Green, Red, Savoy, Sugarloaf, Pointed
+- Brassicas: Brussels Sprouts, Kohlrabi
+
+🥒 ZUCCHINI:
+- Green Zucchini, Yellow Zucchini, Baby Zucchini, Tromboncino, Pattypan, Squash Blossom
+
+🫑 SPECIALTY VEGETABLES:
+- Okra, Artichoke, Globe Artichoke, Asparagus, Fennel, Celery, Celeriac, Cardoon
+
+🍋 CITRUS:
+- Lemon, Lime, Orange, Mandarin, Grapefruit, Tangelo, Blood Orange, Finger Lime, Yuzu, Kumquat
+
+🥚 EGGS:
+- Chicken Eggs (600g, 700g, 800g), Duck Eggs, Quail Eggs, Free Range, Organic
+
+🍈 MELONS:
+- Watermelon, Rockmelon, Honeydew, Cantaloupe, Galia, Piel de Sapo, Korean Melon
+
+🍎 FRUITS:
+- Stone Fruit: Peach, Nectarine, Plum, Apricot, Cherry
+- Tropical: Mango, Papaya, Pineapple, Passionfruit, Lychee, Longan, Rambutan, Dragonfruit, Durian
+- Berries: Strawberry, Blueberry, Raspberry, Blackberry
+
+CRITICAL RULES:
+1. ALWAYS check if an existing category matches first - use it EXACTLY as written
+2. Match the product to its parent category even without explicit keywords (e.g., "Iceberg" alone → LETTUCE & LEAFY GREENS)
+3. Consider common misspellings: "Capsicam" = Capsicum, "Tomatoe" = Tomato, "Letuce" = Lettuce
+4. If truly uncertain, prefer broader existing categories over creating new ones
+
+Response format (JSON only, no markdown):
+{
+  "category": "EXACT CATEGORY NAME IN CAPS",
+  "isNew": true/false,
+  "confidence": "high/medium/low",
+  "reasoning": "Brief explanation"
+}`
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Worker request failed');
+                }
+
+                const data = await response.json();
+                const textContent = data.content.find(c => c.type === 'text')?.text || '';
+                
+                // Clean and parse JSON response
+                let cleanText = textContent.trim();
+                cleanText = cleanText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                
+                const result = JSON.parse(cleanText);
+
+                // Show AI result
+                displayAnalysisResult(result, existingCategories, true);
+
+            } catch (error) {
+                console.error('AI analysis error:', error);
+                
+                // Fallback to smart offline matching
+                const result = smartCategoryMatch(productName, existingCategories);
+                displayAnalysisResult(result, existingCategories, false);
+            }
+        }
+
+        function displayAnalysisResult(result, existingCategories, isAI) {
+            const analysisDiv = document.getElementById('smartAnalysis');
+            const isNewCategory = result.isNew || !existingCategories.includes(result.category);
+            const confidenceColor = result.confidence === 'high' ? '#22c55e' : 
+                                   result.confidence === 'medium' ? '#f59e0b' : '#ef4444';
+            const confidenceIcon = result.confidence === 'high' ? '[HIGH]' : 
+                                  result.confidence === 'medium' ? '[MED]' : '[LOW]';
+            
+            const aiLabel = isAI ? 'AI Analysis' : 'Smart Match';
+
+            if (isNewCategory) {
+                analysisDiv.innerHTML = `
+                    <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <strong style="color: #92400e;">New Category</strong>
+                            <span style="font-size: 11px; padding: 2px 6px; background: ${confidenceColor}20; color: ${confidenceColor}; border-radius: 4px; border: 1px solid ${confidenceColor};">
+                                ${confidenceIcon} ${result.confidence}
+                            </span>
+                            ${isAI ? '<span style="font-size: 10px; color: #64748b;">• AI powered</span>' : ''}
+                        </div>
+                        <p style="color: #78350f; font-size: 13px; margin-top: 4px;">
+                            <strong>"${result.category}"</strong><br>
+                            <em>${result.reasoning}</em>
+                        </p>
+                    </div>
+                `;
+            } else {
+                analysisDiv.innerHTML = `
+                    <div style="background: #f0fdf4; border: 1px solid #22c55e; padding: 12px; border-radius: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <strong style="color: #15803d;">${aiLabel}</strong>
+                            <span style="font-size: 11px; padding: 2px 6px; background: ${confidenceColor}20; color: ${confidenceColor}; border-radius: 4px; border: 1px solid ${confidenceColor};">
+                                ${confidenceIcon} ${result.confidence}
+                            </span>
+                            ${isAI ? '<span style="font-size: 10px; color: #64748b;">• AI powered</span>' : ''}
+                        </div>
+                        <p style="color: #16a34a; font-size: 13px; margin-top: 4px;">
+                            Will add to: <strong>"${result.category}"</strong><br>
+                            <em>${result.reasoning}</em>
+                        </p>
+                    </div>
+                `;
+            }
+
+            suggestedCategory = result.category;
+        }
+
+        // ========================================
+        // SMART PRODUCE KNOWLEDGE DATABASE
+        // ========================================
+        // This is a comprehensive database that maps individual products
+        // to their parent categories - no keywords needed!
+        
+        const PRODUCE_DATABASE = {
+            // 🥬 LETTUCE & LEAFY GREENS
+            'LETTUCE & LEAFY GREENS': {
+                products: [
+                    // Lettuce varieties
+                    'iceberg', 'cos', 'romaine', 'butter', 'butterhead', 'oakleaf', 'oak leaf',
+                    'coral', 'mignonette', 'little gem', 'gem lettuce', 'frisee', 'frisée', 'endive',
+                    'radicchio', 'red leaf', 'green leaf', 'bibb', 'boston', 'living lettuce',
+                    // Leafy greens
+                    'spinach', 'baby spinach', 'english spinach', 'rocket', 'arugula', 'wild rocket',
+                    'kale', 'tuscan kale', 'curly kale', 'baby kale', 'silverbeet', 'silver beet',
+                    'swiss chard', 'chard', 'rainbow chard', 'mesclun', 'mixed leaves', 'spring mix',
+                    'salad mix', 'sorrel', 'watercress', 'land cress', 'microgreens', 'micro greens',
+                    'baby greens', 'lettuce mix', 'salanova', 'tatsoi', 'mache', "lamb's lettuce"
+                ],
+                keywords: ['lettuce', 'leaf', 'leaves', 'greens', 'salad'],
+                reasoning: 'Lettuce or leafy green vegetable'
+            },
+            
+            // 🍅 TOMATOES
+            'TOMATOES': {
+                products: [
+                    'roma', 'truss', 'cherry', 'grape', 'cocktail', 'medley', 'kumato',
+                    'heirloom', 'beefsteak', 'beef steak', 'ox heart', 'oxheart', 'campari',
+                    'san marzano', 'plum', 'yellow tomato', 'green tomato', 'tiger', 'zebra',
+                    'vine ripened', 'vine-ripened', 'field tomato', 'gourmet', 'snacking',
+                    'tommy toe', 'tommy toes', 'grosse lisse', 'money maker', 'black russian'
+                ],
+                keywords: ['tomato', 'tomatoe', 'tomatos', 'tomatoes'],
+                reasoning: 'Tomato variety'
+            },
+            
+            // 🌶️ CAPSICUM (PEPPERS)
+            'CAPSICUM (PEPPERS)': {
+                products: [
+                    'red caps', 'green caps', 'yellow caps', 'orange caps', 'bell pepper',
+                    'bullhorn', 'bull horn', 'long sweet', 'banana pepper', 'pimiento',
+                    'sweet pointed', 'ramiro', 'romano', 'cubanelle', 'mini caps', 'baby caps',
+                    'mixed caps', 'tri color', 'tri-color'
+                ],
+                keywords: ['capsicum', 'caps', 'bell pepper', 'sweet pepper'],
+                reasoning: 'Capsicum/bell pepper variety'
+            },
+            
+            // 🔥 CHILLIES
+            'CHILLIES': {
+                products: [
+                    'long red', 'long green', 'thai', "bird's eye", 'birds eye', 'birdseye',
+                    'jalapeno', 'jalapeño', 'habanero', 'serrano', 'cayenne', 'scotch bonnet',
+                    'ghost pepper', 'carolina reaper', 'shishito', 'padron', 'padrón',
+                    'poblano', 'anaheim', 'pasilla', 'guajillo', 'ancho', 'chipotle',
+                    'kashmiri', 'korean', 'gochugaru', 'peri peri', 'piri piri', 'tabasco',
+                    'banana chilli', 'wax pepper', 'fresno', 'bullet', 'finger chilli'
+                ],
+                keywords: ['chilli', 'chili', 'chile', 'hot pepper', 'spicy'],
+                reasoning: 'Chilli/hot pepper variety'
+            },
+            
+            // 🍆 EGGPLANTS
+            'EGGPLANTS': {
+                products: [
+                    'lebanese', 'japanese', 'thai', 'purple stripe', 'graffiti',
+                    'white eggplant', 'indian', 'baby eggplant', 'globe', 'fairy tale',
+                    'rosa bianca', 'sicilian', 'italian', 'slim', 'long purple',
+                    'round', 'striped', 'aubergine', 'brinjal', 'pea eggplant'
+                ],
+                keywords: ['eggplant', 'aubergine', 'brinjal'],
+                reasoning: 'Eggplant variety'
+            },
+            
+            // 🥒 CUCUMBERS
+            'CUCUMBERS': {
+                products: [
+                    'lebanese', 'continental', 'telegraph', 'mini', 'baby cucumber',
+                    'persian', 'burpless', 'english', 'gherkin', 'pickle', 'pickling',
+                    'qukes', 'snack cucumber', 'apple cucumber', 'crystal', 'japanese',
+                    'telegraph', 'tele', 'long green', 'field cucumber'
+                ],
+                keywords: ['cucumber', 'cuke', 'cukes', 'gherkin'],
+                reasoning: 'Cucumber variety'
+            },
+            
+            // 🥦 BROCCOLI & CAULIFLOWER
+            'BROCCOLI & CAULIFLOWER': {
+                products: [
+                    'broccolini', 'baby broccoli', 'tenderstem', 'romanesco',
+                    'purple cauliflower', 'orange cauliflower', 'green cauliflower',
+                    'caulilini', 'cauliflower florets', 'broccoli florets', 'broccoli head',
+                    'chinese broccoli', 'broccoli rabe', 'rapini', 'sprouting broccoli',
+                    'calabrese', 'crown broccoli'
+                ],
+                keywords: ['broccoli', 'cauliflower', 'broccolini'],
+                reasoning: 'Broccoli or cauliflower variety'
+            },
+            
+            // 🫛 BEANS & PEAS
+            'BEANS & PEAS': {
+                products: [
+                    'green bean', 'flat bean', 'runner bean', 'broad bean', 'fava',
+                    'butter bean', 'snake bean', 'yard long', 'long bean', 'borlotti',
+                    'cannellini', 'kidney', 'lima', 'string bean', 'french bean',
+                    'snow pea', 'sugar snap', 'snap pea', 'green pea', 'garden pea',
+                    'split pea', 'mange tout', 'mangetout', 'stringless', 'wax bean'
+                ],
+                keywords: ['bean', 'beans', 'pea', 'peas', 'snap', 'snow'],
+                reasoning: 'Bean or pea variety'
+            },
+            
+            // 🥬 ASIAN VEGETABLES
+            'ASIAN VEGETABLES': {
+                products: [
+                    'bok choy', 'pak choy', 'bok choi', 'pak choi', 'choy sum', 'gai lan',
+                    'chinese broccoli', 'kai lan', 'wombok', 'napa', 'chinese cabbage',
+                    'shanghai', 'baby bok', 'tatsoi', 'water spinach', 'kangkong',
+                    'morning glory', 'ong choy', 'yu choy', 'mustard greens', 'gai choy',
+                    'luffa', 'loofah', 'bitter melon', 'bitter gourd', 'karela',
+                    'winter melon', 'wax gourd', 'fuzzy melon', 'mo qua', 'daikon',
+                    'lotus root', 'galangal', 'taro', 'kohlrabi', 'water chestnut',
+                    'bamboo shoot', 'bean sprout', 'mung bean', 'enoki', 'shimeji',
+                    'burdock', 'gobo', 'chrysanthemum', 'perilla', 'shiso'
+                ],
+                keywords: ['asian', 'chinese', 'oriental', 'bok', 'choy', 'choi'],
+                reasoning: 'Asian vegetable'
+            },
+            
+            // 🧅 ONIONS
+            'ONIONS': {
+                products: [
+                    'brown onion', 'red onion', 'spanish onion', 'white onion',
+                    'pickling onion', 'pearl onion', 'cipollini', 'boiling onion',
+                    'spring onion', 'shallot', 'eschalot', 'scallion', 'green onion',
+                    'leek', 'baby leek', 'welsh onion', 'bunching onion', 'vidalia',
+                    'sweet onion', 'walla walla', 'maui', 'salad onion'
+                ],
+                keywords: ['onion', 'shallot', 'eschalot', 'scallion', 'leek'],
+                reasoning: 'Onion variety'
+            },
+            
+            // 🧄 GARLIC
+            'GARLIC': {
+                products: [
+                    'fresh garlic', 'peeled garlic', 'organic garlic', 'elephant garlic',
+                    'black garlic', 'garlic chives', 'garlic scape', 'green garlic',
+                    'solo garlic', 'single clove', 'hardneck', 'softneck', 'rocambole',
+                    'purple stripe garlic', 'creole garlic', 'silverskin'
+                ],
+                keywords: ['garlic'],
+                reasoning: 'Garlic product'
+            },
+            
+            // 🎃 PUMPKINS
+            'PUMPKINS': {
+                products: [
+                    'butternut', 'grey pumpkin', 'white pumpkin', 'queensland blue',
+                    'kent', 'jap', 'kabocha', 'crown pumpkin', 'golden nugget',
+                    'acorn', 'delicata', 'spaghetti', 'gem squash', 'hubbard',
+                    'turban', 'banana squash', 'carnival', 'dumpling', 'red kuri',
+                    'blue hubbard', 'buttercup', 'jarrahdale', 'musquee', 'honeynut'
+                ],
+                keywords: ['pumpkin', 'squash'],
+                reasoning: 'Pumpkin or squash variety'
+            },
+            
+            // 🥕 ROOT VEGETABLES
+            'ROOT VEGETABLES': {
+                products: [
+                    'carrot', 'baby carrot', 'dutch carrot', 'heirloom carrot', 'rainbow carrot',
+                    'parsnip', 'turnip', 'swede', 'rutabaga',
+                    'beetroot', 'beet', 'baby beetroot', 'golden beetroot', 'candy beetroot', 'chioggia',
+                    'radish', 'red radish', 'french radish', 'watermelon radish', 'black radish',
+                    'horseradish', 'wasabi',
+                    'sweet potato', 'gold sweet potato', 'white sweet potato', 'purple sweet potato',
+                    'potato', 'kipfler', 'sebago', 'desiree', 'pontiac', 'coliban', 'dutch cream',
+                    'nicola', 'pink eye', 'royal blue', 'chat potato', 'new potato', 'fingerling',
+                    'yam', 'cassava', 'yuca', 'jicama', 'sunchoke', 'jerusalem artichoke'
+                ],
+                keywords: ['root', 'potato', 'carrot', 'beet', 'turnip', 'parsnip'],
+                reasoning: 'Root vegetable'
+            },
+            
+            // 🌿 HERBS
+            'HERBS': {
+                products: [
+                    'basil', 'sweet basil', 'thai basil', 'holy basil', 'lemon basil',
+                    'mint', 'spearmint', 'peppermint', 'vietnamese mint', 'chocolate mint',
+                    'coriander', 'cilantro', 'culantro', 'sawtooth',
+                    'parsley', 'flat parsley', 'curly parsley', 'italian parsley',
+                    'dill', 'chives', 'garlic chives',
+                    'rosemary', 'thyme', 'lemon thyme', 'oregano', 'sage', 'marjoram',
+                    'bay leaves', 'bay leaf', 'curry leaf', 'kaffir lime', 'makrut',
+                    'lemongrass', 'tarragon', 'chervil', 'lovage', 'savory', 'epazote',
+                    'shiso', 'perilla', 'sorrel', 'borage', 'hyssop', 'lavender',
+                    'chamomile', 'stevia', 'fennel fronds', 'dill weed'
+                ],
+                keywords: ['herb', 'basil', 'mint', 'parsley', 'coriander', 'thyme', 'rosemary'],
+                reasoning: 'Herb variety'
+            },
+            
+            // 🍄 MUSHROOMS
+            'MUSHROOMS': {
+                products: [
+                    'button', 'cup', 'flat', 'swiss brown', 'cremini', 'cremini',
+                    'portobello', 'portabella', 'portobella',
+                    'shiitake', 'oyster', 'king oyster', 'king trumpet', 'eryngii',
+                    'enoki', 'enokitake', 'shimeji', 'bunashimeji', 'wood ear',
+                    'maitake', 'hen of the woods', 'chanterelle', 'porcini', 'cep',
+                    'morel', 'truffle', 'black truffle', 'white truffle',
+                    "lion's mane", 'hedgehog', 'puffball', 'chestnut', 'nameko',
+                    'mixed mushroom', 'exotic mushroom', 'field mushroom'
+                ],
+                keywords: ['mushroom', 'fungi', 'shroom'],
+                reasoning: 'Mushroom variety'
+            },
+            
+            // 🥒 ZUCCHINI
+            'ZUCCHINI': {
+                products: [
+                    'green zucchini', 'yellow zucchini', 'baby zucchini', 'tromboncino',
+                    'pattypan', 'patty pan', 'scallop', 'round zucchini', 'ronde de nice',
+                    'cousa', 'costata romanesco', 'zephyr', 'eight ball',
+                    'squash blossom', 'zucchini flower', 'courgette'
+                ],
+                keywords: ['zucchini', 'courgette', 'marrow'],
+                reasoning: 'Zucchini variety'
+            },
+            
+            // 🫑 SPECIALTY VEGETABLES
+            'SPECIALTY VEGETABLES': {
+                products: [
+                    'okra', 'lady finger', 'bhindi', 'gumbo',
+                    'artichoke', 'globe artichoke', 'baby artichoke',
+                    'asparagus', 'white asparagus', 'purple asparagus', 'wild asparagus',
+                    'fennel', 'florence fennel', 'anise', 'finocchio',
+                    'celery', 'celery heart', 'celeriac', 'celery root',
+                    'cardoon', 'rhubarb', 'fiddlehead', 'hearts of palm',
+                    'nopal', 'cactus paddle', 'sea bean', 'samphire', 'sea asparagus'
+                ],
+                keywords: ['specialty', 'okra', 'artichoke', 'asparagus', 'fennel', 'celery'],
+                reasoning: 'Specialty vegetable'
+            },
+            
+            // 🍋 CITRUS
+            'CITRUS': {
+                products: [
+                    'lemon', 'meyer lemon', 'eureka lemon', 'lisbon',
+                    'lime', 'tahitian lime', 'kaffir lime', 'key lime', 'finger lime',
+                    'orange', 'navel', 'valencia', 'blood orange', 'cara cara',
+                    'mandarin', 'imperial', 'murcott', 'clementine', 'satsuma', 'tangerine',
+                    'grapefruit', 'ruby grapefruit', 'pink grapefruit', 'pomelo',
+                    'tangelo', 'minneola', 'kumquat', 'yuzu', 'sudachi', 'bergamot',
+                    'citron', 'buddha hand', "buddha's hand", 'ugli fruit'
+                ],
+                keywords: ['citrus', 'lemon', 'lime', 'orange', 'mandarin', 'grapefruit'],
+                reasoning: 'Citrus fruit'
+            },
+            
+            // 🥚 EGGS
+            'EGGS': {
+                products: [
+                    'chicken egg', 'duck egg', 'quail egg', 'free range', 'organic egg',
+                    'cage free', 'barn laid', 'pastured', 'omega-3', 'jumbo', 'xl eggs',
+                    '600g', '700g', '800g', '55g', '60g', '65g', '70g', 'dozen'
+                ],
+                keywords: ['egg', 'eggs'],
+                reasoning: 'Egg product'
+            },
+            
+            // 🍈 MELONS
+            'MELONS': {
+                products: [
+                    'watermelon', 'seedless watermelon', 'mini watermelon', 'yellow watermelon',
+                    'rockmelon', 'cantaloupe', 'honeydew', 'galia', 'charentais',
+                    'piel de sapo', 'santa claus', 'korean melon', 'canary melon',
+                    'crenshaw', 'casaba', 'hami', 'sprite melon', 'sugar kiss',
+                    'orange flesh', 'green flesh'
+                ],
+                keywords: ['melon', 'watermelon', 'rockmelon', 'honeydew', 'cantaloupe'],
+                reasoning: 'Melon variety'
+            },
+            
+            // 🥬 CABBAGE & BRASSICAS
+            'CABBAGE & BRASSICAS': {
+                products: [
+                    'green cabbage', 'red cabbage', 'purple cabbage', 'savoy cabbage',
+                    'sugarloaf', 'pointed cabbage', 'sweetheart', 'hispi',
+                    'brussels sprout', 'brussels', 'sprouts',
+                    'kohlrabi', 'kohl rabi'
+                ],
+                keywords: ['cabbage', 'brussels', 'sprout', 'brassica'],
+                reasoning: 'Cabbage or brassica variety'
+            },
+            
+            // 🍎 FRUITS (General)
+            'FRUITS': {
+                products: [
+                    // Stone fruits
+                    'peach', 'nectarine', 'plum', 'apricot', 'cherry', 'cherries',
+                    // Tropical
+                    'mango', 'papaya', 'pawpaw', 'pineapple', 'passionfruit', 'passion fruit',
+                    'lychee', 'longan', 'rambutan', 'dragonfruit', 'dragon fruit', 'pitaya',
+                    'durian', 'jackfruit', 'star fruit', 'starfruit', 'carambola',
+                    'guava', 'feijoa', 'tamarillo', 'persimmon', 'cherimoya',
+                    // Berries
+                    'strawberry', 'blueberry', 'raspberry', 'blackberry', 'mulberry',
+                    'boysenberry', 'loganberry', 'gooseberry', 'currant', 'açaí', 'acai',
+                    // Other
+                    'banana', 'plantain', 'coconut', 'pomegranate', 'fig', 'date',
+                    'kiwi', 'kiwifruit', 'grape', 'grapes'
+                ],
+                keywords: ['fruit', 'berry', 'tropical'],
+                reasoning: 'Fruit variety'
+            }
+        };
+        
+        // Common misspellings and variations mapping
+        const SPELLING_CORRECTIONS = {
+            'capsicam': 'capsicum', 'capsicm': 'capsicum', 'capiscum': 'capsicum',
+            'tomatoe': 'tomato', 'tomatos': 'tomato', 'tomateos': 'tomato',
+            'letuce': 'lettuce', 'lettice': 'lettuce', 'lattuce': 'lettuce',
+            'icburg': 'iceberg', 'icberg': 'iceberg', 'icebarg': 'iceberg',
+            'brocoli': 'broccoli', 'brocolli': 'broccoli', 'broccolli': 'broccoli',
+            'califlower': 'cauliflower', 'cauliflour': 'cauliflower', 'couliflower': 'cauliflower',
+            'zuchini': 'zucchini', 'zuchinni': 'zucchini', 'zuccini': 'zucchini',
+            'eggplnt': 'eggplant', 'eggplat': 'eggplant', 'eggplnt': 'eggplant',
+            'cucmber': 'cucumber', 'cucumer': 'cucumber', 'cucmumber': 'cucumber',
+            'mushrrom': 'mushroom', 'mushrom': 'mushroom', 'mushrooom': 'mushroom',
+            'spinich': 'spinach', 'spinnach': 'spinach', 'spinash': 'spinach',
+            'aspargus': 'asparagus', 'aspargaus': 'asparagus', 'asperagus': 'asparagus',
+            'aubergene': 'aubergine', 'aubergeen': 'aubergine',
+            'coriender': 'coriander', 'corriander': 'coriander',
+            'parsely': 'parsley', 'parsly': 'parsley',
+            'shallott': 'shallot', 'shalot': 'shallot',
+            'potatoe': 'potato', 'potatos': 'potato',
+            'beens': 'beans', 'beanes': 'beans',
+            'chille': 'chilli', 'chillie': 'chilli', 'chily': 'chilli',
+            'jalepeno': 'jalapeno', 'jalapenio': 'jalapeno', 'jallepeno': 'jalapeno',
+            'bokchoy': 'bok choy', 'bokchoi': 'bok choy', 'bok choi': 'bok choy',
+            'galran': 'gai lan', 'gailan': 'gai lan', 'gai larn': 'gai lan',
+            'wom bok': 'wombok', 'wong bok': 'wombok'
+        };
+        
+        // Calculate string similarity (Levenshtein distance)
+        function stringSimilarity(s1, s2) {
+            const longer = s1.length > s2.length ? s1 : s2;
+            const shorter = s1.length > s2.length ? s2 : s1;
+            
+            if (longer.length === 0) return 1.0;
+            
+            const costs = [];
+            for (let i = 0; i <= s1.length; i++) {
+                let lastValue = i;
+                for (let j = 0; j <= s2.length; j++) {
+                    if (i === 0) {
+                        costs[j] = j;
+                    } else if (j > 0) {
+                        let newValue = costs[j - 1];
+                        if (s1.charAt(i - 1) !== s2.charAt(j - 1)) {
+                            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                        }
+                        costs[j - 1] = lastValue;
+                        lastValue = newValue;
+                    }
+                }
+                if (i > 0) costs[s2.length] = lastValue;
+            }
+            
+            return (longer.length - costs[s2.length]) / longer.length;
+        }
+        
+        // Smart category matching with comprehensive knowledge base
+        function smartCategoryMatch(productName, existingCategories) {
+            let name = productName.toLowerCase().trim();
+            
+            // Step 1: Apply spelling corrections
+            for (const [misspelled, correct] of Object.entries(SPELLING_CORRECTIONS)) {
+                if (name.includes(misspelled)) {
+                    name = name.replace(misspelled, correct);
+                }
+            }
+            
+            const nameUpper = name.toUpperCase();
+            let bestMatch = null;
+            let bestScore = 0;
+            let bestReasoning = '';
+            let isExactMatch = false;
+            
+            // Step 2: Search through the produce database
+            for (const [category, data] of Object.entries(PRODUCE_DATABASE)) {
+                // Check individual products (these are EXACT identifiers)
+                for (const product of data.products) {
+                    const productLower = product.toLowerCase();
+                    
+                    // Exact match in name
+                    if (name.includes(productLower) || productLower.includes(name)) {
+                        const matchLength = productLower.length;
+                        const score = matchLength * 15; // Higher weight for product matches
+                        
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMatch = category;
+                            bestReasoning = `"${product}" is a ${data.reasoning.toLowerCase()}`;
+                            isExactMatch = true;
+                        }
+                    }
+                    
+                    // Fuzzy match for typos
+                    const similarity = stringSimilarity(name, productLower);
+                    if (similarity > 0.75) { // 75%+ similarity
+                        const score = similarity * 100;
+                        if (score > bestScore && !isExactMatch) {
+                            bestScore = score;
+                            bestMatch = category;
+                            bestReasoning = `Similar to "${product}" - ${data.reasoning.toLowerCase()}`;
+                        }
+                    }
+                }
+                
+                // Check keywords as fallback
+                for (const keyword of data.keywords) {
+                    if (name.includes(keyword.toLowerCase())) {
+                        const score = keyword.length * 8;
+                        if (score > bestScore && !isExactMatch) {
+                            bestScore = score;
+                            bestMatch = category;
+                            bestReasoning = data.reasoning;
+                        }
+                    }
+                }
+            }
+            
+            // Step 3: If we found a match, check if category exists
+            if (bestMatch) {
+                // Try to find an existing category that matches
+                const existingMatch = existingCategories.find(cat => {
+                    const catLower = cat.toLowerCase();
+                    const matchLower = bestMatch.toLowerCase();
+                    return catLower === matchLower || 
+                           catLower.includes(matchLower.split(' ')[0]) ||
+                           matchLower.includes(catLower.split(' ')[0]);
+                });
+                
+                // Determine confidence
+                let confidence = 'high';
+                if (bestScore < 50) confidence = 'low';
+                else if (bestScore < 80) confidence = 'medium';
+                
+                if (existingMatch) {
+                    return {
+                        category: existingMatch, // Use exact existing category name
+                        isNew: false,
+                        confidence: confidence,
+                        reasoning: bestReasoning
+                    };
+                } else {
+                    return {
+                        category: bestMatch,
+                        isNew: true,
+                        confidence: confidence,
+                        reasoning: bestReasoning
+                    };
+                }
+            }
+            
+            // Step 4: No match found - try to create a sensible category
+            const words = name.split(' ').filter(w => w.length > 2);
+            const mainWord = words[0] || name;
+            const newCategory = mainWord.toUpperCase() + (mainWord.endsWith('S') ? '' : 'S');
+            
+            return {
+                category: newCategory,
+                isNew: true,
+                confidence: 'low',
+                reasoning: `No known category match - creating new category for "${productName}"`
+            };
+        }
+
+
+        function confirmSmartAdd() {
+            const productName = document.getElementById('smartProductName').value.trim();
+            const grade = document.getElementById('smartProductGrade').value.trim() || '-';
+            let price = document.getElementById('smartProductPrice').value.trim();
+
+            if (!productName) {
+                alert('Please enter a product name');
+                return;
+            }
+
+            // Format price
+            if (price && !price.startsWith('$')) {
+                price = '$' + price;
+            }
+            if (!price) {
+                price = '$0';
+            }
+
+            // Use suggested category or create default
+            const category = suggestedCategory || 'OTHER';
+
+            // Create category if doesn't exist
+            if (!priceData[category]) {
+                priceData[category] = [];
+            }
+
+            // Add product (with empty cost field)
+            priceData[category].push([productName, grade, price, '']);
+
+            // Save and re-render
+            saveToLocal(false); // No toast notification
+            renderCategories();
+            closeSmartAdd();
+        }
+
+        // Delete category
+        function deleteCategory(categoryName) {
+            if (confirm(`Delete category "${categoryName}"?`)) {
+                collectData(); // Save current changes first
+                delete priceData[categoryName];
+                delete categoryMargins[categoryName]; // Also delete margin setting
+                saveToLocal(false); // No toast notification
+                renderCategories();
+            }
+        }
+
+        // Rename category
+        function renameCategory(oldName, newName) {
+            if (newName && newName.trim() && newName !== oldName) {
+                collectData(); // Save current changes first
+                priceData[newName.trim().toUpperCase()] = priceData[oldName];
+                delete priceData[oldName];
+                // Transfer margin setting to new category name
+                if (categoryMargins[oldName]) {
+                    categoryMargins[newName.trim().toUpperCase()] = categoryMargins[oldName];
+                    delete categoryMargins[oldName];
+                }
+                saveToLocal(false); // No toast notification
+                renderCategories();
+            }
+        }
+
+        // Download as image
+        function downloadImage() {
+            console.log('Starting image generation...');
+            collectData();
+            
+            // Validate: Check for empty prices
+            let hasEmptyPrices = false;
+            let emptyPriceProducts = [];
+            
+            for (const categoryName in priceData) {
+                const items = priceData[categoryName];
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    const price = (item[2] || '').toString().trim();
+                    
+                    if (price === '') {
+                        hasEmptyPrices = true;
+                        emptyPriceProducts.push(`${categoryName}: ${item[0]}`);
+                    }
+                }
+            }
+            
+            // Show error if empty prices found
+            if (hasEmptyPrices) {
+                const productList = emptyPriceProducts.join('\n- ');
+                alert(`ERROR: Cannot generate image!\n\nThe following products have empty prices:\n\n- ${productList}\n\nPlease fill in all prices or mark as "NA" if not available.`);
+                return; // Stop here, don't generate image
+            }
+            
+            const loading = document.getElementById('loading');
+            loading.classList.add('show');
+
+            // Use requestAnimationFrame for better performance
+            requestAnimationFrame(() => {
+                try {
+                    console.log('Creating canvas...');
+                    const canvas = document.getElementById('downloadCanvas');
+                    const ctx = canvas.getContext('2d');
+
+                    // Calculate height
+                    let totalRows = 0;
+                    Object.values(priceData).forEach(items => totalRows += items.length);
+                    const categoryCount = Object.keys(priceData).length;
+                    
+                    // Ultra HD - 3x resolution (3600px width)
+                    canvas.width = 3600;
+                    const estimatedHeight = 1200 + (categoryCount * 300) + (totalRows * 135) + 600;
+                    canvas.height = estimatedHeight;
+                    
+                    console.log(`Canvas size: ${canvas.width}x${canvas.height} (Ultra HD 3x)`);
+
+                    // White background
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    let y = 120;
+                    const margin = 180;
+
+                    // Header background - Barely green-white
+                    ctx.fillStyle = '#fafdf7';
+                    const headerHeight = (salesmanInfo.name || salesmanInfo.phone) ? 840 : 720;
+                    ctx.fillRect(0, 0, canvas.width, headerHeight);
+
+                    // Company name - Forest green
+                    ctx.fillStyle = '#2d6a4f';
+                    ctx.font = 'bold 168px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('EVERFRESH PRODUCE GROUP', canvas.width / 2, y + 150);
+                    y += 240;
+
+                    // Title - Fresh green
+                    ctx.fillStyle = '#52b788';
+                    ctx.font = 'bold 144px Arial';
+                    ctx.fillText('WHOLESALE PRICE LIST', canvas.width / 2, y + 120);
+                    y += 210;
+
+                    // Address and Date
+                    const leftCol = 300;
+                    const rightCol = canvas.width - 300;
+                    
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = '#2d6a4f';
+                    ctx.font = 'bold 66px Arial';
+                    ctx.fillText('Stand 275, Shed C, Sydney Markets', leftCol, y + 60);
+                    
+                    ctx.textAlign = 'right';
+                    const effectiveDate = getEffectiveDate();
+                    const formattedDate = effectiveDate.toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
+                    ctx.fillText('Effective: ' + formattedDate, rightCol, y + 60);
+                    y += 150;
+
+                    // Contact box - Very light green
+                    if (salesmanInfo.name || salesmanInfo.phone) {
+                        ctx.fillStyle = '#d8f3dc';
+                        ctx.fillRect(leftCol - 60, y - 30, canvas.width - 480, 150);
+                        ctx.strokeStyle = '#52b788';
+                        ctx.lineWidth = 6;
+                        ctx.strokeRect(leftCol - 60, y - 30, canvas.width - 480, 150);
+                        
+                        ctx.textAlign = 'left';
+                        ctx.fillStyle = '#1b4332';
+                        ctx.font = 'bold 72px Arial';
+                        
+                        if (salesmanInfo.name && salesmanInfo.phone) {
+                            ctx.fillText('Sales Contact: ' + salesmanInfo.name, leftCol, y + 60);
+                            ctx.textAlign = 'right';
+                            ctx.fillText(salesmanInfo.phone, rightCol, y + 60);
+                        } else if (salesmanInfo.name) {
+                            ctx.fillText('Sales Contact: ' + salesmanInfo.name, leftCol, y + 60);
+                        } else {
+                            ctx.fillText('Sales Contact: ' + salesmanInfo.phone, leftCol, y + 60);
+                        }
+                        y += 195;
+                    } else {
+                        y += 45;
+                    }
+
+                    // Separator - Fresh green
+                    ctx.strokeStyle = '#b7e4c7';
+                    ctx.lineWidth = 6;
+                    ctx.beginPath();
+                    ctx.moveTo(margin, y);
+                    ctx.lineTo(canvas.width - margin, y);
+                    ctx.stroke();
+                    y += 90;
+
+                    // Table setup
+                    ctx.textAlign = 'left';
+                    const tableWidth = canvas.width - 2 * margin;
+                    const col1 = margin;
+                    const col2 = margin + tableWidth * 0.45;
+                    const col3 = margin + tableWidth * 0.80;
+                    const rowHeight = 126;
+
+                    console.log('Drawing categories...');
+                    
+                    // Draw each category
+                    for (const categoryName in priceData) {
+                        const items = priceData[categoryName];
+                        
+                        // Filter out items with NA/Not Available price (case-insensitive, handles symbols)
+                        const availableItems = items.filter(item => {
+                            const price = (item[2] || '').toString().trim();
+                            
+                            // Empty prices already validated, so won't reach here
+                            // But keep this check for safety
+                            if (price === '') return false;
+                            
+                            // Remove all symbols and spaces, then check
+                            const cleanedPrice = price.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                            
+                            // Filter out ONLY if it's "na" or "notavailable"
+                            return cleanedPrice !== 'na' && cleanedPrice !== 'notavailable';
+                        });
+                        
+                        // Skip this category if no available items
+                        if (availableItems.length === 0) {
+                            console.log(`Skipping category "${categoryName}" - all products NA`);
+                            continue;
+                        }
+
+                        // Category header - Medium green
+                        ctx.fillStyle = '#40916c';
+                        ctx.fillRect(margin, y, tableWidth, 150);
+                        ctx.strokeStyle = '#2d6a4f';
+                        ctx.lineWidth = 6;
+                        ctx.strokeRect(margin, y, tableWidth, 150);
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = 'bold 102px Arial';
+                        ctx.fillText(categoryName, col1 + 60, y + 108);
+                        y += 150;
+
+                        // Column headers - Light green
+                        ctx.fillStyle = '#74c69d';
+                        ctx.fillRect(margin, y, tableWidth, rowHeight);
+                        ctx.strokeRect(margin, y, tableWidth, rowHeight);
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = 'bold 78px Arial';
+                        ctx.fillText('Product', col1 + 60, y + 84);
+                        ctx.fillText('Grade/Size', col2 + 60, y + 84);
+                        ctx.fillText('Price', col3 + 60, y + 84);
+                        
+                        // Vertical lines
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 6;
+                        ctx.beginPath();
+                        ctx.moveTo(col2, y);
+                        ctx.lineTo(col2, y + rowHeight);
+                        ctx.moveTo(col3, y);
+                        ctx.lineTo(col3, y + rowHeight);
+                        ctx.stroke();
+                        y += rowHeight;
+
+                        // Draw only available items
+                        for (let i = 0; i < availableItems.length; i++) {
+                            const item = availableItems[i];
+                            
+                            // Background - Very subtle alternating
+                            ctx.fillStyle = i % 2 === 1 ? '#f1faee' : '#ffffff';
+                            ctx.fillRect(margin, y, tableWidth, rowHeight);
+                            
+                            // Borders - Soft green-gray
+                            ctx.strokeStyle = '#d8f3dc';
+                            ctx.lineWidth = 3;
+                            ctx.strokeRect(margin, y, tableWidth, rowHeight);
+                            ctx.beginPath();
+                            ctx.moveTo(col2, y);
+                            ctx.lineTo(col2, y + rowHeight);
+                            ctx.moveTo(col3, y);
+                            ctx.lineTo(col3, y + rowHeight);
+                            ctx.stroke();
+
+                            // Text - Dark for readability
+                            ctx.fillStyle = '#212529';
+                            ctx.font = '72px Arial';
+                            ctx.fillText(item[0], col1 + 60, y + 84);
+                            ctx.fillText(item[1], col2 + 60, y + 84);
+                            
+                            // Price - Deep forest green
+                            ctx.fillStyle = '#1b4332';
+                            ctx.font = 'bold 78px Arial';
+                            ctx.fillText(item[2], col3 + 60, y + 84);
+                            
+                            y += rowHeight;
+                        }
+                        y += 75;
+                    }
+
+                    // Notes
+                    y += 45;
+                    ctx.fillStyle = '#2d6a4f';
+                    ctx.font = 'bold 96px Arial';
+                    ctx.fillText('NOTES:', margin, y + 90);
+                    y += 150;
+
+                    ctx.fillStyle = '#495057';
+                    ctx.font = '60px Arial';
+                    const notes = [
+                        '• All prices are wholesale rates',
+                        '• Prices subject to availability and market conditions',
+                        '• Quality guaranteed - fresh daily from Sydney Markets',
+                        '• Contact us for bulk pricing and special requests'
+                    ];
+                    notes.forEach(note => {
+                        ctx.fillText(note, margin + 60, y + 66);
+                        y += 96;
+                    });
+
+                    console.log('Converting to blob...');
+                    
+                    // Download
+                    canvas.toBlob(function(blob) {
+                        if (!blob) {
+                            console.error('Failed to create blob');
+                            alert('Failed to generate image. Please try again.');
+                            loading.classList.remove('show');
+                            return;
+                        }
+                        
+                        console.log('Downloading...');
+                        const url = URL.createObjectURL(blob);
+                        
+                        // Store for sharing
+                        if (lastGeneratedImageUrl) {
+                            URL.revokeObjectURL(lastGeneratedImageUrl);
+                        }
+                        lastGeneratedImageUrl = url;
+                        
+                        const a = document.createElement('a');
+                        a.href = url;
+                        const dateStr = new Date().toISOString().split('T')[0];
+                        a.download = 'everfresh-price-list-' + dateStr + '.png';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        
+                        console.log('Download complete!');
+                        loading.classList.remove('show');
+                    }, 'image/png');
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error generating image: ' + error.message);
+                    loading.classList.remove('show');
+                }
+            });
+        }
+
+        // Quick share on WhatsApp
+        async function quickShareWhatsApp() {
+            collectData();
+            
+            // Check for empty prices
+            let hasEmptyPrices = false;
+            for (const categoryName in priceData) {
+                const items = priceData[categoryName];
+                for (let i = 0; i < items.length; i++) {
+                    const price = (items[i][2] || '').toString().trim();
+                    if (price === '') {
+                        hasEmptyPrices = true;
+                        break;
+                    }
+                }
+                if (hasEmptyPrices) break;
+            }
+            
+            if (hasEmptyPrices) {
+                alert('Please fill in all prices or mark as "NA" before sharing.');
+                return;
+            }
+            
+            const loading = document.getElementById('loading');
+            loading.classList.add('show');
+            
+            try {
+                // Generate image blob
+                const blob = await generateImageBlob();
+                
+                if (!blob) {
+                    throw new Error('Failed to generate image');
+                }
+                
+                // Create message with variables (respects toggle setting)
+                const effectiveDate = getEffectiveDate();
+                const formattedDate = effectiveDate.toLocaleDateString('en-AU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                const yourName = salesmanInfo.name || 'Everfresh Team';
+                const message = `Hi! ${yourName} here from Everfresh 👋 Fresh prices for ${formattedDate} - give me a call or text for your order! Thank you.`;
+                
+                // Check if Web Share API is available (iOS/modern browsers)
+                if (navigator.share && navigator.canShare) {
+                    const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
+                    
+                    if (navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            title: 'Everfresh Price List',
+                            text: message,
+                            files: [file]
+                        });
+                        loading.classList.remove('show');
+                        return;
+                    }
+                }
+                
+                // Fallback: Download image
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const dateStr = new Date().toISOString().split('T')[0];
+                a.download = 'everfresh-price-list-' + dateStr + '.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                loading.classList.remove('show');
+                alert('Image downloaded! Please open WhatsApp and share the image from your Photos/Files.');
+                
+            } catch (error) {
+                loading.classList.remove('show');
+                if (error.name !== 'AbortError') {
+                    console.error('Share error:', error);
+                    alert('Error sharing: ' + error.message);
+                }
+            }
+        }
+
+        // Show customer share menu
+        function showCustomerShareMenu() {
+            if (customerContacts.length === 0) {
+                alert('No customers added yet! Please add customers in Settings first.');
+                return;
+            }
+            
+            collectData();
+            
+            // Check for empty prices
+            let hasEmptyPrices = false;
+            for (const categoryName in priceData) {
+                const items = priceData[categoryName];
+                for (let i = 0; i < items.length; i++) {
+                    const price = (items[i][2] || '').toString().trim();
+                    if (price === '') {
+                        hasEmptyPrices = true;
+                        break;
+                    }
+                }
+                if (hasEmptyPrices) break;
+            }
+            
+            if (hasEmptyPrices) {
+                alert('Please fill in all prices or mark as "NA" before sharing.');
+                return;
+            }
+            
+            const container = document.getElementById('customerShareList');
+            let html = '';
+            
+            customerContacts.forEach((customer, index) => {
+                html += `
+                    <div class="customer-item">
+                        <div class="customer-info">
+                            <div class="customer-name">${customer.name}</div>
+                            <div class="customer-phone">${customer.phone}</div>
+                        </div>
+                        <button class="btn btn-primary btn-small" onclick="sendToCustomer(${index})">Send</button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            document.getElementById('customerShareMenu').classList.add('show');
+        }
+
+        // Close customer share menu
+        function closeCustomerShareMenu() {
+            document.getElementById('customerShareMenu').classList.remove('show');
+        }
+
+        // Send to specific customer
+        async function sendToCustomer(index) {
+            const customer = customerContacts[index];
+            const phone = customer.phone.replace(/\D/g, ''); // Remove non-digits
+            
+            closeCustomerShareMenu();
+            
+            const loading = document.getElementById('loading');
+            loading.classList.add('show');
+            
+            try {
+                // Generate image blob
+                const blob = await generateImageBlob();
+                
+                if (!blob) {
+                    throw new Error('Failed to generate image');
+                }
+                
+                // Create personalized message (respects toggle setting)
+                const effectiveDate = getEffectiveDate();
+                const formattedDate = effectiveDate.toLocaleDateString('en-AU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                const yourName = salesmanInfo.name || 'Everfresh Team';
+                const message = `Hi ${customer.name}! ${yourName} here from Everfresh 👋 Fresh prices for ${formattedDate} - give me a call or text for your order! Thank you.`;
+                
+                // Check if Web Share API is available (iOS/modern browsers)
+                if (navigator.share && navigator.canShare) {
+                    const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
+                    
+                    if (navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            title: `Price List for ${customer.name}`,
+                            text: message,
+                            files: [file]
+                        });
+                        loading.classList.remove('show');
+                        return;
+                    }
+                }
+                
+                // Fallback: Download and open WhatsApp
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const dateStr = new Date().toISOString().split('T')[0];
+                a.download = 'everfresh-price-list-' + dateStr + '.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                loading.classList.remove('show');
+                
+                // Open WhatsApp with customer number
+                const messageEncoded = encodeURIComponent(message);
+                const whatsappUrl = `https://wa.me/${phone}?text=${messageEncoded}`;
+                
+                alert('Image downloaded! WhatsApp will open - please attach the image from your Photos/Files and send.');
+                setTimeout(() => {
+                    window.open(whatsappUrl, '_blank');
+                }, 500);
+                
+            } catch (error) {
+                loading.classList.remove('show');
+                if (error.name !== 'AbortError') {
+                    console.error('Share error:', error);
+                    alert('Error sharing: ' + error.message);
+                }
+            }
+        }
+
+        // Generate image blob (helper function)
+        function generateImageBlob() {
+            return new Promise((resolve, reject) => {
+                const canvas = document.getElementById('downloadCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                try {
+                    // Collect fresh data
+                    collectData();
+                    
+                    // Calculate height
+                    let totalRows = 0;
+                    Object.values(priceData).forEach(items => {
+                        const availableItems = items.filter(item => {
+                            const price = (item[2] || '').toString().trim();
+                            if (price === '') return false;
+                            const cleanedPrice = price.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                            return cleanedPrice !== 'na' && cleanedPrice !== 'notavailable';
+                        });
+                        totalRows += availableItems.length;
+                    });
+                    const categoryCount = Object.keys(priceData).length;
+                        
+                        // Ultra HD - 3x resolution (3600px width)
+                        canvas.width = 3600;
+                        const estimatedHeight = 1200 + (categoryCount * 300) + (totalRows * 135) + 600;
+                        canvas.height = estimatedHeight;
+                        
+                        console.log(`Canvas size: ${canvas.width}x${canvas.height} (Ultra HD 3x)`);
+
+                        // White background
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                        let y = 120;
+                        const margin = 180;
+
+                        // Header background - Barely green-white
+                        ctx.fillStyle = '#fafdf7';
+                        const headerHeight = (salesmanInfo.name || salesmanInfo.phone) ? 840 : 720;
+                        ctx.fillRect(0, 0, canvas.width, headerHeight);
+
+                        // Company name - Forest green
+                        ctx.fillStyle = '#2d6a4f';
+                        ctx.font = 'bold 168px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('EVERFRESH PRODUCE GROUP', canvas.width / 2, y + 150);
+                        y += 240;
+
+                        // Title - Fresh green
+                        ctx.fillStyle = '#52b788';
+                        ctx.font = 'bold 144px Arial';
+                        ctx.fillText('WHOLESALE PRICE LIST', canvas.width / 2, y + 120);
+                        y += 210;
+
+                        // Address and Date
+                        const leftCol = 300;
+                        const rightCol = canvas.width - 300;
+                        
+                        ctx.textAlign = 'left';
+                        ctx.fillStyle = '#2d6a4f';
+                        ctx.font = 'bold 66px Arial';
+                        ctx.fillText('Stand 275, Shed C, Sydney Markets', leftCol, y + 60);
+                        
+                        ctx.textAlign = 'right';
+                        const effectiveDate = getEffectiveDate();
+                        const formattedDate = effectiveDate.toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
+                        ctx.fillText('Effective: ' + formattedDate, rightCol, y + 60);
+                        y += 150;
+
+                        // Contact box - Very light green
+                        if (salesmanInfo.name || salesmanInfo.phone) {
+                            ctx.fillStyle = '#d8f3dc';
+                            ctx.fillRect(leftCol - 60, y - 30, canvas.width - 480, 150);
+                            ctx.strokeStyle = '#52b788';
+                            ctx.lineWidth = 6;
+                            ctx.strokeRect(leftCol - 60, y - 30, canvas.width - 480, 150);
+                            
+                            ctx.textAlign = 'left';
+                            ctx.fillStyle = '#1b4332';
+                            ctx.font = 'bold 72px Arial';
+                            
+                            if (salesmanInfo.name && salesmanInfo.phone) {
+                                ctx.fillText('Sales Contact: ' + salesmanInfo.name, leftCol, y + 60);
+                                ctx.textAlign = 'right';
+                                ctx.fillText(salesmanInfo.phone, rightCol, y + 60);
+                            } else if (salesmanInfo.name) {
+                                ctx.fillText('Sales Contact: ' + salesmanInfo.name, leftCol, y + 60);
+                            } else {
+                                ctx.fillText('Sales Contact: ' + salesmanInfo.phone, leftCol, y + 60);
+                            }
+                            y += 195;
+                        } else {
+                            y += 45;
+                        }
+
+                        // Separator - Fresh green
+                        ctx.strokeStyle = '#b7e4c7';
+                        ctx.lineWidth = 6;
+                        ctx.beginPath();
+                        ctx.moveTo(margin, y);
+                        ctx.lineTo(canvas.width - margin, y);
+                        ctx.stroke();
+                        y += 90;
+
+                        // Table setup
+                        ctx.textAlign = 'left';
+                        const tableWidth = canvas.width - 2 * margin;
+                        const col1 = margin;
+                        const col2 = margin + tableWidth * 0.45;
+                        const col3 = margin + tableWidth * 0.80;
+                        const rowHeight = 126;
+
+                        console.log('Drawing categories...');
+                        
+                        // Get the appropriate price data (adjusted if customer selected)
+                        const displayPriceData = selectedCustomer ? getAdjustedPriceData() : priceData;
+                        
+                        // Draw each category
+                        for (const categoryName in displayPriceData) {
+                            const items = displayPriceData[categoryName];
+                            
+                            // Filter out items with NA/Not Available price (case-insensitive, handles symbols)
+                            const availableItems = items.filter(item => {
+                                const price = (item[2] || '').toString().trim();
+                                
+                                // Empty prices already validated, so won't reach here
+                                // But keep this check for safety
+                                if (price === '') return false;
+                                
+                                // Remove all symbols and spaces, then check
+                                const cleanedPrice = price.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                                
+                                // Filter out ONLY if it's "na" or "notavailable"
+                                return cleanedPrice !== 'na' && cleanedPrice !== 'notavailable';
+                            });
+                            
+                            // Skip this category if no available items
+                            if (availableItems.length === 0) {
+                                console.log(`Skipping category "${categoryName}" - all products NA`);
+                                continue;
+                            }
+
+                            // Category header - Medium green
+                            ctx.fillStyle = '#40916c';
+                            ctx.fillRect(margin, y, tableWidth, 150);
+                            ctx.strokeStyle = '#2d6a4f';
+                            ctx.lineWidth = 6;
+                            ctx.strokeRect(margin, y, tableWidth, 150);
+                            ctx.fillStyle = '#ffffff';
+                            ctx.font = 'bold 102px Arial';
+                            ctx.fillText(categoryName, col1 + 60, y + 108);
+                            y += 150;
+
+                            // Column headers - Light green
+                            ctx.fillStyle = '#74c69d';
+                            ctx.fillRect(margin, y, tableWidth, rowHeight);
+                            ctx.strokeRect(margin, y, tableWidth, rowHeight);
+                            ctx.fillStyle = '#ffffff';
+                            ctx.font = 'bold 78px Arial';
+                            ctx.fillText('Product', col1 + 60, y + 84);
+                            ctx.fillText('Grade/Size', col2 + 60, y + 84);
+                            ctx.fillText('Price', col3 + 60, y + 84);
+                            
+                            // Vertical lines
+                            ctx.strokeStyle = '#ffffff';
+                            ctx.lineWidth = 6;
+                            ctx.beginPath();
+                            ctx.moveTo(col2, y);
+                            ctx.lineTo(col2, y + rowHeight);
+                            ctx.moveTo(col3, y);
+                            ctx.lineTo(col3, y + rowHeight);
+                            ctx.stroke();
+                            y += rowHeight;
+
+                            // Draw only available items
+                            for (let i = 0; i < availableItems.length; i++) {
+                                const item = availableItems[i];
+                                
+                                // Background - Very subtle alternating
+                                ctx.fillStyle = i % 2 === 1 ? '#f1faee' : '#ffffff';
+                                ctx.fillRect(margin, y, tableWidth, rowHeight);
+                                
+                                // Borders - Soft green-gray
+                                ctx.strokeStyle = '#d8f3dc';
+                                ctx.lineWidth = 3;
+                                ctx.strokeRect(margin, y, tableWidth, rowHeight);
+                                ctx.beginPath();
+                                ctx.moveTo(col2, y);
+                                ctx.lineTo(col2, y + rowHeight);
+                                ctx.moveTo(col3, y);
+                                ctx.lineTo(col3, y + rowHeight);
+                                ctx.stroke();
+
+                                // Text - Dark for readability
+                                ctx.fillStyle = '#212529';
+                                ctx.font = '72px Arial';
+                                ctx.fillText(item[0], col1 + 60, y + 84);
+                                ctx.fillText(item[1], col2 + 60, y + 84);
+                                
+                                // Price - Deep forest green
+                                ctx.fillStyle = '#1b4332';
+                                ctx.font = 'bold 78px Arial';
+                                ctx.fillText(item[2], col3 + 60, y + 84);
+                                
+                                y += rowHeight;
+                            }
+                            y += 75;
+                        }
+
+                        // Notes
+                        y += 45;
+                        ctx.fillStyle = '#2d6a4f';
+                        ctx.font = 'bold 96px Arial';
+                        ctx.fillText('NOTES:', margin, y + 90);
+                        y += 150;
+
+                        ctx.fillStyle = '#495057';
+                        ctx.font = '60px Arial';
+                        const notes = [
+                            '• All prices are wholesale rates',
+                            '• Prices subject to availability and market conditions',
+                            '• Quality guaranteed - fresh daily from Sydney Markets',
+                            '• Contact us for bulk pricing and special requests'
+                        ];
+                        notes.forEach(note => {
+                            ctx.fillText(note, margin + 60, y + 66);
+                            y += 96;
+                        });
+
+                        // Convert to blob
+                        canvas.toBlob(function(blob) {
+                            if (blob) {
+                                resolve(blob);
+                            } else {
+                                reject(new Error('Failed to create blob'));
+                            }
+                        }, 'image/png');
+                        
+                    } catch (error) {
+                        console.error('Error generating blob:', error);
+                        reject(error);
+                    }
+            });
+        }
+
+        // Initialize
+        loadFromLocal();
+        renderCategories();
+        setupGlobalEventDelegation();
+    </script>
+</body>
+</html>
