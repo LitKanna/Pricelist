@@ -4757,9 +4757,8 @@ Response format (JSON only, no markdown):
 
                         if (navigator.canShare({ files: [file] })) {
                             try {
+                                // Share ONLY the file - text interferes with image attachment on iOS
                                 await navigator.share({
-                                    title: 'Everfresh Price List',
-                                    text: message,
                                     files: [file]
                                 });
                                 return;
