@@ -4748,22 +4748,10 @@ Response format (JSON only, no markdown):
                 // Generate message
                 const message = generateShareMessage();
 
-                // STRATEGY: On iOS, save image first then trigger shortcut
+                // On iOS, use share sheet directly (no shortcut for general share - no phone number)
                 if (isIOS()) {
                     loading.classList.remove('show');
 
-                    // Step 1: Ask user to save image to Photos via Share Sheet
-                    const saveFirst = confirm(
-                        '📱 iOS Auto-Send via Shortcut\n\n' +
-                        'Step 1: Save image to Photos\n' +
-                        '• Share sheet will open\n' +
-                        '• Tap "Save Image" to save to Photos\n\n' +
-                        'Tap OK to continue.'
-                    );
-
-                    if (!saveFirst) return;
-
-                    // Show share sheet so user can save to Photos
                     if (navigator.share && navigator.canShare) {
                         const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
 
@@ -4771,8 +4759,10 @@ Response format (JSON only, no markdown):
                             try {
                                 await navigator.share({
                                     title: 'Everfresh Price List',
+                                    text: message,
                                     files: [file]
                                 });
+                                return;
                             } catch (shareError) {
                                 if (shareError.name === 'AbortError') {
                                     return; // User cancelled
@@ -4781,18 +4771,9 @@ Response format (JSON only, no markdown):
                         }
                     }
 
-                    // Step 2: After saving, trigger the shortcut
-                    const triggerShortcut = confirm(
-                        '✅ Step 2: Send via Shortcut\n\n' +
-                        'Did you save the image to Photos?\n\n' +
-                        'If yes, tap OK to run the shortcut.\n' +
-                        'The shortcut will grab the latest photo and send it!'
-                    );
-
-                    if (triggerShortcut) {
-                        const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(message)}`;
-                        window.location.href = shortcutUrl;
-                    }
+                    // Fallback: download
+                    alert('Share not available. Downloading image instead.');
+                    downloadBlob(blob);
                     return;
                 }
 
