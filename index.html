@@ -1267,17 +1267,19 @@
         }
 
         // Save to localStorage
-        function saveToLocal() {
+        function saveToLocal(showNotification = true) {
             collectData();
             localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
             localStorage.setItem('everfresh_category_margins', JSON.stringify(categoryMargins));
             
-            // Show toast notification
-            const toast = document.getElementById('toast');
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            // Show toast notification only if requested
+            if (showNotification) {
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
         }
         
         // Toggle auto-sort setting
@@ -2051,6 +2053,9 @@
                         ? calculateCustomerPrice(item[2], item[1], selectedCustomer)
                         : item[2];
                     
+                    // Escape category name for use in HTML attributes
+                    const escapedCategoryName = categoryName.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    
                     html += `
                         <div class="product" draggable="${!autoSortEnabled}" data-category="${categoryName}" data-product-index="${idx}">
                             <div class="product-grid-with-drag">
@@ -2062,18 +2067,20 @@
                                     <input type="text" class="input-field" value="${item[1]}" placeholder="Grade/size" data-category="${categoryName}" data-row="${idx}" data-col="1">
                                 </div>
                                 <div class="product-field cost-field">
-                                    <input type="text" class="input-field" value="${cost}" placeholder="$0" data-category="${categoryName}" data-row="${idx}" data-col="3" onchange="calculatePriceFromCost('${categoryName}', ${idx}, this.value)">
+                                    <input type="text" class="input-field" value="${cost}" placeholder="$0" data-category="${categoryName}" data-row="${idx}" data-col="3" onchange="calculatePriceFromCost('${escapedCategoryName}', ${idx}, this.value)">
                                 </div>
                                 <div class="product-field">
                                     <input type="text" class="input-field" value="${displayPrice}" placeholder="$0.00" data-category="${categoryName}" data-row="${idx}" data-col="2" ${selectedCustomer ? 'readonly style="background: #f0fdf4; color: #15803d;"' : ''}>
                                 </div>
-                                <button class="product-delete" onclick="deleteRow('${categoryName}', ${idx})">×</button>
+                                <button class="product-delete" data-category="${categoryName}" data-idx="${idx}">×</button>
                             </div>
                         </div>
                     `;
                 });
 
-                html += `<button class="add-product-btn" onclick="addRow('${categoryName}')">+ Add</button>`;
+                // Escape category name for add button too
+                const escapedCatName = categoryName.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                html += `<button class="add-product-btn" data-category="${categoryName}">+ Add</button>`;
 
                 category.innerHTML = html;
                 container.appendChild(category);
@@ -2088,6 +2095,20 @@
                         setupProductDragEvents(product, categoryName);
                     });
                 }
+                
+                // Add click event listeners for delete and add buttons
+                category.querySelectorAll('.product-delete').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const cat = this.dataset.category;
+                        const idx = parseInt(this.dataset.idx);
+                        deleteRow(cat, idx);
+                    });
+                });
+                
+                category.querySelector('.add-product-btn').addEventListener('click', function() {
+                    const cat = this.dataset.category;
+                    addRow(cat);
+                });
             });
         }
         
@@ -2319,7 +2340,7 @@
             });
             
             priceData = newPriceData;
-            saveToLocal();
+            saveToLocal(false); // No toast notification
             renderCategories();
         }
         
@@ -2330,7 +2351,7 @@
             const [movedProduct] = products.splice(fromIndex, 1);
             products.splice(toIndex, 0, movedProduct);
             
-            saveToLocal();
+            saveToLocal(false); // No toast notification
             renderCategories();
         }
 
@@ -2355,18 +2376,16 @@
         function addRow(categoryName) {
             collectData(); // Save current changes first
             priceData[categoryName].push(['New Product', '-', '$0', '']);
-            saveToLocal();
+            saveToLocal(false); // No toast notification
             renderCategories();
         }
 
         // Delete row
         function deleteRow(categoryName, idx) {
-            if (confirm('Delete this product?')) {
-                collectData(); // Save current changes first
-                priceData[categoryName].splice(idx, 1);
-                saveToLocal();
-                renderCategories();
-            }
+            collectData(); // Save current changes first
+            priceData[categoryName].splice(idx, 1);
+            saveToLocal(false); // No toast notification
+            renderCategories();
         }
 
         // Add category
@@ -2375,7 +2394,7 @@
             if (name && name.trim()) {
                 collectData(); // Save current changes first
                 priceData[name.trim().toUpperCase()] = [['New Product', '-', '$0', '']];
-                saveToLocal();
+                saveToLocal(false); // No toast notification
                 renderCategories();
             }
         }
@@ -3136,11 +3155,9 @@ Response format (JSON only, no markdown):
             priceData[category].push([productName, grade, price, '']);
 
             // Save and re-render
-            saveToLocal();
+            saveToLocal(false); // No toast notification
             renderCategories();
             closeSmartAdd();
-
-            showToast(`Added "${productName}" to ${category}!`);
         }
 
         // Delete category
@@ -3149,7 +3166,7 @@ Response format (JSON only, no markdown):
                 collectData(); // Save current changes first
                 delete priceData[categoryName];
                 delete categoryMargins[categoryName]; // Also delete margin setting
-                saveToLocal();
+                saveToLocal(false); // No toast notification
                 renderCategories();
             }
         }
@@ -3165,7 +3182,7 @@ Response format (JSON only, no markdown):
                     categoryMargins[newName.trim().toUpperCase()] = categoryMargins[oldName];
                     delete categoryMargins[oldName];
                 }
-                saveToLocal();
+                saveToLocal(false); // No toast notification
                 renderCategories();
             }
         }
