@@ -2341,20 +2341,30 @@
                 const category = input.dataset.category;
                 const row = parseInt(input.dataset.row);
                 const col = parseInt(input.dataset.col);
+                
+                // Ensure the array has enough elements (for cost column)
+                while (priceData[category][row].length <= col) {
+                    priceData[category][row].push('');
+                }
+                
                 priceData[category][row][col] = input.value;
             });
         }
 
         // Add new row
         function addRow(categoryName) {
+            collectData(); // Save current changes first
             priceData[categoryName].push(['New Product', '-', '$0', '']);
+            saveToLocal();
             renderCategories();
         }
 
         // Delete row
         function deleteRow(categoryName, idx) {
             if (confirm('Delete this product?')) {
+                collectData(); // Save current changes first
                 priceData[categoryName].splice(idx, 1);
+                saveToLocal();
                 renderCategories();
             }
         }
@@ -2363,7 +2373,9 @@
         function addCategory() {
             const name = prompt('Enter category name:');
             if (name && name.trim()) {
+                collectData(); // Save current changes first
                 priceData[name.trim().toUpperCase()] = [['New Product', '-', '$0', '']];
+                saveToLocal();
                 renderCategories();
             }
         }
@@ -3134,7 +3146,10 @@ Response format (JSON only, no markdown):
         // Delete category
         function deleteCategory(categoryName) {
             if (confirm(`Delete category "${categoryName}"?`)) {
+                collectData(); // Save current changes first
                 delete priceData[categoryName];
+                delete categoryMargins[categoryName]; // Also delete margin setting
+                saveToLocal();
                 renderCategories();
             }
         }
@@ -3142,8 +3157,15 @@ Response format (JSON only, no markdown):
         // Rename category
         function renameCategory(oldName, newName) {
             if (newName && newName.trim() && newName !== oldName) {
+                collectData(); // Save current changes first
                 priceData[newName.trim().toUpperCase()] = priceData[oldName];
                 delete priceData[oldName];
+                // Transfer margin setting to new category name
+                if (categoryMargins[oldName]) {
+                    categoryMargins[newName.trim().toUpperCase()] = categoryMargins[oldName];
+                    delete categoryMargins[oldName];
+                }
+                saveToLocal();
                 renderCategories();
             }
         }
