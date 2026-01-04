@@ -1707,13 +1707,6 @@
             }
         });
 
-        // Preload company logo for canvas export
-        let companyLogo = new Image();
-        companyLogo.src = 'logo.png';
-        let logoLoaded = false;
-        companyLogo.onload = () => { logoLoaded = true; console.log('Logo loaded successfully'); };
-        companyLogo.onerror = () => { console.log('Logo failed to load, will use text fallback'); };
-
         // Initial data
         let priceData = {
             "TOMATOES": [
@@ -4319,22 +4312,12 @@ Response format (JSON only, no markdown):
                     const headerHeight = (salesmanInfo.name || salesmanInfo.phone) ? 840 : 720;
                     ctx.fillRect(0, 0, canvas.width, headerHeight);
 
-                    // Company logo (or fallback to text)
-                    if (logoLoaded && companyLogo.complete) {
-                        // Draw logo centered - scale to ~1500px wide for UHD
-                        const logoWidth = 1500;
-                        const logoHeight = (companyLogo.height / companyLogo.width) * logoWidth;
-                        const logoX = (canvas.width - logoWidth) / 2;
-                        ctx.drawImage(companyLogo, logoX, y + 20, logoWidth, logoHeight);
-                        y += logoHeight + 60;
-                    } else {
-                        // Fallback to text if logo not loaded
-                        ctx.fillStyle = '#2d6a4f';
-                        ctx.font = 'bold 168px Arial, Helvetica, sans-serif';
-                        ctx.textAlign = 'center';
-                        ctx.fillText('EVERFRESH PRODUCE GROUP', canvas.width / 2, y + 150);
-                        y += 240;
-                    }
+                    // Company name - Forest green
+                    ctx.fillStyle = '#2d6a4f';
+                    ctx.font = 'bold 168px Arial, Helvetica, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('EVERFRESH PRODUCE GROUP', canvas.width / 2, y + 150);
+                    y += 240;
 
                     // Title - Fresh green
                     ctx.fillStyle = '#52b788';
@@ -5278,22 +5261,12 @@ Response format (JSON only, no markdown):
                         const headerHeight = (salesmanInfo.name || salesmanInfo.phone) ? 840 : 720;
                         ctx.fillRect(0, 0, canvas.width, headerHeight);
 
-                        // Company logo (or fallback to text)
-                        if (logoLoaded && companyLogo.complete) {
-                            // Draw logo centered - scale to ~1500px wide for UHD
-                            const logoWidth = 1500;
-                            const logoHeight = (companyLogo.height / companyLogo.width) * logoWidth;
-                            const logoX = (canvas.width - logoWidth) / 2;
-                            ctx.drawImage(companyLogo, logoX, y + 20, logoWidth, logoHeight);
-                            y += logoHeight + 60;
-                        } else {
-                            // Fallback to text if logo not loaded
-                            ctx.fillStyle = '#2d6a4f';
-                            ctx.font = 'bold 168px Arial, Helvetica, sans-serif';
-                            ctx.textAlign = 'center';
-                            ctx.fillText('EVERFRESH PRODUCE GROUP', canvas.width / 2, y + 150);
-                            y += 240;
-                        }
+                        // Company name - Forest green
+                        ctx.fillStyle = '#2d6a4f';
+                        ctx.font = 'bold 168px Arial, Helvetica, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('EVERFRESH PRODUCE GROUP', canvas.width / 2, y + 150);
+                        y += 240;
 
                         // Title - Fresh green
                         ctx.fillStyle = '#52b788';
