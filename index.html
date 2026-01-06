@@ -1674,6 +1674,9 @@
         // Temporary storage for generated image
         let lastGeneratedImageUrl = null;
 
+        // Session flag: image already saved to Photos (skip re-saving)
+        let imageSavedThisSession = false;
+
         // Get effective date based on settings - uses Sydney timezone
         function getEffectiveDate() {
             // Get current date in Sydney timezone
@@ -2801,6 +2804,9 @@
             
             // Handle margin select change
             container.addEventListener('change', function(e) {
+                // Reset image saved flag when any data changes
+                imageSavedThisSession = false;
+
                 if (e.target.classList.contains('margin-select')) {
                     const encodedCat = e.target.dataset.categoryEncoded;
                     if (encodedCat !== undefined) {
@@ -2809,7 +2815,7 @@
                     }
                     return;
                 }
-                
+
                 // Handle cost input change
                 if (e.target.classList.contains('cost-input')) {
                     const encodedCat = e.target.dataset.categoryEncoded;
@@ -2819,6 +2825,13 @@
                         calculatePriceFromCost(categoryName, idx, e.target.value);
                     }
                     return;
+                }
+            });
+
+            // Also reset on input event for immediate typing feedback
+            container.addEventListener('input', function(e) {
+                if (e.target.tagName === 'INPUT') {
+                    imageSavedThisSession = false;
                 }
             });
         }
@@ -5128,49 +5141,35 @@ Response format (JSON only, no markdown):
 
                 loading.classList.remove('show');
 
-                // iOS with iMessage: Save to Photos first, then trigger shortcut
+                // iOS with iMessage: Streamlined flow
                 if (isIOS() && method === 'imessage') {
-                    // Step 1: Save image to Photos via Share Sheet
-                    const saveFirst = confirm(
-                        `📱 Send to ${customer.name} via iMessage\n\n` +
-                        `Step 1: Save image to Photos\n` +
-                        `• Share sheet will open\n` +
-                        `• Tap "Save Image"\n\n` +
-                        `Tap OK to continue.`
-                    );
 
-                    if (!saveFirst) return;
+                    // Only save image if not already saved this session
+                    if (!imageSavedThisSession) {
+                        if (navigator.share && navigator.canShare) {
+                            const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
 
-                    // Show share sheet
-                    if (navigator.share && navigator.canShare) {
-                        const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
-
-                        if (navigator.canShare({ files: [file] })) {
-                            try {
-                                await navigator.share({
-                                    title: `Price List for ${customer.name}`,
-                                    files: [file]
-                                });
-                            } catch (shareError) {
-                                if (shareError.name === 'AbortError') {
-                                    return;
+                            if (navigator.canShare({ files: [file] })) {
+                                try {
+                                    // Show share sheet - user taps "Save Image"
+                                    await navigator.share({
+                                        files: [file]
+                                    });
+                                    // Mark as saved for this session
+                                    imageSavedThisSession = true;
+                                } catch (shareError) {
+                                    if (shareError.name === 'AbortError') {
+                                        return;
+                                    }
                                 }
                             }
                         }
                     }
 
-                    // Step 2: Trigger shortcut with phone number
-                    const triggerShortcut = confirm(
-                        `✅ Step 2: Auto-Send to ${customer.name}\n\n` +
-                        `Did you save the image?\n\n` +
-                        `Tap OK to send via iMessage shortcut.`
-                    );
-
-                    if (triggerShortcut) {
-                        const shortcutInput = `${phone},${message}`;
-                        const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                        window.location.href = shortcutUrl;
-                    }
+                    // Trigger shortcut immediately (no confirmation)
+                    const shortcutInput = `${phone},${message}`;
+                    const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+                    window.location.href = shortcutUrl;
                     return;
                 }
 
@@ -5288,36 +5287,32 @@ Response format (JSON only, no markdown):
                 }
 
                 // Step 2: Save image to Photos via Share Sheet
-                statusText.textContent = 'Save image to Photos...';
-                progressBar.style.width = '20%';
+                // Only save image if not already saved this session
+                if (!imageSavedThisSession) {
+                    statusText.textContent = 'Save image to Photos (once)...';
+                    progressBar.style.width = '20%';
 
-                const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
+                    const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
 
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    alert(
-                        '📱 Step 1: Save Image to Photos\n\n' +
-                        'Share sheet will open.\n' +
-                        'Tap "Save Image" to save to your Photos.\n\n' +
-                        'This image will be used for ALL customers.'
-                    );
-
-                    try {
-                        await navigator.share({ files: [file] });
-                    } catch (shareError) {
-                        if (shareError.name === 'AbortError') {
-                            // User cancelled
-                            progressDiv.style.display = 'none';
-                            sendAllBtn.style.display = 'flex';
-                            return;
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({ files: [file] });
+                            imageSavedThisSession = true;
+                        } catch (shareError) {
+                            if (shareError.name === 'AbortError') {
+                                progressDiv.style.display = 'none';
+                                sendAllBtn.style.display = 'flex';
+                                return;
+                            }
                         }
+                    } else {
+                        throw new Error('Share API not available');
                     }
-                } else {
-                    throw new Error('Share API not available');
                 }
 
-                // Step 3: Build customer list for shortcut
+                // Build customer list for shortcut
                 statusText.textContent = 'Preparing customer list...';
-                progressBar.style.width = '30%';
+                progressBar.style.width = '50%';
 
                 const effectiveDate = getEffectiveDate();
                 const formattedDate = effectiveDate.toLocaleDateString('en-AU', {
@@ -5335,16 +5330,9 @@ Response format (JSON only, no markdown):
                     return `${phone}|${customer.name}|${message}`;
                 }).join(';;;');
 
-                // Step 4: Trigger the bulk send shortcut
+                // Trigger shortcut immediately
                 statusText.textContent = 'Launching shortcut...';
-                progressBar.style.width = '50%';
-
-                alert(
-                    '📱 Step 2: Send to All\n\n' +
-                    `The shortcut will now send to ${customerContacts.length} customers.\n\n` +
-                    'For each customer, you may need to approve the send.\n\n' +
-                    'Tap OK to start sending!'
-                );
+                progressBar.style.width = '80%';
 
                 // Trigger shortcut with BULK mode and customer list
                 const shortcutInput = `BULK,${customerList}`;
