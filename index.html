@@ -46,6 +46,14 @@
         color: var(--slate-900);
         line-height: 1.5;
     }
+
+    /* Prevent background scroll when modal is open */
+    body.modal-open {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+    }
     
     /* Beautiful Header - Enhanced */
     .header {
@@ -2501,6 +2509,7 @@
             if (products.length === 0) {
                 list.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 40px;">No products found in XPS file.</p>';
                 modal.classList.add('show');
+                document.body.classList.add('modal-open');
                 return;
             }
 
@@ -2618,6 +2627,7 @@
             // Store matches globally
             window.xpsMatches = matches;
             modal.classList.add('show');
+            document.body.classList.add('modal-open');
         }
 
         // Levenshtein distance for fuzzy matching
@@ -2634,6 +2644,7 @@
 
         function closeXPSImport() {
             document.getElementById('xpsImportModal').classList.remove('show');
+            document.body.classList.remove('modal-open');
             xpsExtractedProducts = [];
             window.xpsMatches = null;
         }
@@ -3564,18 +3575,20 @@
 
         function showSmartAddProduct() {
             document.getElementById('smartAddModal').classList.add('show');
+            document.body.classList.add('modal-open');
             document.getElementById('smartProductName').value = '';
             document.getElementById('smartProductGrade').value = '';
             document.getElementById('smartProductPrice').value = '';
             document.getElementById('smartAnalysis').innerHTML = '';
             suggestedCategory = null;
-            
+
             // Focus on product name
             setTimeout(() => document.getElementById('smartProductName').focus(), 100);
         }
 
         function closeSmartAdd() {
             document.getElementById('smartAddModal').classList.remove('show');
+            document.body.classList.remove('modal-open');
         }
 
         function analyzeProduct() {
@@ -4797,12 +4810,14 @@ Response format (JSON only, no markdown):
             }
 
             document.getElementById('shareMenu').classList.add('show');
+            document.body.classList.add('modal-open');
         }
 
         // Close share menu modal
         function closeShareMenu() {
             document.getElementById('shareMenu').classList.remove('show');
             document.getElementById('shortcutSetupInfo').style.display = 'none';
+            document.body.classList.remove('modal-open');
         }
 
         // Download blob as file
@@ -5139,11 +5154,13 @@ Response format (JSON only, no markdown):
             
             container.innerHTML = html;
             document.getElementById('customerShareMenu').classList.add('show');
+            document.body.classList.add('modal-open');
         }
 
         // Close customer share menu
         function closeCustomerShareMenu() {
             document.getElementById('customerShareMenu').classList.remove('show');
+            document.body.classList.remove('modal-open');
         }
 
         // Send to specific customer
