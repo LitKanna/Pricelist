@@ -1464,6 +1464,29 @@
         
         <div class="customer-share-menu" id="customerShareMenu" style="max-height: 80vh; overflow-y: auto;">
             <h3>Select Customer</h3>
+
+            <!-- Send to All Button -->
+            <button id="sendToAllBtn" class="btn" onclick="sendToAllCustomers()" style="width: 100%; margin-bottom: 15px; background: linear-gradient(135deg, #8B5CF6, #6366F1); color: white; padding: 14px; font-size: 15px; font-weight: 600; border: none; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Send to All Customers (iMessage)
+            </button>
+
+            <!-- Progress indicator for Send All -->
+            <div id="sendAllProgress" style="display: none; margin-bottom: 15px; padding: 12px; background: #EEF2FF; border-radius: 10px; border: 1px solid #C7D2FE;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <div class="spinner" style="width: 18px; height: 18px; border: 2px solid #6366F1; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    <span id="sendAllStatus" style="color: #4338CA; font-weight: 500;">Preparing...</span>
+                </div>
+                <div style="background: #C7D2FE; border-radius: 4px; height: 6px; overflow: hidden;">
+                    <div id="sendAllProgressBar" style="background: #6366F1; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                </div>
+            </div>
+
             <div id="customerShareList" style="max-height: 60vh; overflow-y: auto;"></div>
             <button class="btn btn-secondary" onclick="closeCustomerShareMenu()" style="margin-top: 15px;">Cancel</button>
         </div>
@@ -5216,6 +5239,129 @@ Response format (JSON only, no markdown):
                 loading.classList.remove('show');
                 console.error('Share error:', error);
                 alert('Error: ' + error.message);
+            }
+        }
+
+        // Send to ALL customers via iOS Shortcut (loop)
+        async function sendToAllCustomers() {
+            if (!isIOS()) {
+                alert('This feature requires iOS with the Everfresh Pricelist shortcut installed.');
+                return;
+            }
+
+            if (customerContacts.length === 0) {
+                alert('No customers to send to. Add customers in Settings first.');
+                return;
+            }
+
+            // Confirm with user
+            const confirmSend = confirm(
+                `📤 Send to All Customers\n\n` +
+                `This will send the price list to ${customerContacts.length} customer(s):\n\n` +
+                customerContacts.slice(0, 5).map(c => `• ${c.name}`).join('\n') +
+                (customerContacts.length > 5 ? `\n...and ${customerContacts.length - 5} more` : '') +
+                `\n\nYou'll need to:\n` +
+                `1. Save the image to Photos (once)\n` +
+                `2. Approve each send in the Shortcut\n\n` +
+                `Continue?`
+            );
+
+            if (!confirmSend) return;
+
+            const progressDiv = document.getElementById('sendAllProgress');
+            const statusText = document.getElementById('sendAllStatus');
+            const progressBar = document.getElementById('sendAllProgressBar');
+            const sendAllBtn = document.getElementById('sendToAllBtn');
+
+            // Show progress, hide button
+            progressDiv.style.display = 'block';
+            sendAllBtn.style.display = 'none';
+
+            try {
+                // Step 1: Generate image once
+                statusText.textContent = 'Generating price list image...';
+                progressBar.style.width = '10%';
+
+                const blob = await generateImageBlob();
+                if (!blob) {
+                    throw new Error('Failed to generate image');
+                }
+
+                // Step 2: Save image to Photos via Share Sheet
+                statusText.textContent = 'Save image to Photos...';
+                progressBar.style.width = '20%';
+
+                const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
+
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    alert(
+                        '📱 Step 1: Save Image to Photos\n\n' +
+                        'Share sheet will open.\n' +
+                        'Tap "Save Image" to save to your Photos.\n\n' +
+                        'This image will be used for ALL customers.'
+                    );
+
+                    try {
+                        await navigator.share({ files: [file] });
+                    } catch (shareError) {
+                        if (shareError.name === 'AbortError') {
+                            // User cancelled
+                            progressDiv.style.display = 'none';
+                            sendAllBtn.style.display = 'flex';
+                            return;
+                        }
+                    }
+                } else {
+                    throw new Error('Share API not available');
+                }
+
+                // Step 3: Build customer list for shortcut
+                statusText.textContent = 'Preparing customer list...';
+                progressBar.style.width = '30%';
+
+                const effectiveDate = getEffectiveDate();
+                const formattedDate = effectiveDate.toLocaleDateString('en-AU', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                const yourName = salesmanInfo.name || 'Everfresh Team';
+
+                // Build list of customers: phone|name|message
+                const customerList = customerContacts.map(customer => {
+                    const phone = customer.phone.replace(/\D/g, '');
+                    const message = `Hi ${customer.name}! ${yourName} here from Everfresh 👋 Fresh prices for ${formattedDate} - give me a call or text for your order! Thank you.`;
+                    return `${phone}|${customer.name}|${message}`;
+                }).join(';;;');
+
+                // Step 4: Trigger the bulk send shortcut
+                statusText.textContent = 'Launching shortcut...';
+                progressBar.style.width = '50%';
+
+                alert(
+                    '📱 Step 2: Send to All\n\n' +
+                    `The shortcut will now send to ${customerContacts.length} customers.\n\n` +
+                    'For each customer, you may need to approve the send.\n\n' +
+                    'Tap OK to start sending!'
+                );
+
+                // Trigger shortcut with BULK mode and customer list
+                const shortcutInput = `BULK,${customerList}`;
+                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+
+                // Reset UI before launching shortcut
+                progressDiv.style.display = 'none';
+                sendAllBtn.style.display = 'flex';
+                closeCustomerShareMenu();
+
+                window.location.href = shortcutUrl;
+
+            } catch (error) {
+                console.error('Send all error:', error);
+                alert('Error: ' + error.message);
+                progressDiv.style.display = 'none';
+                sendAllBtn.style.display = 'flex';
             }
         }
 
