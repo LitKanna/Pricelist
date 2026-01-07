@@ -5863,12 +5863,12 @@ Response format (JSON only, no markdown):
                 });
                 const yourName = salesmanInfo.name || 'Everfresh Team';
 
-                // Build list of filtered customers: phone|name|message
+                // Build list of filtered customers: phone~name~message (using ~ as delimiter, safe for URLs)
                 const customerList = customers.map(customer => {
                     const phone = customer.phone.replace(/\D/g, '');
-                    const message = `Hi ${customer.name}! ${yourName} here from Everfresh 👋 Fresh prices for ${formattedDate} - give me a call or text for your order! Thank you.`;
-                    return `${phone}|${customer.name}|${message}`;
-                }).join(';;;');
+                    const message = `Hi ${customer.name}! ${yourName} here from Everfresh. Fresh prices for ${formattedDate} - give me a call or text for your order! Thank you.`;
+                    return `${phone}~${customer.name}~${message}`;
+                }).join('~~~');
 
                 // Trigger shortcut
                 statusText.textContent = 'Launching shortcut...';
