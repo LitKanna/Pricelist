@@ -1105,7 +1105,75 @@
         font-size: 14px;
         margin-top: 2px;
     }
-    
+
+    .customer-days {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 6px;
+    }
+
+    .customer-day-tag {
+        background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+        color: #15803d;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .customer-day-tag.all-days {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        color: #16a34a;
+    }
+
+    .day-checkbox {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .day-checkbox:has(input:checked) {
+        background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+        border-color: #22c55e;
+        color: #15803d;
+    }
+
+    .day-checkbox input {
+        accent-color: #22c55e;
+    }
+
+    .day-pill {
+        padding: 8px 14px;
+        border: 2px solid #e2e8f0;
+        background: #f8fafc;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .day-pill:hover {
+        border-color: #22c55e;
+        color: #16a34a;
+    }
+
+    .day-pill.active {
+        background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+        border-color: #16a34a;
+        color: white;
+    }
+
     /* Modal - Modern Glass Design */
     .customer-share-menu {
         display: none;
@@ -1571,20 +1639,45 @@
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
                 <h3>Send to Customer</h3>
-                <p>Select a customer to share with</p>
+                <p id="customerShareSubtitle">Select a customer to share with</p>
             </div>
 
             <div class="share-menu-body" style="flex: 1; overflow-y: auto;">
-                <!-- Send to All Button -->
-                <button id="sendToAllBtn" onclick="sendToAllCustomers()" style="width: 100%; margin-bottom: 16px; background: linear-gradient(135deg, #15803d 0%, #16a34a 50%, #22c55e 100%); color: white; padding: 14px 18px; font-size: 14px; font-weight: 600; border: none; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3); transition: all 0.2s ease;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="9" cy="7" r="4"/>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
-                    Send to All Customers
-                </button>
+                <!-- Day Filter Section -->
+                <div id="dayFilterSection" style="margin-bottom: 16px;">
+                    <!-- Smart Tomorrow Button -->
+                    <button id="sendTomorrowBtn" onclick="filterByTomorrow()" style="width: 100%; margin-bottom: 10px; background: linear-gradient(135deg, #15803d 0%, #16a34a 50%, #22c55e 100%); color: white; padding: 14px 18px; font-size: 14px; font-weight: 600; border: none; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3); transition: all 0.2s ease;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <span id="tomorrowBtnText">Send to Tomorrow's Customers</span>
+                    </button>
+
+                    <!-- Day Selection Pills -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;">
+                        <button class="day-pill active" data-day="all" onclick="filterCustomersByDay('all')">All</button>
+                        <button class="day-pill" data-day="mon" onclick="filterCustomersByDay('mon')">Mon</button>
+                        <button class="day-pill" data-day="tue" onclick="filterCustomersByDay('tue')">Tue</button>
+                        <button class="day-pill" data-day="wed" onclick="filterCustomersByDay('wed')">Wed</button>
+                        <button class="day-pill" data-day="thu" onclick="filterCustomersByDay('thu')">Thu</button>
+                        <button class="day-pill" data-day="fri" onclick="filterCustomersByDay('fri')">Fri</button>
+                        <button class="day-pill" data-day="sat" onclick="filterCustomersByDay('sat')">Sat</button>
+                    </div>
+
+                    <!-- Send to Filtered Button -->
+                    <button id="sendFilteredBtn" onclick="sendToFilteredCustomers()" style="width: 100%; background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); color: white; padding: 12px 16px; font-size: 13px; font-weight: 600; border: none; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: all 0.2s ease;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        <span id="sendFilteredText">Send to All (0)</span>
+                    </button>
+                </div>
 
                 <!-- Progress indicator for Send All -->
                 <div id="sendAllProgress" style="display: none; margin-bottom: 16px; padding: 14px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 14px; border: 1px solid #bbf7d0;">
@@ -1596,6 +1689,9 @@
                         <div id="sendAllProgressBar" style="background: linear-gradient(90deg, #16a34a, #22c55e); height: 100%; width: 0%; transition: width 0.3s; border-radius: 6px;"></div>
                     </div>
                 </div>
+
+                <!-- Customer List Label -->
+                <div id="customerListLabel" style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Or send individually:</div>
 
                 <div id="customerShareList" style="display: flex; flex-direction: column; gap: 10px;"></div>
 
@@ -1702,8 +1798,19 @@
                         <input type="text" id="customerPhone" placeholder="e.g., 0400123456">
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="addCustomerContact()">Add Customer</button>
-                
+                <div class="input-group" style="margin-top: 15px;">
+                    <label>Days Customer Comes In <span style="color: #64748b; font-weight: normal;">(leave empty = every day)</span></label>
+                    <div id="customerDaysSelector" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+                        <label class="day-checkbox"><input type="checkbox" value="mon"> Mon</label>
+                        <label class="day-checkbox"><input type="checkbox" value="tue"> Tue</label>
+                        <label class="day-checkbox"><input type="checkbox" value="wed"> Wed</label>
+                        <label class="day-checkbox"><input type="checkbox" value="thu"> Thu</label>
+                        <label class="day-checkbox"><input type="checkbox" value="fri"> Fri</label>
+                        <label class="day-checkbox"><input type="checkbox" value="sat"> Sat</label>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="addCustomerContact()" style="margin-top: 15px;">Add Customer</button>
+
                 <div id="customersList" style="margin-top: 20px;"></div>
             </div>
         </div>
@@ -2700,20 +2807,29 @@
         function addCustomerContact() {
             const name = document.getElementById('customerName').value.trim();
             const phone = document.getElementById('customerPhone').value.trim();
-            
+
             if (!name || !phone) {
                 alert('Please enter both customer name and phone number');
                 return;
             }
-            
-            customerContacts.push({ name, phone });
+
+            // Get selected days
+            const dayCheckboxes = document.querySelectorAll('#customerDaysSelector input[type="checkbox"]');
+            const days = [];
+            dayCheckboxes.forEach(cb => {
+                if (cb.checked) days.push(cb.value);
+            });
+
+            customerContacts.push({ name, phone, days });
             localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
-            
+
             document.getElementById('customerName').value = '';
             document.getElementById('customerPhone').value = '';
-            
+            // Reset day checkboxes
+            dayCheckboxes.forEach(cb => cb.checked = false);
+
             renderCustomersList();
-            
+
             const toast = document.getElementById('toast');
             toast.innerHTML = 'Customer added!';
             toast.classList.add('show');
@@ -2739,16 +2855,28 @@
                 container.innerHTML = '<p style="color: #6b7280; font-size: 14px; margin-top: 10px;">No customers added yet</p>';
                 return;
             }
-            
+
+            const dayNames = { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat' };
+
             let html = '<div style="margin-top: 15px;">';
             customerContacts.forEach((customer, index) => {
+                const days = customer.days || [];
+                let daysHtml = '';
+                if (days.length === 0) {
+                    daysHtml = '<span class="customer-day-tag all-days">Every Day</span>';
+                } else {
+                    daysHtml = days.map(d => `<span class="customer-day-tag">${dayNames[d] || d}</span>`).join('');
+                }
+
                 html += `
-                    <div class="customer-item">
-                        <div class="customer-info">
+                    <div class="customer-item" style="flex-wrap: wrap;">
+                        <div class="customer-info" style="flex: 1; min-width: 150px;">
                             <div class="customer-name">${customer.name}</div>
                             <div class="customer-phone">${customer.phone}</div>
+                            <div class="customer-days">${daysHtml}</div>
                         </div>
-                        <div class="customer-actions">
+                        <div class="customer-actions" style="display: flex; gap: 8px;">
+                            <button class="btn btn-secondary btn-small" onclick="editCustomerDays(${index})">Edit Days</button>
                             <button class="btn btn-danger btn-small" onclick="deleteCustomerContact(${index})">Delete</button>
                         </div>
                     </div>
@@ -2756,6 +2884,73 @@
             });
             html += '</div>';
             container.innerHTML = html;
+        }
+
+        // Edit customer days
+        function editCustomerDays(index) {
+            const customer = customerContacts[index];
+            const days = customer.days || [];
+            const dayNames = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+            const dayLabels = { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat' };
+
+            let checkboxesHtml = dayNames.map(day => {
+                const checked = days.includes(day) ? 'checked' : '';
+                return `<label class="day-checkbox"><input type="checkbox" value="${day}" ${checked}> ${dayLabels[day]}</label>`;
+            }).join('');
+
+            const modal = document.createElement('div');
+            modal.className = 'customer-share-menu show';
+            modal.id = 'editDaysModal';
+            modal.style.cssText = 'max-width: 400px;';
+            modal.innerHTML = `
+                <div class="share-menu-header">
+                    <h3 style="margin: 0;">Edit Days for ${customer.name}</h3>
+                    <p style="margin: 6px 0 0 0;">Select which days this customer comes in</p>
+                </div>
+                <div class="share-menu-body">
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;">
+                        ${checkboxesHtml}
+                    </div>
+                    <p style="color: #64748b; font-size: 13px; margin-bottom: 16px;">Leave all unchecked = customer appears every day</p>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="saveCustomerDays(${index})" style="flex: 1;">Save</button>
+                        <button class="btn btn-secondary" onclick="closeEditDaysModal()" style="flex: 1;">Cancel</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            document.body.classList.add('modal-open');
+        }
+
+        // Save customer days
+        function saveCustomerDays(index) {
+            const modal = document.getElementById('editDaysModal');
+            const checkboxes = modal.querySelectorAll('input[type="checkbox"]');
+            const days = [];
+            checkboxes.forEach(cb => {
+                if (cb.checked) days.push(cb.value);
+            });
+
+            customerContacts[index].days = days;
+            localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
+
+            closeEditDaysModal();
+            renderCustomersList();
+
+            const toast = document.getElementById('toast');
+            toast.innerHTML = 'Days updated!';
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.innerHTML = 'Saved successfully!';
+            }, 2000);
+        }
+
+        // Close edit days modal
+        function closeEditDaysModal() {
+            const modal = document.getElementById('editDaysModal');
+            if (modal) modal.remove();
+            document.body.classList.remove('modal-open');
         }
 
         // Render categories
@@ -5094,15 +5289,46 @@ Response format (JSON only, no markdown):
             }
         }
 
+        // Current filter state
+        let currentDayFilter = 'all';
+
+        // Get tomorrow's day (smart detection)
+        function getTomorrowDay() {
+            const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            let dayIndex = tomorrow.getDay();
+            // Skip Sunday - if tomorrow is Sunday, show Monday
+            if (dayIndex === 0) dayIndex = 1;
+            return days[dayIndex];
+        }
+
+        // Get day display name
+        function getDayDisplayName(day) {
+            const names = { mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday', fri: 'Friday', sat: 'Saturday' };
+            return names[day] || day;
+        }
+
+        // Filter customers by day
+        function getCustomersForDay(day) {
+            if (day === 'all') return customerContacts;
+            return customerContacts.filter(customer => {
+                const customerDays = customer.days || [];
+                // Empty days = every day
+                if (customerDays.length === 0) return true;
+                return customerDays.includes(day);
+            });
+        }
+
         // Show customer share menu
         function showCustomerShareMenu() {
             if (customerContacts.length === 0) {
                 alert('No customers added yet! Please add customers in Settings first.');
                 return;
             }
-            
+
             collectData();
-            
+
             // Check for empty prices
             let hasEmptyPrices = false;
             for (const categoryName in priceData) {
@@ -5116,32 +5342,99 @@ Response format (JSON only, no markdown):
                 }
                 if (hasEmptyPrices) break;
             }
-            
+
             if (hasEmptyPrices) {
                 alert('Please fill in all prices or mark as "NA" before sharing.');
                 return;
             }
-            
+
+            // Reset filter to 'all'
+            currentDayFilter = 'all';
+
+            // Update tomorrow button text
+            const tomorrowDay = getTomorrowDay();
+            const tomorrowCustomers = getCustomersForDay(tomorrowDay);
+            document.getElementById('tomorrowBtnText').textContent =
+                `Send to ${getDayDisplayName(tomorrowDay)}'s Customers (${tomorrowCustomers.length})`;
+
+            // Reset day pills
+            document.querySelectorAll('.day-pill').forEach(pill => {
+                pill.classList.remove('active');
+                if (pill.dataset.day === 'all') pill.classList.add('active');
+            });
+
+            // Render customer list
+            renderCustomerShareList('all');
+
+            document.getElementById('customerShareMenu').classList.add('show');
+            document.body.classList.add('modal-open');
+        }
+
+        // Filter by tomorrow (smart button)
+        function filterByTomorrow() {
+            const tomorrowDay = getTomorrowDay();
+            filterCustomersByDay(tomorrowDay);
+            // Trigger send to filtered
+            sendToFilteredCustomers();
+        }
+
+        // Filter customers by day (manual selection)
+        function filterCustomersByDay(day) {
+            currentDayFilter = day;
+
+            // Update active pill
+            document.querySelectorAll('.day-pill').forEach(pill => {
+                pill.classList.remove('active');
+                if (pill.dataset.day === day) pill.classList.add('active');
+            });
+
+            // Re-render customer list
+            renderCustomerShareList(day);
+        }
+
+        // Render customer share list
+        function renderCustomerShareList(day) {
+            const customers = getCustomersForDay(day);
             const container = document.getElementById('customerShareList');
+            const dayNames = { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat' };
+
+            // Update send button text
+            const dayLabel = day === 'all' ? 'All' : getDayDisplayName(day);
+            document.getElementById('sendFilteredText').textContent = `Send to ${dayLabel} (${customers.length})`;
+
+            if (customers.length === 0) {
+                container.innerHTML = '<p style="color: #64748b; text-align: center; padding: 20px;">No customers for this day</p>';
+                return;
+            }
+
             let html = '';
-            
-            customerContacts.forEach((customer, index) => {
+            customers.forEach((customer) => {
+                const originalIndex = customerContacts.indexOf(customer);
+                const customerDays = customer.days || [];
+                let daysHtml = '';
+                if (customerDays.length === 0) {
+                    daysHtml = '<span style="background: #f0fdf4; color: #16a34a; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Every Day</span>';
+                } else {
+                    daysHtml = customerDays.map(d => `<span style="background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px; font-size: 10px;">${dayNames[d]}</span>`).join(' ');
+                }
+
                 html += `
                     <div style="background: #f0fdf4; border: 1px solid #dcfce7; border-radius: 12px; padding: 12px 14px;">
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
                             <div>
                                 <div style="font-weight: 600; font-size: 15px; color: #15803d;">${customer.name}</div>
                                 <div style="font-size: 13px; color: #16a34a;">${customer.phone}</div>
+                                <div style="display: flex; gap: 4px; margin-top: 4px;">${daysHtml}</div>
                             </div>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button onclick="sendToCustomerVia(${index}, 'imessage')" style="flex: 1; background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); color: white; padding: 10px; font-size: 13px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <button onclick="sendToCustomerVia(${originalIndex}, 'imessage')" style="flex: 1; background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); color: white; padding: 10px; font-size: 13px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white">
                                     <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/>
                                 </svg>
                                 iMessage
                             </button>
-                            <button onclick="sendToCustomerVia(${index}, 'whatsapp')" style="flex: 1; background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); color: white; padding: 10px; font-size: 13px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <button onclick="sendToCustomerVia(${originalIndex}, 'whatsapp')" style="flex: 1; background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); color: white; padding: 10px; font-size: 13px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white">
                                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                                 </svg>
@@ -5151,10 +5444,19 @@ Response format (JSON only, no markdown):
                     </div>
                 `;
             });
-            
+
             container.innerHTML = html;
-            document.getElementById('customerShareMenu').classList.add('show');
-            document.body.classList.add('modal-open');
+        }
+
+        // Send to filtered customers
+        function sendToFilteredCustomers() {
+            const customers = getCustomersForDay(currentDayFilter);
+            if (customers.length === 0) {
+                alert('No customers to send to for this day.');
+                return;
+            }
+            // Use the existing sendToAllCustomers logic but with filtered list
+            sendToCustomersByDay(currentDayFilter);
         }
 
         // Close customer share menu
@@ -5473,6 +5775,119 @@ Response format (JSON only, no markdown):
                 alert('Error: ' + error.message);
                 progressDiv.style.display = 'none';
                 sendAllBtn.style.display = 'flex';
+            }
+        }
+
+        // Send to customers by day filter
+        async function sendToCustomersByDay(day) {
+            if (!isIOS()) {
+                alert('This feature requires iOS with the Everfresh Pricelist shortcut installed.');
+                return;
+            }
+
+            const customers = getCustomersForDay(day);
+            if (customers.length === 0) {
+                alert('No customers to send to for this day.');
+                return;
+            }
+
+            const dayLabel = day === 'all' ? 'All' : getDayDisplayName(day);
+
+            // Confirm with user
+            const confirmSend = confirm(
+                `📤 Send to ${dayLabel} Customers\n\n` +
+                `This will send the price list to ${customers.length} customer(s):\n\n` +
+                customers.slice(0, 5).map(c => `• ${c.name}`).join('\n') +
+                (customers.length > 5 ? `\n...and ${customers.length - 5} more` : '') +
+                `\n\nYou'll need to:\n` +
+                `1. Save the image to Photos (once)\n` +
+                `2. Approve each send in the Shortcut\n\n` +
+                `Continue?`
+            );
+
+            if (!confirmSend) return;
+
+            const progressDiv = document.getElementById('sendAllProgress');
+            const statusText = document.getElementById('sendAllStatus');
+            const progressBar = document.getElementById('sendAllProgressBar');
+            const sendFilteredBtn = document.getElementById('sendFilteredBtn');
+
+            // Show progress
+            progressDiv.style.display = 'block';
+            sendFilteredBtn.style.display = 'none';
+
+            try {
+                // Step 1: Generate image once
+                statusText.textContent = 'Generating price list image...';
+                progressBar.style.width = '10%';
+
+                const blob = await generateImageBlob();
+                if (!blob) {
+                    throw new Error('Failed to generate image');
+                }
+
+                // Step 2: Save image to Photos via Share Sheet
+                if (!imageSavedThisSession) {
+                    statusText.textContent = 'Save image to Photos (once)...';
+                    progressBar.style.width = '20%';
+
+                    const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
+
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({ files: [file] });
+                            imageSavedThisSession = true;
+                        } catch (shareError) {
+                            if (shareError.name === 'AbortError') {
+                                progressDiv.style.display = 'none';
+                                sendFilteredBtn.style.display = 'flex';
+                                return;
+                            }
+                        }
+                    } else {
+                        throw new Error('Share API not available');
+                    }
+                }
+
+                // Build customer list for shortcut
+                statusText.textContent = `Preparing ${dayLabel} customers...`;
+                progressBar.style.width = '50%';
+
+                const effectiveDate = getEffectiveDate();
+                const formattedDate = effectiveDate.toLocaleDateString('en-AU', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                const yourName = salesmanInfo.name || 'Everfresh Team';
+
+                // Build list of filtered customers: phone|name|message
+                const customerList = customers.map(customer => {
+                    const phone = customer.phone.replace(/\D/g, '');
+                    const message = `Hi ${customer.name}! ${yourName} here from Everfresh 👋 Fresh prices for ${formattedDate} - give me a call or text for your order! Thank you.`;
+                    return `${phone}|${customer.name}|${message}`;
+                }).join(';;;');
+
+                // Trigger shortcut
+                statusText.textContent = 'Launching shortcut...';
+                progressBar.style.width = '80%';
+
+                const shortcutInput = `BULK,${customerList}`;
+                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+
+                // Reset UI before launching shortcut
+                progressDiv.style.display = 'none';
+                sendFilteredBtn.style.display = 'flex';
+                closeCustomerShareMenu();
+
+                window.location.href = shortcutUrl;
+
+            } catch (error) {
+                console.error('Send by day error:', error);
+                alert('Error: ' + error.message);
+                progressDiv.style.display = 'none';
+                sendFilteredBtn.style.display = 'flex';
             }
         }
 
