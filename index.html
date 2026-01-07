@@ -5871,25 +5871,45 @@ Response format (JSON only, no markdown):
                 }).join('\n');
 
                 // Trigger shortcut
-                statusText.textContent = 'Launching shortcut...';
-                progressBar.style.width = '80%';
+                statusText.textContent = 'Ready to send!';
+                progressBar.style.width = '100%';
 
-                // Copy customer data to clipboard (avoids URL encoding issues)
-                try {
-                    await navigator.clipboard.writeText(customerList);
-                } catch (clipErr) {
-                    console.error('Clipboard error:', clipErr);
-                }
-
-                // Launch shortcut - it will read from clipboard
-                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist`;
-
-                // Reset UI before launching shortcut
+                // Reset UI
                 progressDiv.style.display = 'none';
                 sendFilteredBtn.style.display = 'flex';
                 closeCustomerShareMenu();
 
-                window.location.href = shortcutUrl;
+                // Create a simple format: just phone numbers separated by commas
+                const phoneList = customers.map(c => c.phone.replace(/\D/g, '')).join(',');
+
+                // Show prompt with data to copy
+                const copySuccess = await new Promise(resolve => {
+                    const modal = document.createElement('div');
+                    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;';
+                    modal.innerHTML = `
+                        <div style="background:white;border-radius:20px;padding:24px;max-width:350px;width:100%;text-align:center;">
+                            <h3 style="margin:0 0 16px;color:#1e293b;">Send to ${customers.length} Customers</h3>
+                            <p style="color:#64748b;font-size:14px;margin-bottom:16px;">Tap the box below to copy, then tap "Open Shortcut"</p>
+                            <textarea id="phoneDataBox" readonly style="width:100%;height:80px;border:2px solid #e2e8f0;border-radius:12px;padding:12px;font-size:14px;font-family:monospace;resize:none;margin-bottom:16px;">${phoneList}</textarea>
+                            <button id="copyAndOpenBtn" style="width:100%;padding:14px;background:linear-gradient(135deg,#16a34a,#22c55e);color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;">Copy & Open Shortcut</button>
+                            <button onclick="this.parentElement.parentElement.remove()" style="width:100%;padding:12px;background:none;border:none;color:#64748b;font-size:14px;margin-top:8px;cursor:pointer;">Cancel</button>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+
+                    document.getElementById('copyAndOpenBtn').onclick = async () => {
+                        const textarea = document.getElementById('phoneDataBox');
+                        textarea.select();
+                        document.execCommand('copy');
+                        modal.remove();
+                        resolve(true);
+                    };
+                });
+
+                if (copySuccess) {
+                    // Launch shortcut
+                    window.location.href = 'shortcuts://run-shortcut?name=Everfresh%20Pricelist';
+                }
 
             } catch (error) {
                 console.error('Send by day error:', error);
