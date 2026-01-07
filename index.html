@@ -5882,8 +5882,8 @@ Response format (JSON only, no markdown):
                 // Create simple phone list (just digits and commas - URL safe)
                 const phoneList = customers.map(c => c.phone.replace(/\D/g, '')).join(',');
 
-                // Launch shortcut with phone list in URL
-                window.location.href = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${phoneList}`;
+                // Launch shortcut with phone list in URL (using input parameter directly)
+                window.location.href = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=${phoneList}`;
 
             } catch (error) {
                 console.error('Send by day error:', error);
