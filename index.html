@@ -5874,8 +5874,8 @@ Response format (JSON only, no markdown):
                 statusText.textContent = 'Launching shortcut...';
                 progressBar.style.width = '80%';
 
-                // Always add ;;; at end so even 1 customer uses bulk mode (Repeat loop)
-                const shortcutInput = customerList + ';;;';
+                // Send customer list directly - shortcut always uses repeat loop
+                const shortcutInput = customerList;
                 const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
 
                 // Reset UI before launching shortcut
