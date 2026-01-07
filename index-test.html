@@ -1457,7 +1457,7 @@
         </div>
 
         <!-- Share Menu Modal -->
-        <div class="customer-share-menu" id="shareMenu">
+        <div class="customer-share-menu" id="shareMenu" style="max-height: 85vh;">
             <div class="share-menu-header">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="margin-bottom: 8px; opacity: 0.9;">
                     <circle cx="18" cy="5" r="3"/>
@@ -1562,7 +1562,7 @@
             </div>
         </div>
         
-        <div class="customer-share-menu" id="customerShareMenu" style="max-height: 85vh; overflow: hidden;">
+        <div class="customer-share-menu" id="customerShareMenu" style="max-height: 85vh; display: flex; flex-direction: column;">
             <div class="share-menu-header">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="margin-bottom: 8px; opacity: 0.9;">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -1574,7 +1574,7 @@
                 <p>Select a customer to share with</p>
             </div>
 
-            <div class="share-menu-body" style="max-height: 60vh; overflow-y: auto;">
+            <div class="share-menu-body" style="flex: 1; overflow-y: auto;">
                 <!-- Send to All Button -->
                 <button id="sendToAllBtn" onclick="sendToAllCustomers()" style="width: 100%; margin-bottom: 16px; background: linear-gradient(135deg, #15803d 0%, #16a34a 50%, #22c55e 100%); color: white; padding: 14px 18px; font-size: 14px; font-weight: 600; border: none; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3); transition: all 0.2s ease;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
