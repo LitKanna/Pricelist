@@ -5874,9 +5874,15 @@ Response format (JSON only, no markdown):
                 statusText.textContent = 'Launching shortcut...';
                 progressBar.style.width = '80%';
 
-                // Send customer list directly - shortcut always uses repeat loop
-                const shortcutInput = customerList;
-                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+                // Copy customer data to clipboard (avoids URL encoding issues)
+                try {
+                    await navigator.clipboard.writeText(customerList);
+                } catch (clipErr) {
+                    console.error('Clipboard error:', clipErr);
+                }
+
+                // Launch shortcut - it will read from clipboard
+                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist`;
 
                 // Reset UI before launching shortcut
                 progressDiv.style.display = 'none';
