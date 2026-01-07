@@ -5874,7 +5874,8 @@ Response format (JSON only, no markdown):
                 statusText.textContent = 'Launching shortcut...';
                 progressBar.style.width = '80%';
 
-                const shortcutInput = `BULK,${customerList}`;
+                // No BULK, prefix - shortcut detects bulk mode by checking for ;;;
+                const shortcutInput = customerList;
                 const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
 
                 // Reset UI before launching shortcut
