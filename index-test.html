@@ -1718,39 +1718,40 @@
         </div>
 
         <!-- Smart Add Product Modal -->
-        <div class="customer-share-menu" id="smartAddModal" style="max-width: 600px;">
-            <div class="share-menu-header">
-                <h3>Add Product</h3>
+        <div class="customer-share-menu" id="smartAddModal" style="max-width: 500px;">
+            <div class="share-menu-header" style="padding: 18px 24px;">
+                <h3 style="margin: 0;">Add Product</h3>
             </div>
 
             <div class="share-menu-body">
-                <div style="margin-bottom: 16px;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b; font-size: 13px;">Product Name</label>
-                    <input type="text" id="smartProductName" placeholder="e.g., Red Onion, Cherry Tomato, Long Green Chilli..."
-                           style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; transition: border-color 0.2s; box-sizing: border-box;"
-                           onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='#e2e8f0'"
+                <div style="margin-bottom: 14px;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #374151; font-size: 13px;">Product Name</label>
+                    <input type="text" id="smartProductName" placeholder="Red Onion, Cherry Tomato..."
+                           style="width: 100%; padding: 12px 14px; border: 1.5px solid #d1d5db; border-radius: 10px; font-size: 15px; transition: border-color 0.2s; box-sizing: border-box;"
+                           onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='#d1d5db'"
                            onkeyup="analyzeProduct()">
                 </div>
 
-                <div style="margin-bottom: 16px;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b; font-size: 13px;">Grade/Size</label>
-                    <input type="text" id="smartProductGrade" placeholder="e.g., 10kg, per kg, BOX, piece..."
-                           style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; transition: border-color 0.2s; box-sizing: border-box;"
-                           onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='#e2e8f0'">
+                <div style="display: flex; gap: 12px; margin-bottom: 14px;">
+                    <div style="flex: 1;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #374151; font-size: 13px;">Grade/Size</label>
+                        <input type="text" id="smartProductGrade" placeholder="10kg, BOX..."
+                               style="width: 100%; padding: 12px 14px; border: 1.5px solid #d1d5db; border-radius: 10px; font-size: 15px; transition: border-color 0.2s; box-sizing: border-box;"
+                               onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='#d1d5db'">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #374151; font-size: 13px;">Price</label>
+                        <input type="text" id="smartProductPrice" placeholder="$25"
+                               style="width: 100%; padding: 12px 14px; border: 1.5px solid #d1d5db; border-radius: 10px; font-size: 15px; transition: border-color 0.2s; box-sizing: border-box;"
+                               onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='#d1d5db'">
+                    </div>
                 </div>
 
-                <div style="margin-bottom: 16px;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b; font-size: 13px;">Price</label>
-                    <input type="text" id="smartProductPrice" placeholder="e.g., $25, $0.80..."
-                           style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; transition: border-color 0.2s; box-sizing: border-box;"
-                           onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='#e2e8f0'">
-                </div>
-
-                <div id="smartAnalysis" style="margin-bottom: 16px;"></div>
+                <div id="smartAnalysis" style="margin-bottom: 14px;"></div>
 
                 <div style="display: flex; gap: 10px;">
                     <button class="btn btn-secondary" onclick="closeSmartAdd()" style="flex: 1;">Cancel</button>
-                    <button class="btn btn-success" onclick="confirmSmartAdd()" style="flex: 1;">Add Product</button>
+                    <button class="btn btn-success" onclick="confirmSmartAdd()" style="flex: 1;">Add</button>
                 </div>
             </div>
         </div>
