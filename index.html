@@ -1516,6 +1516,15 @@
                             </svg>
                             Pricing
                         </button>
+                        <button class="dropdown-item" onclick="autoOrganizeProducts(); closeAllDropdowns()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="21" y1="10" x2="3" y2="10"/>
+                                <line x1="21" y1="6" x2="3" y2="6"/>
+                                <line x1="21" y1="14" x2="3" y2="14"/>
+                                <line x1="21" y1="18" x2="3" y2="18"/>
+                            </svg>
+                            Auto-Organize
+                        </button>
                     </div>
                 </div>
             </div>
@@ -3961,6 +3970,85 @@
                 saveToLocal(false); // No toast notification
                 renderCategories();
             }
+        }
+
+        // Auto-organize all products into correct categories and sort alphabetically
+        function autoOrganizeProducts() {
+            collectData(); // Get latest data from inputs
+
+            const existingCategories = Object.keys(priceData);
+            let movedCount = 0;
+            let checkedCount = 0;
+
+            // Collect all products with their current categories
+            const allProducts = [];
+            for (const [category, items] of Object.entries(priceData)) {
+                for (const item of items) {
+                    if (item[0] && item[0].trim() && item[0] !== 'New Product') {
+                        allProducts.push({
+                            name: item[0],
+                            grade: item[1],
+                            price: item[2],
+                            cost: item[3] || '',
+                            currentCategory: category
+                        });
+                        checkedCount++;
+                    }
+                }
+            }
+
+            // Clear all categories (we'll rebuild them)
+            const newPriceData = {};
+
+            // Process each product
+            for (const product of allProducts) {
+                // Use smart matching to find correct category
+                const match = smartCategoryMatch(product.name, existingCategories);
+                const correctCategory = match.category;
+
+                // Track if product moved
+                if (product.currentCategory !== correctCategory) {
+                    movedCount++;
+                    console.log(`[Auto-Organize] Moving "${product.name}" from "${product.currentCategory}" to "${correctCategory}"`);
+                }
+
+                // Add to correct category
+                if (!newPriceData[correctCategory]) {
+                    newPriceData[correctCategory] = [];
+                }
+                newPriceData[correctCategory].push([
+                    product.name,
+                    product.grade,
+                    product.price,
+                    product.cost
+                ]);
+            }
+
+            // Sort products alphabetically within each category
+            for (const category of Object.keys(newPriceData)) {
+                newPriceData[category].sort((a, b) => {
+                    const nameA = (a[0] || '').toLowerCase();
+                    const nameB = (b[0] || '').toLowerCase();
+                    return nameA.localeCompare(nameB);
+                });
+            }
+
+            // Sort categories alphabetically
+            const sortedCategories = Object.keys(newPriceData).sort((a, b) => a.localeCompare(b));
+            const sortedPriceData = {};
+            for (const cat of sortedCategories) {
+                sortedPriceData[cat] = newPriceData[cat];
+            }
+
+            // Update price data
+            priceData = sortedPriceData;
+
+            // Save and refresh
+            saveToLocal(false);
+            renderCategories();
+
+            // Show result
+            showToast(`Organized ${checkedCount} products. Moved ${movedCount} to correct categories.`);
         }
 
         // Smart Add Product System
