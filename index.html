@@ -3935,6 +3935,11 @@
                 }
 
                 let value = input.value;
+                // Auto-format grade/size column (col 1) with proper capitalization
+                if (col === 1) {
+                    value = formatGradeSize(value);
+                    input.value = value; // Update the input field too
+                }
                 // Auto-add $ to price column (col 2) if user typed a number without $
                 if (col === 2) {
                     value = formatPriceWithSymbol(value);
@@ -4884,6 +4889,72 @@ Response format (JSON only, no markdown):
                 p = '$' + p;
             }
             return p;
+        }
+
+        // Format grade/size field with proper capitalization
+        function formatGradeSize(text) {
+            if (!text || text === '-') return text;
+            let t = text.toString().trim();
+
+            // Units that should be lowercase
+            const lowercaseUnits = ['kg', 'g', 'ml', 'l', 'lb', 'oz'];
+            // Words that should be lowercase
+            const lowercaseWords = ['per', 'each', 'box', 'tray', 'bunch', 'punnet', 'pack', 'bag', 'case', 'crate', 'carton', 'pallet', 'head', 'piece'];
+            // Words that should be capitalized (first letter)
+            const capitalizeWords = ['small', 'medium', 'large', 'premium', 'standard', 'extra', 'baby', 'mini', 'jumbo', 'xl', 'no'];
+
+            // First, normalize the text
+            t = t.replace(/\s+/g, ' '); // Multiple spaces to single
+
+            // Handle number+unit patterns (e.g., "5KG" → "5kg", "10 KG" → "10kg")
+            t = t.replace(/(\d+)\s*(kg|g|ml|l|lb|oz)/gi, (match, num, unit) => {
+                return num + unit.toLowerCase();
+            });
+
+            // Handle "per X" patterns
+            t = t.replace(/\bper\s+(\w+)/gi, (match, word) => {
+                return 'per ' + word.toLowerCase();
+            });
+
+            // Process each word
+            const words = t.split(' ');
+            const formatted = words.map(word => {
+                const wordLower = word.toLowerCase();
+
+                // Check if it's a number+unit combo (already handled above)
+                if (/^\d+\w+$/.test(word)) {
+                    return word.toLowerCase();
+                }
+
+                // Check lowercase words
+                if (lowercaseWords.includes(wordLower)) {
+                    return wordLower;
+                }
+
+                // Check units
+                if (lowercaseUnits.includes(wordLower)) {
+                    return wordLower;
+                }
+
+                // Check words to capitalize
+                if (capitalizeWords.includes(wordLower)) {
+                    return wordLower.charAt(0).toUpperCase() + wordLower.slice(1);
+                }
+
+                // Handle "No.X" pattern (e.g., "NO.1" → "No.1")
+                if (/^no\.?\d/i.test(word)) {
+                    return 'No.' + word.replace(/^no\.?/i, '');
+                }
+
+                // Default: capitalize first letter
+                if (word.length > 0) {
+                    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+                }
+
+                return word;
+            });
+
+            return formatted.join(' ');
         }
 
         function truncateText(ctx, text, maxWidth) {
