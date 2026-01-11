@@ -1965,17 +1965,12 @@
                 </div>
             </div>
 
-            <!-- Existing Tiers Card -->
-            <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    </div>
-                    <div style="font-weight: 600; color: #1e293b; font-size: 15px;">Your Pricing Tiers</div>
-                </div>
-                <div id="customerTiersList"></div>
-                <div id="noTiersMessage" style="text-align: center; padding: 20px; color: #94a3b8; font-size: 14px;">
-                    No pricing tiers yet. Add one above!
+            <!-- Quick Tier Selector -->
+            <div style="background: white; border-radius: 16px; padding: 16px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Select Pricing</div>
+                <div id="customerTiersList" style="overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none;"></div>
+                <div id="noTiersMessage" style="text-align: center; padding: 16px; color: #94a3b8; font-size: 13px;">
+                    No tiers yet — add one above
                 </div>
             </div>
 
@@ -2528,7 +2523,7 @@
             showToast('Customer tier added!');
         }
 
-        // Render customer tiers list - compact chip design
+        // Render customer tiers list - horizontal scroll selector
         function renderCustomerTiersList() {
             const container = document.getElementById('customerTiersList');
             const noTiersMsg = document.getElementById('noTiersMessage');
@@ -2541,7 +2536,23 @@
 
             if (noTiersMsg) noTiersMsg.style.display = 'none';
 
-            let html = '<div style="display: flex; flex-wrap: wrap; gap: 8px;">';
+            const isStandardActive = !selectedCustomer;
+
+            let html = '<div style="display: flex; gap: 10px; padding: 4px 0;">';
+
+            // Standard option (no tier)
+            if (isStandardActive) {
+                html += '<div onclick="applyCustomerPricing(null)" style="flex-shrink: 0; display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); padding: 10px 16px; border-radius: 12px; cursor: pointer; box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);">' +
+                    '<span style="color: white; font-size: 14px; font-weight: 600;">Standard</span>' +
+                    '<span style="color: rgba(255,255,255,0.9); font-size: 12px;">✓</span>' +
+                '</div>';
+            } else {
+                html += '<div onclick="applyCustomerPricing(null)" style="flex-shrink: 0; display: flex; align-items: center; background: #f8fafc; border: 2px solid #e2e8f0; padding: 10px 16px; border-radius: 12px; cursor: pointer; transition: all 0.2s;">' +
+                    '<span style="color: #64748b; font-size: 14px; font-weight: 500;">Standard</span>' +
+                '</div>';
+            }
+
+            // Customer tiers
             customers.forEach(customer => {
                 const adjustmentText = customer.adjustmentType === 'percentage'
                     ? (customer.adjustmentValue > 0 ? '+' : '') + customer.adjustmentValue + '%'
@@ -2551,46 +2562,53 @@
                 const isNegative = customer.adjustmentValue < 0;
 
                 if (isActive) {
-                    // Active chip - prominent green
-                    html += '<div onclick="applyCustomerPricing(' + customer.id + ')" style="display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); padding: 8px 12px; border-radius: 20px; cursor: pointer; box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);">' +
-                        '<span style="color: white; font-size: 13px; font-weight: 600;">' + customer.name + '</span>' +
-                        '<span style="background: rgba(255,255,255,0.25); color: white; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 8px;">' + adjustmentText + '</span>' +
-                        '<span style="color: rgba(255,255,255,0.8); font-size: 11px;">✓</span>' +
-                        '<button onclick="event.stopPropagation(); deleteCustomerTier(' + customer.id + ')" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 18px; height: 18px; border-radius: 50%; cursor: pointer; font-size: 12px; line-height: 1; margin-left: 2px;">×</button>' +
+                    html += '<div style="flex-shrink: 0; display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); padding: 10px 14px; border-radius: 12px; box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);">' +
+                        '<div onclick="applyCustomerPricing(' + customer.id + ')" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">' +
+                            '<span style="color: white; font-size: 14px; font-weight: 600;">' + customer.name + '</span>' +
+                            '<span style="background: rgba(255,255,255,0.2); color: white; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">' + adjustmentText + '</span>' +
+                        '</div>' +
+                        '<button onclick="deleteCustomerTier(' + customer.id + ')" style="background: rgba(255,255,255,0.15); border: none; color: rgba(255,255,255,0.9); width: 22px; height: 22px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">×</button>' +
                     '</div>';
                 } else {
-                    // Inactive chip - subtle gray
-                    html += '<div onclick="applyCustomerPricing(' + customer.id + ')" style="display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 20px; cursor: pointer; transition: all 0.2s;">' +
-                        '<span style="color: #475569; font-size: 13px; font-weight: 500;">' + customer.name + '</span>' +
-                        '<span style="background: ' + (isNegative ? '#fecaca' : '#dcfce7') + '; color: ' + (isNegative ? '#dc2626' : '#16a34a') + '; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 8px;">' + adjustmentText + '</span>' +
-                        '<button onclick="event.stopPropagation(); deleteCustomerTier(' + customer.id + ')" style="background: #fee2e2; border: none; color: #dc2626; width: 18px; height: 18px; border-radius: 50%; cursor: pointer; font-size: 12px; line-height: 1; margin-left: 2px;">×</button>' +
+                    html += '<div style="flex-shrink: 0; display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 2px solid #e2e8f0; padding: 10px 14px; border-radius: 12px; transition: all 0.2s;">' +
+                        '<div onclick="applyCustomerPricing(' + customer.id + ')" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">' +
+                            '<span style="color: #334155; font-size: 14px; font-weight: 500;">' + customer.name + '</span>' +
+                            '<span style="background: ' + (isNegative ? '#fef2f2' : '#f0fdf4') + '; color: ' + (isNegative ? '#dc2626' : '#16a34a') + '; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">' + adjustmentText + '</span>' +
+                        '</div>' +
+                        '<button onclick="deleteCustomerTier(' + customer.id + ')" style="background: #fef2f2; border: none; color: #ef4444; width: 22px; height: 22px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">×</button>' +
                     '</div>';
                 }
             });
+
             html += '</div>';
             container.innerHTML = html;
         }
 
         // Apply customer pricing
         function applyCustomerPricing(customerId) {
-            if (selectedCustomer && selectedCustomer.id === customerId) {
-                // Deactivate
+            if (customerId === null) {
+                // Switch to Standard pricing
                 selectedCustomer = null;
                 localStorage.removeItem('everfresh_selected_customer_id');
-                showToast('Standard pricing restored');
+                showToast('Standard pricing');
+            } else if (selectedCustomer && selectedCustomer.id === customerId) {
+                // Already active - switch to standard
+                selectedCustomer = null;
+                localStorage.removeItem('everfresh_selected_customer_id');
+                showToast('Standard pricing');
             } else {
-                // Activate
+                // Activate selected tier
                 selectedCustomer = customers.find(c => c.id === customerId);
                 localStorage.setItem('everfresh_selected_customer_id', customerId.toString());
-                showToast(`Applied pricing for ${selectedCustomer.name}`);
+                showToast(`${selectedCustomer.name} pricing`);
             }
-            
+
             // Reset image cache so new image is generated with new prices
             imageSavedThisSession = false;
-            
+
             renderCustomerTiersList();
             renderCategories();
-            
+
             // Sync to cloud immediately
             if (cloudSyncEnabled && currentUserPhone) {
                 syncToCloud(true);
