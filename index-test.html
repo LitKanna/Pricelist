@@ -2366,6 +2366,13 @@
             if (savedCustomers) {
                 customers = JSON.parse(savedCustomers);
             }
+            
+            // Load selected customer (active pricing tier)
+            const savedSelectedId = localStorage.getItem('everfresh_selected_customer_id');
+            if (savedSelectedId && customers.length > 0) {
+                const id = parseInt(savedSelectedId);
+                selectedCustomer = customers.find(c => c.id === id) || null;
+            }
         }
 
         // Save to localStorage
@@ -2571,15 +2578,22 @@
             if (selectedCustomer && selectedCustomer.id === customerId) {
                 // Deactivate
                 selectedCustomer = null;
+                localStorage.removeItem('everfresh_selected_customer_id');
                 showToast('Standard pricing restored');
             } else {
                 // Activate
                 selectedCustomer = customers.find(c => c.id === customerId);
+                localStorage.setItem('everfresh_selected_customer_id', customerId.toString());
                 showToast(`Applied pricing for ${selectedCustomer.name}`);
             }
             
             renderCustomerTiersList();
             renderCategories();
+            
+            // Sync to cloud immediately
+            if (cloudSyncEnabled && currentUserPhone) {
+                syncToCloud(true);
+            }
         }
 
         // Delete customer tier
@@ -6897,6 +6911,11 @@ Response format (JSON only, no markdown):
                 localStorage.setItem('everfresh_category_margins', JSON.stringify(categoryMargins));
                 localStorage.setItem('everfresh_customers', JSON.stringify(customers));
                 localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
+                if (selectedCustomer) {
+                    localStorage.setItem('everfresh_selected_customer_id', selectedCustomer.id.toString());
+                } else {
+                    localStorage.removeItem('everfresh_selected_customer_id');
+                }
                 renderCustomerTiersList();
 
                 // Refresh UI
@@ -7035,6 +7054,11 @@ Response format (JSON only, no markdown):
                 localStorage.setItem('everfresh_category_margins', JSON.stringify(categoryMargins));
                 localStorage.setItem('everfresh_customers', JSON.stringify(customers));
                 localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
+                if (selectedCustomer) {
+                    localStorage.setItem('everfresh_selected_customer_id', selectedCustomer.id.toString());
+                } else {
+                    localStorage.removeItem('everfresh_selected_customer_id');
+                }
                 renderCategories();
                 renderCustomersList();
                 renderCustomerTiersList();
