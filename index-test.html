@@ -164,6 +164,15 @@
         scrollbar-width: none;
     }
 
+    /* Butter smooth scroll for tier picker */
+    #customerTiersList {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    #customerTiersList::-webkit-scrollbar {
+        display: none;
+    }
+
     /* Hide main page scrollbar on mobile */
     @media (max-width: 480px) {
         html, body {
@@ -1976,7 +1985,7 @@
                         <div id="activeTierDisplay" style="font-size: 13px; color: #64748b; font-weight: 500;">Tap to choose</div>
                     </div>
                 </div>
-                <div id="customerTiersList" style="max-height: 280px; overflow-y: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; background: rgba(248,250,252,0.8);"></div>
+                <div id="customerTiersList" style="max-height: 280px; overflow-y: auto; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; overscroll-behavior-y: contain; border-radius: 12px; background: rgba(248,250,252,0.8);"></div>
                 <div id="noTiersMessage" style="text-align: center; padding: 24px; color: #94a3b8; font-size: 13px;">No pricing tiers yet</div>
             </div>
 
