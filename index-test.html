@@ -6303,14 +6303,42 @@ Response format (JSON only, no markdown):
         let confirmationResult = null;
         let recaptchaVerifier = null;
 
+        // Reset reCAPTCHA completely
+        function resetRecaptcha() {
+            if (recaptchaVerifier) {
+                try {
+                    recaptchaVerifier.clear();
+                } catch (e) {
+                    console.log('Could not clear reCAPTCHA:', e);
+                }
+                recaptchaVerifier = null;
+            }
+            // Clear the container HTML
+            const container = document.getElementById('recaptcha-container');
+            if (container) container.innerHTML = '';
+        }
+
         // Initialize reCAPTCHA (invisible)
         function initRecaptcha() {
-            if (recaptchaVerifier) return;
+            return new Promise((resolve, reject) => {
+                // Always reset first
+                resetRecaptcha();
 
-            recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-                size: 'invisible',
-                callback: () => {
-                    console.log('reCAPTCHA solved');
+                try {
+                    recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                        size: 'invisible',
+                        callback: () => {
+                            console.log('reCAPTCHA solved');
+                            resolve();
+                        },
+                        'expired-callback': () => {
+                            console.log('reCAPTCHA expired');
+                            resetRecaptcha();
+                        }
+                    });
+                    resolve();
+                } catch (error) {
+                    reject(error);
                 }
             });
         }
@@ -6332,8 +6360,8 @@ Response format (JSON only, no markdown):
                 document.getElementById('syncNotVerified').style.display = 'none';
                 document.getElementById('syncVerifying').style.display = 'block';
 
-                // Initialize reCAPTCHA
-                initRecaptcha();
+                // Initialize reCAPTCHA fresh
+                await initRecaptcha();
 
                 // Send OTP
                 confirmationResult = await auth.signInWithPhoneNumber(formattedPhone, recaptchaVerifier);
@@ -6343,12 +6371,7 @@ Response format (JSON only, no markdown):
                 console.error('Phone auth error:', error);
                 showToast('Error: ' + error.message);
                 cancelVerification();
-
-                // Reset reCAPTCHA on error
-                if (recaptchaVerifier) {
-                    recaptchaVerifier.clear();
-                    recaptchaVerifier = null;
-                }
+                resetRecaptcha();
             }
         }
 
