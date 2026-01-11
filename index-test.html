@@ -6509,9 +6509,13 @@ Response format (JSON only, no markdown):
 
         // Upload data to cloud (silent mode)
         async function syncToCloud(silent = false) {
-            if (!currentUserPhone || syncInProgress) return;
+            if (!currentUserPhone || syncInProgress) {
+                console.log('[Sync] Upload skipped:', !currentUserPhone ? 'no phone' : 'in progress');
+                return;
+            }
 
             syncInProgress = true;
+            console.log('[Sync] Uploading to:', 'users/' + currentUserPhone);
 
             // Update status to show syncing
             const statusIcon = document.getElementById('syncStatusIcon');
@@ -6530,6 +6534,7 @@ Response format (JSON only, no markdown):
                 };
 
                 await database.ref('users/' + currentUserPhone).set(dataToSync);
+                console.log('[Sync] Upload success!');
 
                 // Update status back to synced
                 if (statusIcon) statusIcon.textContent = '●';
@@ -6544,9 +6549,13 @@ Response format (JSON only, no markdown):
 
         // Download data from cloud
         async function syncFromCloud(silent = false) {
-            if (!currentUserPhone || syncInProgress) return;
+            if (!currentUserPhone || syncInProgress) {
+                console.log('[Sync] Download skipped:', !currentUserPhone ? 'no phone' : 'in progress');
+                return;
+            }
 
             syncInProgress = true;
+            console.log('[Sync] Downloading from:', 'users/' + currentUserPhone);
             const statusIcon = document.getElementById('syncStatusIcon');
             if (statusIcon) statusIcon.textContent = '↻';
 
@@ -6556,9 +6565,12 @@ Response format (JSON only, no markdown):
 
                 if (!cloudData) {
                     // No cloud data - this is fine for first sync, just start uploading
+                    console.log('[Sync] No cloud data found, will upload instead');
                     if (statusIcon) statusIcon.textContent = '●';
                     return;
                 }
+
+                console.log('[Sync] Cloud data found, applying...');
 
                 // Apply cloud data
                 if (cloudData.priceData) {
@@ -6577,15 +6589,17 @@ Response format (JSON only, no markdown):
                     document.getElementById('nextDayToggle').checked = salesmanInfo.sendForNextDay !== false;
                 }
 
-                // Save locally and refresh UI
-                saveToLocal(false);
+                // Save locally (but don't trigger another cloud sync!)
+                localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
+                localStorage.setItem('everfresh_category_margins', JSON.stringify(categoryMargins));
                 renderCategories();
                 renderCustomersList();
 
+                console.log('[Sync] Download success! Data applied.');
                 if (statusIcon) statusIcon.textContent = '●';
 
             } catch (error) {
-                console.error('Sync from cloud error:', error);
+                console.error('[Sync] Download error:', error);
                 if (statusIcon) statusIcon.textContent = '!';
             } finally {
                 syncInProgress = false;
@@ -6602,12 +6616,30 @@ Response format (JSON only, no markdown):
                 cloudSyncEnabled = true;
 
                 // Auto-download and start sync on page load
+                console.log('[Sync] Restoring sync session for:', savedPhone);
                 syncFromCloud(true);
                 startAutoSync();
             }
 
             updateSyncUI();
         }
+
+        // Listen for Firebase auth state changes
+        auth.onAuthStateChanged((user) => {
+            console.log('[Auth] State changed:', user ? user.phoneNumber : 'signed out');
+            if (user && user.phoneNumber) {
+                const normalizedPhone = normalizePhoneForStorage(user.phoneNumber);
+                if (!cloudSyncEnabled || currentUserPhone !== normalizedPhone) {
+                    currentUserPhone = normalizedPhone;
+                    cloudSyncEnabled = true;
+                    localStorage.setItem('everfresh_sync_phone', normalizedPhone);
+                    localStorage.setItem('everfresh_sync_enabled', 'true');
+                    updateSyncUI();
+                    syncFromCloud(true);
+                    startAutoSync();
+                }
+            }
+        });
 
         // Initialize
         loadFromLocal();
