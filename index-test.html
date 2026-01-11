@@ -1719,33 +1719,45 @@
 
         <!-- Smart Add Product Modal -->
         <div class="customer-share-menu" id="smartAddModal" style="max-width: 600px;">
-            <h3>Smart Add Product</h3>
-            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Just type the product name - I'll figure out where it belongs!</p>
-            
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b;">Product Name</label>
-                <input type="text" id="smartProductName" placeholder="e.g., Red Onion, Cherry Tomato, Long Green Chilli..." 
-                       style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px;"
-                       onkeyup="analyzeProduct()">
+            <div class="share-menu-header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="margin-bottom: 8px; opacity: 0.9;">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="16"/>
+                    <line x1="8" y1="12" x2="16" y2="12"/>
+                </svg>
+                <h3>Smart Add Product</h3>
+                <p>Just type the product name - I'll figure out where it belongs!</p>
             </div>
 
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b;">Grade/Size</label>
-                <input type="text" id="smartProductGrade" placeholder="e.g., 10kg, per kg, BOX, piece..." 
-                       style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px;">
-            </div>
+            <div class="share-menu-body">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b; font-size: 13px;">Product Name</label>
+                    <input type="text" id="smartProductName" placeholder="e.g., Red Onion, Cherry Tomato, Long Green Chilli..."
+                           style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; transition: border-color 0.2s; box-sizing: border-box;"
+                           onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='#e2e8f0'"
+                           onkeyup="analyzeProduct()">
+                </div>
 
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b;">Price</label>
-                <input type="text" id="smartProductPrice" placeholder="e.g., $25, $0.80..." 
-                       style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px;">
-            </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b; font-size: 13px;">Grade/Size</label>
+                    <input type="text" id="smartProductGrade" placeholder="e.g., 10kg, per kg, BOX, piece..."
+                           style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; transition: border-color 0.2s; box-sizing: border-box;"
+                           onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='#e2e8f0'">
+                </div>
 
-            <div id="smartAnalysis" style="margin-bottom: 20px;"></div>
-            
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button class="btn btn-secondary" onclick="closeSmartAdd()">Cancel</button>
-                <button class="btn btn-success" onclick="confirmSmartAdd()">Add Product</button>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b; font-size: 13px;">Price</label>
+                    <input type="text" id="smartProductPrice" placeholder="e.g., $25, $0.80..."
+                           style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; transition: border-color 0.2s; box-sizing: border-box;"
+                           onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='#e2e8f0'">
+                </div>
+
+                <div id="smartAnalysis" style="margin-bottom: 16px;"></div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="closeSmartAdd()" style="flex: 1;">Cancel</button>
+                    <button class="btn btn-success" onclick="confirmSmartAdd()" style="flex: 1;">Add Product</button>
+                </div>
             </div>
         </div>
 
