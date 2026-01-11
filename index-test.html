@@ -6877,6 +6877,11 @@ Response format (JSON only, no markdown):
                 if (cloudData.customers) {
                     customers = cloudData.customers;
                 }
+                if (cloudData.selectedCustomerId) {
+                    selectedCustomer = customers.find(c => c.id === cloudData.selectedCustomerId) || null;
+                } else {
+                    selectedCustomer = null;
+                }
                 if (cloudData.salesmanInfo) {
                     salesmanInfo = cloudData.salesmanInfo;
                     const nameInput = document.getElementById('salesmanName');
@@ -6955,6 +6960,7 @@ Response format (JSON only, no markdown):
                     categoryMargins: categoryMargins,
                     customerContacts: customerContacts,
                     customers: customers,
+                    selectedCustomerId: selectedCustomer ? selectedCustomer.id : null,
                     salesmanInfo: salesmanInfo,
                     categoryOrder: Object.keys(priceData),
                     lastUpdated: timestamp
@@ -7011,6 +7017,11 @@ Response format (JSON only, no markdown):
                 }
                 if (cloudData.customers) {
                     customers = cloudData.customers;
+                }
+                if (cloudData.selectedCustomerId) {
+                    selectedCustomer = customers.find(c => c.id === cloudData.selectedCustomerId) || null;
+                } else {
+                    selectedCustomer = null;
                 }
                 if (cloudData.salesmanInfo) {
                     salesmanInfo = cloudData.salesmanInfo;
