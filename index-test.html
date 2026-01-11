@@ -1876,8 +1876,8 @@
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 6px;">Name</label>
-                        <input type="text" id="customerName" placeholder="Mario's Restaurant"
+                        <label style="display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 6px;">Contact Name</label>
+                        <input type="text" id="customerName" placeholder="Tony"
                                style="width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
                     </div>
                     <div>
@@ -1885,6 +1885,12 @@
                         <input type="text" id="customerPhone" placeholder="0400123456"
                                style="width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
                     </div>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 6px;">Business Name <span style="color: #94a3b8; font-weight: 400;">(optional, internal only)</span></label>
+                    <input type="text" id="customerBusinessName" placeholder="Tony's Restaurant"
+                           style="width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
                 </div>
 
                 <div style="margin-bottom: 12px;">
@@ -1935,8 +1941,9 @@
                 <div style="display: grid; gap: 12px;">
                     <div>
                         <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 6px;">Customer/Tier Name</label>
-                        <input type="text" id="tierName" placeholder="e.g., VIP Customers, Tony's Restaurant"
+                        <input type="text" id="tierName" list="customerSuggestions" placeholder="e.g., VIP Customers, Tony's Restaurant"
                                style="width: 100%; padding: 10px 12px; border: none; border-radius: 8px; font-size: 14px; background: rgba(255,255,255,0.95); color: #1e293b; box-sizing: border-box;">
+                        <datalist id="customerSuggestions"></datalist>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         <div>
@@ -2452,6 +2459,33 @@
             if (panel.classList.contains('show')) {
                 renderCustomerTiersList();
             }
+        }
+
+        // Update tier name suggestions from customer contacts
+        function updateTierNameSuggestions() {
+            const datalist = document.getElementById('customerSuggestions');
+            if (!datalist) return;
+
+            // Clear existing options
+            while (datalist.firstChild) {
+                datalist.removeChild(datalist.firstChild);
+            }
+
+            // Get unique names from contacts (business name preferred, fallback to contact name)
+            const suggestions = [];
+            customerContacts.forEach(contact => {
+                const name = contact.businessName || contact.name;
+                if (!suggestions.includes(name)) {
+                    suggestions.push(name);
+                }
+            });
+
+            // Create options safely
+            suggestions.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                datalist.appendChild(option);
+            });
         }
 
         // Add customer pricing tier
@@ -3041,9 +3075,10 @@
         function addCustomerContact() {
             const name = document.getElementById('customerName').value.trim();
             const phone = document.getElementById('customerPhone').value.trim();
+            const businessName = document.getElementById('customerBusinessName').value.trim();
 
             if (!name || !phone) {
-                alert('Please enter both customer name and phone number');
+                alert('Please enter both contact name and phone number');
                 return;
             }
 
@@ -3054,15 +3089,36 @@
                 if (cb.checked) days.push(cb.value);
             });
 
-            customerContacts.push({ name, phone, days });
+            // Create customer contact object
+            const newContact = { name, phone, days };
+            if (businessName) newContact.businessName = businessName;
+            
+            customerContacts.push(newContact);
             localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
+
+            // Auto-create pricing tier if it doesn't exist
+            const tierName = businessName || name;
+            const existingTier = customers.find(c => c.name.toLowerCase() === tierName.toLowerCase());
+            if (!existingTier) {
+                customers.push({
+                    id: Date.now(),
+                    name: tierName,
+                    adjustmentType: 'percentage',
+                    adjustmentValue: 0,
+                    linkedContactIndex: customerContacts.length - 1
+                });
+                saveCustomers();
+                renderCustomerTiersList();
+            }
 
             document.getElementById('customerName').value = '';
             document.getElementById('customerPhone').value = '';
+            document.getElementById('customerBusinessName').value = '';
             // Reset day checkboxes
             dayCheckboxes.forEach(cb => cb.checked = false);
 
             renderCustomersList();
+            updateTierNameSuggestions();
 
             const toast = document.getElementById('toast');
             toast.innerHTML = 'Customer added!';
@@ -3102,10 +3158,12 @@
                     daysHtml = days.map(d => `<span class="customer-day-tag">${dayNames[d] || d}</span>`).join('');
                 }
 
+                const businessDisplay = customer.businessName ? `<div style="font-size: 12px; color: #8b5cf6; font-weight: 500;">${customer.businessName}</div>` : '';
                 html += `
                     <div class="customer-item" style="flex-wrap: wrap;">
                         <div class="customer-info" style="flex: 1; min-width: 150px;">
                             <div class="customer-name">${customer.name}</div>
+                            ${businessDisplay}
                             <div class="customer-phone">${customer.phone}</div>
                             <div class="customer-days">${daysHtml}</div>
                         </div>
@@ -7008,6 +7066,7 @@ Response format (JSON only, no markdown):
         // Initialize
         loadFromLocal();
         renderCategories();
+        updateTierNameSuggestions();
         setupGlobalEventDelegation();
         checkExistingSync();
     </script>
