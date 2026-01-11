@@ -1762,108 +1762,142 @@
         </div>
 
         <div class="settings-panel" id="settingsPanel">
-            <h3>Salesman Information</h3>
-            <div class="settings-grid">
-                <div class="input-group">
-                    <label>Your Name</label>
-                    <input type="text" id="salesmanName" placeholder="e.g., John Smith">
+            <!-- Header -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;">
+                <h2 style="font-size: 24px; font-weight: 700; color: #0f172a; margin: 0;">Settings</h2>
+                <button onclick="closeSettings()" style="background: none; border: none; padding: 8px; cursor: pointer; color: #64748b;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+
+            <!-- Profile Card -->
+            <div style="background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); border-radius: 16px; padding: 20px; margin-bottom: 20px; color: white;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8;">Salesman</div>
+                        <div style="font-size: 18px; font-weight: 600;" id="profileNameDisplay">Not Set</div>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label>Phone Number</label>
-                    <input type="text" id="salesmanPhone" placeholder="e.g., 0433 975 055">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 6px;">Name</label>
+                        <input type="text" id="salesmanName" placeholder="Your name"
+                               style="width: 100%; padding: 10px 12px; border: none; border-radius: 8px; font-size: 14px; background: rgba(255,255,255,0.95); color: #1e293b; box-sizing: border-box;"
+                               onchange="updateProfileDisplay()">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 6px;">Phone</label>
+                        <input type="text" id="salesmanPhone" placeholder="0433 975 055"
+                               style="width: 100%; padding: 10px 12px; border: none; border-radius: 8px; font-size: 14px; background: rgba(255,255,255,0.95); color: #1e293b; box-sizing: border-box;">
+                    </div>
                 </div>
             </div>
 
-            <!-- Cloud Sync Section -->
-            <div id="cloudSyncSection" style="margin-top: 20px; padding: 16px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
-                        <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
-                    </svg>
-                    <span style="font-weight: 600; color: #1e293b;">Cloud Sync</span>
-                    <span id="syncStatus" style="font-size: 12px; padding: 2px 8px; border-radius: 10px; background: #fee2e2; color: #dc2626;">Not Connected</span>
+            <!-- Cloud Sync Card -->
+            <div style="background: #f8fafc; border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; color: #1e293b; font-size: 15px;">Cloud Sync</div>
+                            <div style="font-size: 12px; color: #64748b;">Sync across devices</div>
+                        </div>
+                    </div>
+                    <span id="syncStatus" style="font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 600; background: #fee2e2; color: #dc2626;">Not Connected</span>
                 </div>
-                <p style="font-size: 13px; color: #64748b; margin-bottom: 14px;">Sync your data across all devices using your phone number.</p>
 
-                <!-- Not verified state -->
                 <div id="syncNotVerified">
-                    <button class="btn btn-primary" onclick="startPhoneVerification()" style="width: 100%;">
+                    <button class="btn btn-primary" onclick="startPhoneVerification()" style="width: 100%; padding: 14px; border-radius: 10px;">
                         Verify Phone & Enable Sync
                     </button>
                 </div>
 
-                <!-- Verification in progress -->
                 <div id="syncVerifying" style="display: none;">
-                    <p style="font-size: 13px; color: #1e293b; margin-bottom: 10px;">Enter the code sent to <strong id="verifyingPhone"></strong></p>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="otpCode" placeholder="000000" maxlength="6"
-                               style="flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 18px; text-align: center; letter-spacing: 4px;">
+                    <p style="font-size: 13px; color: #1e293b; margin-bottom: 12px; text-align: center;">Enter code sent to <strong id="verifyingPhone"></strong></p>
+                    <input type="text" id="otpCode" placeholder="000000" maxlength="6"
+                           style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 24px; text-align: center; letter-spacing: 8px; margin-bottom: 12px; box-sizing: border-box;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="btn btn-secondary" onclick="cancelVerification()">Cancel</button>
                         <button class="btn btn-success" onclick="verifyOTP()">Verify</button>
                     </div>
-                    <button class="btn btn-secondary" onclick="cancelVerification()" style="width: 100%; margin-top: 10px;">Cancel</button>
                 </div>
 
-                <!-- Connected state -->
                 <div id="syncConnected" style="display: none;">
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <button class="btn btn-success" onclick="syncToCloud()" style="flex: 1;">
-                            <span id="uploadBtnText">Upload to Cloud</span>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                        <button class="btn btn-success" onclick="syncToCloud()" style="padding: 12px; border-radius: 10px;">
+                            <span id="uploadBtnText">↑ Upload</span>
                         </button>
-                        <button class="btn btn-primary" onclick="syncFromCloud()" style="flex: 1;">
-                            <span id="downloadBtnText">Download from Cloud</span>
+                        <button class="btn btn-primary" onclick="syncFromCloud()" style="padding: 12px; border-radius: 10px;">
+                            <span id="downloadBtnText">↓ Download</span>
                         </button>
                     </div>
-                    <button class="btn btn-secondary" onclick="disconnectSync()" style="width: 100%;">Disconnect</button>
+                    <button class="btn btn-secondary" onclick="disconnectSync()" style="width: 100%; padding: 10px; border-radius: 10px; font-size: 13px;">Disconnect</button>
                 </div>
             </div>
-
-            <!-- reCAPTCHA container (invisible) -->
             <div id="recaptcha-container"></div>
 
-            <hr style="margin: 30px 0; border: none; border-top: 2px solid #e9ecef;">
-            
-            <h3>Price List Settings</h3>
-            <div class="toggle-setting">
-                <div class="toggle-info">
-                    <label class="toggle-label">Send for Next Day</label>
-                    <p class="toggle-description">When ON: Shows tomorrow's date | When OFF: Shows today's date</p>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="nextDayToggle" checked onchange="saveSettings()">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-            
-            <div class="toggle-setting" style="margin-top: 16px;">
-                <div class="toggle-info">
-                    <label class="toggle-label">Auto-Sort A-Z</label>
-                    <p class="toggle-description">When ON: Categories & products sort alphabetically | When OFF: Drag to reorder manually</p>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="autoSortToggle" onchange="toggleAutoSort()">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-            
-            <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
-            
-            <hr style="margin: 30px 0; border: none; border-top: 2px solid #e9ecef;">
-            
-            <h3>Customer Contacts</h3>
-            <div class="customer-contacts-section">
-                <div class="settings-grid">
-                    <div class="input-group">
-                        <label>Customer Name</label>
-                        <input type="text" id="customerName" placeholder="e.g., Mario's Restaurant">
+            <!-- Preferences Card -->
+            <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m-9-9h6m6 0h6"/></svg>
                     </div>
-                    <div class="input-group">
-                        <label>WhatsApp Number</label>
-                        <input type="text" id="customerPhone" placeholder="e.g., 0400123456">
+                    <div style="font-weight: 600; color: #1e293b; font-size: 15px;">Preferences</div>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f1f5f9;">
+                    <div>
+                        <div style="font-weight: 500; color: #1e293b; font-size: 14px;">Send for Next Day</div>
+                        <div style="font-size: 12px; color: #64748b;">Shows tomorrow's date on price list</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="nextDayToggle" checked onchange="saveSettings()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 0;">
+                    <div>
+                        <div style="font-weight: 500; color: #1e293b; font-size: 14px;">Auto-Sort A-Z</div>
+                        <div style="font-size: 12px; color: #64748b;">Sort categories & products alphabetically</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoSortToggle" onchange="toggleAutoSort()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Customers Card -->
+            <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <div style="font-weight: 600; color: #1e293b; font-size: 15px;">Customers</div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 6px;">Name</label>
+                        <input type="text" id="customerName" placeholder="Mario's Restaurant"
+                               style="width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 6px;">Phone</label>
+                        <input type="text" id="customerPhone" placeholder="0400123456"
+                               style="width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
                     </div>
                 </div>
-                <div class="input-group" style="margin-top: 15px;">
-                    <label>Days Customer Comes In <span style="color: #64748b; font-weight: normal;">(leave empty = every day)</span></label>
-                    <div id="customerDaysSelector" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 8px;">Delivery Days</label>
+                    <div id="customerDaysSelector" style="display: flex; flex-wrap: wrap; gap: 6px;">
                         <label class="day-checkbox"><input type="checkbox" value="mon"> Mon</label>
                         <label class="day-checkbox"><input type="checkbox" value="tue"> Tue</label>
                         <label class="day-checkbox"><input type="checkbox" value="wed"> Wed</label>
@@ -1872,10 +1906,16 @@
                         <label class="day-checkbox"><input type="checkbox" value="sat"> Sat</label>
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="addCustomerContact()" style="margin-top: 15px;">Add Customer</button>
 
-                <div id="customersList" style="margin-top: 20px;"></div>
+                <button class="btn btn-primary" onclick="addCustomerContact()" style="width: 100%; padding: 12px; border-radius: 10px;">+ Add Customer</button>
+
+                <div id="customersList" style="margin-top: 16px;"></div>
             </div>
+
+            <!-- Save Button -->
+            <button class="btn btn-success" onclick="saveSettings()" style="width: 100%; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600;">
+                Save All Settings
+            </button>
         </div>
 
         <!-- Customer Pricing Panel -->
@@ -2249,6 +2289,11 @@
                 document.getElementById('salesmanName').value = salesmanInfo.name || '';
                 document.getElementById('salesmanPhone').value = salesmanInfo.phone || '';
                 document.getElementById('nextDayToggle').checked = salesmanInfo.sendForNextDay !== false; // Default true
+                // Update profile display
+                const profileDisplay = document.getElementById('profileNameDisplay');
+                if (profileDisplay) {
+                    profileDisplay.textContent = salesmanInfo.name || 'Not Set';
+                }
             }
             
             // Load auto-sort setting
@@ -2347,6 +2392,10 @@
             panel.classList.toggle('show');
             // Close customer pricing if open
             document.getElementById('customerPricingPanel').classList.remove('show');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsPanel').classList.remove('show');
         }
 
         // Toggle customer pricing panel
@@ -2905,22 +2954,25 @@
             showToast(`Updated ${selected.length} product prices!`);
         }
 
+        // Update profile display name
+        function updateProfileDisplay() {
+            const name = document.getElementById('salesmanName').value.trim();
+            const display = document.getElementById('profileNameDisplay');
+            if (display) {
+                display.textContent = name || 'Not Set';
+            }
+        }
+
         // Save settings
         function saveSettings() {
             salesmanInfo.name = document.getElementById('salesmanName').value;
             salesmanInfo.phone = document.getElementById('salesmanPhone').value;
             salesmanInfo.sendForNextDay = document.getElementById('nextDayToggle').checked;
-            
+
             localStorage.setItem('everfresh_salesman_info', JSON.stringify(salesmanInfo));
-            
-            const toast = document.getElementById('toast');
-            toast.innerHTML = 'Settings saved!';
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-                toast.innerHTML = 'Saved successfully!';
-            }, 2000);
-            
+            updateProfileDisplay();
+
+            showToast('Settings saved!');
             toggleSettings();
         }
 
