@@ -3935,6 +3935,11 @@
                 }
 
                 let value = input.value;
+                // Auto-format product name (col 0) with Title Case
+                if (col === 0) {
+                    value = formatProductName(value);
+                    input.value = value; // Update the input field too
+                }
                 // Auto-format grade/size column (col 1) with proper capitalization
                 if (col === 1) {
                     value = formatGradeSize(value);
@@ -4889,6 +4894,18 @@ Response format (JSON only, no markdown):
                 p = '$' + p;
             }
             return p;
+        }
+
+        // Format product name with Title Case (capitalize first letter of each word)
+        function formatProductName(text) {
+            if (!text || text === 'New Product') return text;
+            let t = text.toString().trim();
+
+            // Split by spaces and capitalize each word
+            return t.split(' ').map(word => {
+                if (word.length === 0) return word;
+                return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+            }).join(' ');
         }
 
         // Format grade/size field with proper capitalization
