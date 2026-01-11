@@ -1980,6 +1980,8 @@
         let cloudSyncEnabled = false;
         let currentUserPhone = null;
         let syncInProgress = false;
+        let lastUploadTimestamp = 0;  // Track our uploads to ignore in listener
+        let realtimeListener = null;  // Firebase real-time listener reference
 
         // ========================================
         // PHONE NUMBER UTILITIES
@@ -6388,9 +6390,6 @@ Response format (JSON only, no markdown):
             });
         }
 
-        // Auto-sync interval
-        let autoSyncInterval = null;
-
         // Start phone verification
         async function startPhoneVerification() {
             const phone = document.getElementById('salesmanPhone').value.trim();
@@ -6455,7 +6454,7 @@ Response format (JSON only, no markdown):
                 await syncFromCloud(true);
 
                 // Start auto-sync
-                startAutoSync();
+                startRealtimeSync();
 
             } catch (error) {
                 console.error('OTP verification error:', error);
@@ -6488,22 +6487,76 @@ Response format (JSON only, no markdown):
             }
         }
 
-        // Start auto-sync (every 5 seconds)
-        function startAutoSync() {
-            if (autoSyncInterval) clearInterval(autoSyncInterval);
+        // Start real-time sync listener
+        function startRealtimeSync() {
+            if (!currentUserPhone) return;
 
-            autoSyncInterval = setInterval(() => {
-                if (cloudSyncEnabled && currentUserPhone && !syncInProgress) {
-                    syncToCloud(true); // silent sync
+            // Remove existing listener if any
+            stopRealtimeSync();
+
+            console.log('[Sync] Starting real-time listener for:', 'users/' + currentUserPhone);
+
+            const userRef = database.ref('users/' + currentUserPhone);
+            realtimeListener = userRef.on('value', (snapshot) => {
+                const cloudData = snapshot.val();
+
+                if (!cloudData) {
+                    console.log('[Sync] Real-time: No cloud data yet');
+                    return;
                 }
-            }, 5000);
+
+                // Ignore our own uploads (check if timestamp matches what we just uploaded)
+                if (cloudData.lastUpdated === lastUploadTimestamp) {
+                    console.log('[Sync] Real-time: Ignoring our own upload');
+                    return;
+                }
+
+                // This is data from another device - apply it!
+                console.log('[Sync] Real-time: New data from another device!', new Date(cloudData.lastUpdated).toLocaleTimeString());
+
+                // Apply cloud data
+                if (cloudData.priceData) {
+                    priceData = cloudData.priceData;
+                }
+                if (cloudData.categoryMargins) {
+                    categoryMargins = cloudData.categoryMargins;
+                }
+                if (cloudData.customerContacts) {
+                    customerContacts = cloudData.customerContacts;
+                }
+                if (cloudData.salesmanInfo) {
+                    salesmanInfo = cloudData.salesmanInfo;
+                    const nameInput = document.getElementById('salesmanName');
+                    const phoneInput = document.getElementById('salesmanPhone');
+                    const nextDayToggle = document.getElementById('nextDayToggle');
+                    if (nameInput) nameInput.value = salesmanInfo.name || '';
+                    if (phoneInput) phoneInput.value = salesmanInfo.phone || '';
+                    if (nextDayToggle) nextDayToggle.checked = salesmanInfo.sendForNextDay !== false;
+                }
+
+                // Save locally (without triggering cloud sync)
+                localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
+                localStorage.setItem('everfresh_category_margins', JSON.stringify(categoryMargins));
+
+                // Refresh UI
+                renderCategories();
+                renderCustomersList();
+
+                // Flash the sync icon to show data received
+                const statusIcon = document.getElementById('syncStatusIcon');
+                if (statusIcon) {
+                    statusIcon.textContent = '↓';
+                    setTimeout(() => { statusIcon.textContent = '●'; }, 500);
+                }
+            });
         }
 
-        // Stop auto-sync
-        function stopAutoSync() {
-            if (autoSyncInterval) {
-                clearInterval(autoSyncInterval);
-                autoSyncInterval = null;
+        // Stop real-time sync listener
+        function stopRealtimeSync() {
+            if (realtimeListener && currentUserPhone) {
+                database.ref('users/' + currentUserPhone).off('value', realtimeListener);
+                realtimeListener = null;
+                console.log('[Sync] Real-time listener stopped');
             }
         }
 
@@ -6524,17 +6577,21 @@ Response format (JSON only, no markdown):
             try {
                 collectData(); // Make sure we have latest data
 
+                // Generate timestamp and store it so real-time listener ignores our own upload
+                const timestamp = Date.now();
+                lastUploadTimestamp = timestamp;
+
                 const dataToSync = {
                     priceData: priceData,
                     categoryMargins: categoryMargins,
                     customerContacts: customerContacts,
                     salesmanInfo: salesmanInfo,
                     categoryOrder: Object.keys(priceData),
-                    lastUpdated: Date.now()
+                    lastUpdated: timestamp
                 };
 
                 await database.ref('users/' + currentUserPhone).set(dataToSync);
-                console.log('[Sync] Upload success!');
+                console.log('[Sync] Upload success! Timestamp:', timestamp);
 
                 // Update status back to synced
                 if (statusIcon) statusIcon.textContent = '●';
@@ -6618,7 +6675,7 @@ Response format (JSON only, no markdown):
                 // Auto-download and start sync on page load
                 console.log('[Sync] Restoring sync session for:', savedPhone);
                 syncFromCloud(true);
-                startAutoSync();
+                startRealtimeSync();
             }
 
             updateSyncUI();
@@ -6636,7 +6693,7 @@ Response format (JSON only, no markdown):
                     localStorage.setItem('everfresh_sync_enabled', 'true');
                     updateSyncUI();
                     syncFromCloud(true);
-                    startAutoSync();
+                    startRealtimeSync();
                 }
             }
         });
