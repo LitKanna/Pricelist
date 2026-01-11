@@ -4765,13 +4765,13 @@ Response format (JSON only, no markdown):
             
             // Step 3: If we found a match, check if category exists
             if (bestMatch) {
-                // Try to find an existing category that matches
+                // Try to find an existing category that matches (strict matching)
                 const existingMatch = existingCategories.find(cat => {
                     const catLower = cat.toLowerCase();
                     const matchLower = bestMatch.toLowerCase();
-                    return catLower === matchLower || 
-                           catLower.includes(matchLower.split(' ')[0]) ||
-                           matchLower.includes(catLower.split(' ')[0]);
+                    // Exact match only, or first word matches exactly
+                    return catLower === matchLower ||
+                           catLower.split(' ')[0] === matchLower.split(' ')[0];
                 });
                 
                 // Determine confidence
