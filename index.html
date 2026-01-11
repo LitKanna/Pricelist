@@ -6874,6 +6874,9 @@ Response format (JSON only, no markdown):
                 if (cloudData.customerContacts) {
                     customerContacts = cloudData.customerContacts;
                 }
+                if (cloudData.customers) {
+                    customers = cloudData.customers;
+                }
                 if (cloudData.salesmanInfo) {
                     salesmanInfo = cloudData.salesmanInfo;
                     const nameInput = document.getElementById('salesmanName');
@@ -6887,6 +6890,9 @@ Response format (JSON only, no markdown):
                 // Save locally (without triggering cloud sync)
                 localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
                 localStorage.setItem('everfresh_category_margins', JSON.stringify(categoryMargins));
+                localStorage.setItem('everfresh_customers', JSON.stringify(customers));
+                localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
+                renderCustomerTiersList();
 
                 // Refresh UI
                 renderCategories();
@@ -6948,6 +6954,7 @@ Response format (JSON only, no markdown):
                     priceData: priceData,
                     categoryMargins: categoryMargins,
                     customerContacts: customerContacts,
+                    customers: customers,
                     salesmanInfo: salesmanInfo,
                     categoryOrder: Object.keys(priceData),
                     lastUpdated: timestamp
@@ -7002,6 +7009,9 @@ Response format (JSON only, no markdown):
                 if (cloudData.customerContacts) {
                     customerContacts = cloudData.customerContacts;
                 }
+                if (cloudData.customers) {
+                    customers = cloudData.customers;
+                }
                 if (cloudData.salesmanInfo) {
                     salesmanInfo = cloudData.salesmanInfo;
                     document.getElementById('salesmanName').value = salesmanInfo.name || '';
@@ -7012,8 +7022,11 @@ Response format (JSON only, no markdown):
                 // Save locally (but don't trigger another cloud sync!)
                 localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
                 localStorage.setItem('everfresh_category_margins', JSON.stringify(categoryMargins));
+                localStorage.setItem('everfresh_customers', JSON.stringify(customers));
+                localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
                 renderCategories();
                 renderCustomersList();
+                renderCustomerTiersList();
 
                 console.log('[Sync] Download success! Data applied.');
                 if (statusIcon) statusIcon.textContent = '●';
