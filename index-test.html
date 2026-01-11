@@ -17,6 +17,11 @@
     
     <!-- JSZip for XPS file parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     
     <style>
     /* Premium Fresh Design System */
@@ -1765,10 +1770,56 @@
                 </div>
                 <div class="input-group">
                     <label>Phone Number</label>
-                    <input type="text" id="salesmanPhone" placeholder="e.g., 0400 123 456">
+                    <input type="text" id="salesmanPhone" placeholder="e.g., 0433 975 055">
                 </div>
             </div>
-            
+
+            <!-- Cloud Sync Section -->
+            <div id="cloudSyncSection" style="margin-top: 20px; padding: 16px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+                        <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+                    </svg>
+                    <span style="font-weight: 600; color: #1e293b;">Cloud Sync</span>
+                    <span id="syncStatus" style="font-size: 12px; padding: 2px 8px; border-radius: 10px; background: #fee2e2; color: #dc2626;">Not Connected</span>
+                </div>
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 14px;">Sync your data across all devices using your phone number.</p>
+
+                <!-- Not verified state -->
+                <div id="syncNotVerified">
+                    <button class="btn btn-primary" onclick="startPhoneVerification()" style="width: 100%;">
+                        Verify Phone & Enable Sync
+                    </button>
+                </div>
+
+                <!-- Verification in progress -->
+                <div id="syncVerifying" style="display: none;">
+                    <p style="font-size: 13px; color: #1e293b; margin-bottom: 10px;">Enter the code sent to <strong id="verifyingPhone"></strong></p>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="otpCode" placeholder="000000" maxlength="6"
+                               style="flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 18px; text-align: center; letter-spacing: 4px;">
+                        <button class="btn btn-success" onclick="verifyOTP()">Verify</button>
+                    </div>
+                    <button class="btn btn-secondary" onclick="cancelVerification()" style="width: 100%; margin-top: 10px;">Cancel</button>
+                </div>
+
+                <!-- Connected state -->
+                <div id="syncConnected" style="display: none;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <button class="btn btn-success" onclick="syncToCloud()" style="flex: 1;">
+                            <span id="uploadBtnText">Upload to Cloud</span>
+                        </button>
+                        <button class="btn btn-primary" onclick="syncFromCloud()" style="flex: 1;">
+                            <span id="downloadBtnText">Download from Cloud</span>
+                        </button>
+                    </div>
+                    <button class="btn btn-secondary" onclick="disconnectSync()" style="width: 100%;">Disconnect</button>
+                </div>
+            </div>
+
+            <!-- reCAPTCHA container (invisible) -->
+            <div id="recaptcha-container"></div>
+
             <hr style="margin: 30px 0; border: none; border-top: 2px solid #e9ecef;">
             
             <h3>Price List Settings</h3>
@@ -1884,6 +1935,64 @@
     <canvas id="downloadCanvas"></canvas>
 
     <script>
+        // ========================================
+        // FIREBASE CONFIGURATION
+        // ========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyA75uCHV4s526kc4JhnVfhvWGL8Wmd_FHc",
+            authDomain: "pricelist-everfresh.firebaseapp.com",
+            databaseURL: "https://pricelist-everfresh-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "pricelist-everfresh",
+            storageBucket: "pricelist-everfresh.firebasestorage.app",
+            messagingSenderId: "705652613132",
+            appId: "1:705652613132:web:0b74173f8a78146f494e29"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // Cloud sync state
+        let cloudSyncEnabled = false;
+        let currentUserPhone = null;
+        let syncInProgress = false;
+
+        // ========================================
+        // PHONE NUMBER UTILITIES
+        // ========================================
+        function normalizePhoneForStorage(phone) {
+            // Remove all spaces, dashes, parentheses
+            let cleaned = phone.replace(/[\s\-\(\)]/g, '');
+
+            // Handle Australian formats
+            if (cleaned.startsWith('+61')) {
+                cleaned = '61' + cleaned.slice(3);
+            } else if (cleaned.startsWith('0')) {
+                cleaned = '61' + cleaned.slice(1);
+            } else if (cleaned.startsWith('61')) {
+                // Already in correct format
+            }
+
+            return cleaned;
+        }
+
+        function formatPhoneForFirebase(phone) {
+            // Firebase Auth needs +61 format
+            let cleaned = phone.replace(/[\s\-\(\)]/g, '');
+
+            if (cleaned.startsWith('0')) {
+                return '+61' + cleaned.slice(1);
+            } else if (cleaned.startsWith('61')) {
+                return '+' + cleaned;
+            } else if (cleaned.startsWith('+61')) {
+                return cleaned;
+            }
+
+            // Default: assume Australian
+            return '+61' + cleaned;
+        }
+
         // Salesman information
         let salesmanInfo = {
             name: '',
@@ -6187,10 +6296,235 @@ Response format (JSON only, no markdown):
             });
         }
 
+        // ========================================
+        // CLOUD SYNC FUNCTIONS
+        // ========================================
+
+        let confirmationResult = null;
+        let recaptchaVerifier = null;
+
+        // Initialize reCAPTCHA (invisible)
+        function initRecaptcha() {
+            if (recaptchaVerifier) return;
+
+            recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                size: 'invisible',
+                callback: () => {
+                    console.log('reCAPTCHA solved');
+                }
+            });
+        }
+
+        // Start phone verification
+        async function startPhoneVerification() {
+            const phone = document.getElementById('salesmanPhone').value.trim();
+
+            if (!phone) {
+                showToast('Please enter your phone number first');
+                return;
+            }
+
+            const formattedPhone = formatPhoneForFirebase(phone);
+            document.getElementById('verifyingPhone').textContent = formattedPhone;
+
+            try {
+                // Show verifying state
+                document.getElementById('syncNotVerified').style.display = 'none';
+                document.getElementById('syncVerifying').style.display = 'block';
+
+                // Initialize reCAPTCHA
+                initRecaptcha();
+
+                // Send OTP
+                confirmationResult = await auth.signInWithPhoneNumber(formattedPhone, recaptchaVerifier);
+                showToast('Verification code sent!');
+
+            } catch (error) {
+                console.error('Phone auth error:', error);
+                showToast('Error: ' + error.message);
+                cancelVerification();
+
+                // Reset reCAPTCHA on error
+                if (recaptchaVerifier) {
+                    recaptchaVerifier.clear();
+                    recaptchaVerifier = null;
+                }
+            }
+        }
+
+        // Verify OTP code
+        async function verifyOTP() {
+            const code = document.getElementById('otpCode').value.trim();
+
+            if (!code || code.length !== 6) {
+                showToast('Please enter the 6-digit code');
+                return;
+            }
+
+            try {
+                const result = await confirmationResult.confirm(code);
+                const user = result.user;
+
+                // Store the phone for sync
+                currentUserPhone = normalizePhoneForStorage(user.phoneNumber);
+                cloudSyncEnabled = true;
+
+                // Save sync state locally
+                localStorage.setItem('everfresh_sync_phone', currentUserPhone);
+                localStorage.setItem('everfresh_sync_enabled', 'true');
+
+                // Update UI
+                updateSyncUI();
+                showToast('Phone verified! Sync enabled.');
+
+            } catch (error) {
+                console.error('OTP verification error:', error);
+                showToast('Invalid code. Please try again.');
+            }
+        }
+
+        // Cancel verification
+        function cancelVerification() {
+            document.getElementById('syncNotVerified').style.display = 'block';
+            document.getElementById('syncVerifying').style.display = 'none';
+            document.getElementById('otpCode').value = '';
+            confirmationResult = null;
+        }
+
+        // Update sync UI based on state
+        function updateSyncUI() {
+            const statusEl = document.getElementById('syncStatus');
+            const notVerifiedEl = document.getElementById('syncNotVerified');
+            const verifyingEl = document.getElementById('syncVerifying');
+            const connectedEl = document.getElementById('syncConnected');
+
+            if (cloudSyncEnabled && currentUserPhone) {
+                statusEl.textContent = 'Connected';
+                statusEl.style.background = '#dcfce7';
+                statusEl.style.color = '#16a34a';
+                notVerifiedEl.style.display = 'none';
+                verifyingEl.style.display = 'none';
+                connectedEl.style.display = 'block';
+            } else {
+                statusEl.textContent = 'Not Connected';
+                statusEl.style.background = '#fee2e2';
+                statusEl.style.color = '#dc2626';
+                notVerifiedEl.style.display = 'block';
+                verifyingEl.style.display = 'none';
+                connectedEl.style.display = 'none';
+            }
+        }
+
+        // Disconnect sync
+        function disconnectSync() {
+            auth.signOut();
+            cloudSyncEnabled = false;
+            currentUserPhone = null;
+            localStorage.removeItem('everfresh_sync_phone');
+            localStorage.removeItem('everfresh_sync_enabled');
+            updateSyncUI();
+            showToast('Disconnected from cloud sync');
+        }
+
+        // Upload data to cloud
+        async function syncToCloud() {
+            if (!currentUserPhone || syncInProgress) return;
+
+            syncInProgress = true;
+            document.getElementById('uploadBtnText').textContent = 'Uploading...';
+
+            try {
+                collectData(); // Make sure we have latest data
+
+                const dataToSync = {
+                    priceData: priceData,
+                    categoryMargins: categoryMargins,
+                    customerContacts: customerContacts,
+                    salesmanInfo: salesmanInfo,
+                    categoryOrder: Object.keys(priceData),
+                    lastUpdated: Date.now()
+                };
+
+                await database.ref('users/' + currentUserPhone).set(dataToSync);
+                showToast('Data uploaded to cloud!');
+
+            } catch (error) {
+                console.error('Sync to cloud error:', error);
+                showToast('Upload failed: ' + error.message);
+            } finally {
+                syncInProgress = false;
+                document.getElementById('uploadBtnText').textContent = 'Upload to Cloud';
+            }
+        }
+
+        // Download data from cloud
+        async function syncFromCloud() {
+            if (!currentUserPhone || syncInProgress) return;
+
+            syncInProgress = true;
+            document.getElementById('downloadBtnText').textContent = 'Downloading...';
+
+            try {
+                const snapshot = await database.ref('users/' + currentUserPhone).once('value');
+                const cloudData = snapshot.val();
+
+                if (!cloudData) {
+                    showToast('No data found in cloud. Upload first!');
+                    return;
+                }
+
+                // Apply cloud data
+                if (cloudData.priceData) {
+                    priceData = cloudData.priceData;
+                }
+                if (cloudData.categoryMargins) {
+                    categoryMargins = cloudData.categoryMargins;
+                }
+                if (cloudData.customerContacts) {
+                    customerContacts = cloudData.customerContacts;
+                }
+                if (cloudData.salesmanInfo) {
+                    salesmanInfo = cloudData.salesmanInfo;
+                    document.getElementById('salesmanName').value = salesmanInfo.name || '';
+                    document.getElementById('salesmanPhone').value = salesmanInfo.phone || '';
+                    document.getElementById('nextDayToggle').checked = salesmanInfo.sendForNextDay !== false;
+                }
+
+                // Save locally and refresh UI
+                saveToLocal(false);
+                renderCategories();
+                renderCustomerContacts();
+
+                const lastUpdated = cloudData.lastUpdated ? new Date(cloudData.lastUpdated).toLocaleString() : 'Unknown';
+                showToast('Data downloaded! Last updated: ' + lastUpdated);
+
+            } catch (error) {
+                console.error('Sync from cloud error:', error);
+                showToast('Download failed: ' + error.message);
+            } finally {
+                syncInProgress = false;
+                document.getElementById('downloadBtnText').textContent = 'Download from Cloud';
+            }
+        }
+
+        // Check for existing sync session on load
+        function checkExistingSync() {
+            const savedPhone = localStorage.getItem('everfresh_sync_phone');
+            const syncEnabled = localStorage.getItem('everfresh_sync_enabled') === 'true';
+
+            if (savedPhone && syncEnabled) {
+                currentUserPhone = savedPhone;
+                cloudSyncEnabled = true;
+            }
+
+            updateSyncUI();
+        }
+
         // Initialize
         loadFromLocal();
         renderCategories();
         setupGlobalEventDelegation();
+        checkExistingSync();
     </script>
 </body>
 </html>
