@@ -416,7 +416,11 @@
         background: #f8fafc;
         color: #ef4444;
     }
-    
+
+    .icon-btn.category-edit-btn:hover {
+        color: #3b82f6;
+    }
+
     .icon-btn:active {
         transform: scale(0.95);
     }
@@ -3017,6 +3021,7 @@
                             </select>
                         </div>
                         <div class="category-actions">
+                            <button class="icon-btn category-edit-btn" data-category-encoded="${encodedCategoryName}" title="Rename">✎</button>
                             <button class="icon-btn category-delete-btn" data-category-encoded="${encodedCategoryName}" title="Delete">×</button>
                         </div>
                     </div>
@@ -3102,6 +3107,19 @@
                     return;
                 }
                 
+                // Handle category edit button
+                if (e.target.classList.contains('category-edit-btn')) {
+                    const encodedCat = e.target.dataset.categoryEncoded;
+                    if (encodedCat !== undefined) {
+                        const categoryName = decodeURIComponent(encodedCat);
+                        const newName = prompt('Enter new category name:', categoryName);
+                        if (newName !== null) {
+                            renameCategory(categoryName, newName);
+                        }
+                    }
+                    return;
+                }
+
                 // Handle category delete button
                 if (e.target.classList.contains('category-delete-btn')) {
                     const encodedCat = e.target.dataset.categoryEncoded;
