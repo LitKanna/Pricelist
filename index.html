@@ -6516,7 +6516,7 @@ Response format (JSON only, no markdown):
                 // Save locally and refresh UI
                 saveToLocal(false);
                 renderCategories();
-                renderCustomerContacts();
+                renderCustomersList();
 
                 const lastUpdated = cloudData.lastUpdated ? new Date(cloudData.lastUpdated).toLocaleString() : 'Unknown';
                 showToast('Data downloaded! Last updated: ' + lastUpdated);
