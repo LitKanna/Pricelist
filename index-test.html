@@ -1965,13 +1965,22 @@
                 </div>
             </div>
 
-            <!-- Quick Tier Selector -->
-            <div style="background: white; border-radius: 16px; padding: 16px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
-                <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Select Pricing</div>
-                <div id="customerTiersList" style="overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none;"></div>
-                <div id="noTiersMessage" style="text-align: center; padding: 16px; color: #94a3b8; font-size: 13px;">
-                    No tiers yet — add one above
+            <!-- Tier Selector -->
+            <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #1e293b; font-size: 15px;">Active Pricing</div>
+                        <div id="activeTierDisplay" style="font-size: 13px; color: #16a34a; font-weight: 500;">Standard</div>
+                    </div>
                 </div>
+                <select id="tierSelector" onchange="selectTierFromDropdown(this.value)" style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; font-weight: 500; color: #1e293b; background: #f8fafc; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2364748b%22 stroke-width=%222%22%3E%3Cpolyline points=%226 9 12 15 18 9%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 12px center; background-size: 18px;">
+                    <option value="">Standard Pricing</option>
+                </select>
+                <div id="customerTiersList" style="margin-top: 16px;"></div>
+                <div id="noTiersMessage" style="display: none;"></div>
             </div>
 
             <!-- Pricing Logic Info Card -->
@@ -2523,65 +2532,89 @@
             showToast('Customer tier added!');
         }
 
-        // Render customer tiers list - horizontal scroll selector
+        // Render customer tiers list - dropdown + delete list
         function renderCustomerTiersList() {
             const container = document.getElementById('customerTiersList');
-            const noTiersMsg = document.getElementById('noTiersMessage');
+            const selector = document.getElementById('tierSelector');
+            const activeDisplay = document.getElementById('activeTierDisplay');
 
+            // Update dropdown options
+            if (selector) {
+                let options = '<option value="">Standard Pricing</option>';
+                customers.forEach(customer => {
+                    const adjustmentText = customer.adjustmentType === 'percentage'
+                        ? (customer.adjustmentValue > 0 ? '+' : '') + customer.adjustmentValue + '%'
+                        : (customer.adjustmentValue > 0 ? '+' : '') + '$' + Math.abs(customer.adjustmentValue);
+                    const selected = selectedCustomer && selectedCustomer.id === customer.id ? 'selected' : '';
+                    options += '<option value="' + customer.id + '" ' + selected + '>' + customer.name + ' (' + adjustmentText + ')</option>';
+                });
+                selector.innerHTML = options;
+            }
+
+            // Update active display
+            if (activeDisplay) {
+                if (selectedCustomer) {
+                    const adjustmentText = selectedCustomer.adjustmentType === 'percentage'
+                        ? (selectedCustomer.adjustmentValue > 0 ? '+' : '') + selectedCustomer.adjustmentValue + '%'
+                        : (selectedCustomer.adjustmentValue > 0 ? '+' : '') + '$' + Math.abs(selectedCustomer.adjustmentValue);
+                    activeDisplay.textContent = selectedCustomer.name + ' (' + adjustmentText + ')';
+                    activeDisplay.style.color = '#16a34a';
+                } else {
+                    activeDisplay.textContent = 'Standard';
+                    activeDisplay.style.color = '#64748b';
+                }
+            }
+
+            // Show tier management list (for deleting)
             if (customers.length === 0) {
-                container.textContent = '';
-                if (noTiersMsg) noTiersMsg.style.display = 'block';
+                container.innerHTML = '<p style="text-align: center; color: #94a3b8; font-size: 13px; margin: 0;">No custom tiers yet</p>';
                 return;
             }
 
-            if (noTiersMsg) noTiersMsg.style.display = 'none';
-
-            const isStandardActive = !selectedCustomer;
-
-            let html = '<div style="display: flex; gap: 10px; padding: 4px 0;">';
-
-            // Standard option (no tier)
-            if (isStandardActive) {
-                html += '<div onclick="applyCustomerPricing(null)" style="flex-shrink: 0; display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); padding: 10px 16px; border-radius: 12px; cursor: pointer; box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);">' +
-                    '<span style="color: white; font-size: 14px; font-weight: 600;">Standard</span>' +
-                    '<span style="color: rgba(255,255,255,0.9); font-size: 12px;">✓</span>' +
-                '</div>';
-            } else {
-                html += '<div onclick="applyCustomerPricing(null)" style="flex-shrink: 0; display: flex; align-items: center; background: #f8fafc; border: 2px solid #e2e8f0; padding: 10px 16px; border-radius: 12px; cursor: pointer; transition: all 0.2s;">' +
-                    '<span style="color: #64748b; font-size: 14px; font-weight: 500;">Standard</span>' +
-                '</div>';
-            }
-
-            // Customer tiers
+            let html = '<div style="border-top: 1px solid #e2e8f0; padding-top: 16px;"><div style="font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">Manage Tiers</div>';
             customers.forEach(customer => {
                 const adjustmentText = customer.adjustmentType === 'percentage'
                     ? (customer.adjustmentValue > 0 ? '+' : '') + customer.adjustmentValue + '%'
                     : (customer.adjustmentValue > 0 ? '+' : '') + '$' + Math.abs(customer.adjustmentValue);
-
                 const isActive = selectedCustomer && selectedCustomer.id === customer.id;
-                const isNegative = customer.adjustmentValue < 0;
+                const badgeColor = customer.adjustmentValue < 0 ? '#ef4444' : '#22c55e';
 
-                if (isActive) {
-                    html += '<div style="flex-shrink: 0; display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); padding: 10px 14px; border-radius: 12px; box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);">' +
-                        '<div onclick="applyCustomerPricing(' + customer.id + ')" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">' +
-                            '<span style="color: white; font-size: 14px; font-weight: 600;">' + customer.name + '</span>' +
-                            '<span style="background: rgba(255,255,255,0.2); color: white; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">' + adjustmentText + '</span>' +
-                        '</div>' +
-                        '<button onclick="deleteCustomerTier(' + customer.id + ')" style="background: rgba(255,255,255,0.15); border: none; color: rgba(255,255,255,0.9); width: 22px; height: 22px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">×</button>' +
-                    '</div>';
-                } else {
-                    html += '<div style="flex-shrink: 0; display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 2px solid #e2e8f0; padding: 10px 14px; border-radius: 12px; transition: all 0.2s;">' +
-                        '<div onclick="applyCustomerPricing(' + customer.id + ')" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">' +
-                            '<span style="color: #334155; font-size: 14px; font-weight: 500;">' + customer.name + '</span>' +
-                            '<span style="background: ' + (isNegative ? '#fef2f2' : '#f0fdf4') + '; color: ' + (isNegative ? '#dc2626' : '#16a34a') + '; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">' + adjustmentText + '</span>' +
-                        '</div>' +
-                        '<button onclick="deleteCustomerTier(' + customer.id + ')" style="background: #fef2f2; border: none; color: #ef4444; width: 22px; height: 22px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">×</button>' +
-                    '</div>';
-                }
+                html += '<div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">' +
+                    '<div style="display: flex; align-items: center; gap: 10px;">' +
+                        '<span style="font-size: 14px; color: #334155; font-weight: ' + (isActive ? '600' : '400') + ';">' + customer.name + '</span>' +
+                        '<span style="font-size: 12px; color: white; background: ' + badgeColor + '; padding: 2px 8px; border-radius: 4px; font-weight: 600;">' + adjustmentText + '</span>' +
+                        (isActive ? '<span style="font-size: 11px; color: #16a34a; font-weight: 600;">ACTIVE</span>' : '') +
+                    '</div>' +
+                    '<button onclick="deleteCustomerTier(' + customer.id + ')" style="background: none; border: none; color: #ef4444; font-size: 18px; cursor: pointer; padding: 4px 8px;">×</button>' +
+                '</div>';
             });
-
             html += '</div>';
             container.innerHTML = html;
+        }
+
+        // Handle dropdown selection
+        function selectTierFromDropdown(value) {
+            if (value === '') {
+                // Standard pricing
+                selectedCustomer = null;
+                localStorage.removeItem('everfresh_selected_customer_id');
+                showToast('Standard pricing');
+            } else {
+                const customerId = parseInt(value);
+                selectedCustomer = customers.find(c => c.id === customerId);
+                if (selectedCustomer) {
+                    localStorage.setItem('everfresh_selected_customer_id', customerId.toString());
+                    showToast(selectedCustomer.name + ' pricing');
+                }
+            }
+
+            imageSavedThisSession = false;
+            renderCustomerTiersList();
+            renderCategories();
+
+            if (cloudSyncEnabled && currentUserPhone) {
+                syncToCloud(true);
+            }
         }
 
         // Apply customer pricing
