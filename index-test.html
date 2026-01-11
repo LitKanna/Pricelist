@@ -3972,12 +3972,26 @@ Response format (JSON only, no markdown):
 
                 const data = await response.json();
                 const textContent = data.content.find(c => c.type === 'text')?.text || '';
-                
+
                 // Clean and parse JSON response
                 let cleanText = textContent.trim();
                 cleanText = cleanText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-                
+
                 const result = JSON.parse(cleanText);
+
+                // Validate AI result - reject nonsense categories
+                const validCategories = Object.keys(PRODUCE_DATABASE);
+                const isValidCategory = existingCategories.includes(result.category) ||
+                                       validCategories.includes(result.category) ||
+                                       validCategories.some(c => c.includes(result.category) || result.category.includes(c));
+
+                if (!isValidCategory) {
+                    // AI returned nonsense, use smart fallback instead
+                    console.warn('AI returned invalid category:', result.category, '- using fallback');
+                    const fallbackResult = smartCategoryMatch(productName, existingCategories);
+                    displayAnalysisResult(fallbackResult, existingCategories, false);
+                    return;
+                }
 
                 // Show AI result
                 displayAnalysisResult(result, existingCategories, true);
@@ -4163,9 +4177,11 @@ Response format (JSON only, no markdown):
                     'winter melon', 'wax gourd', 'fuzzy melon', 'mo qua', 'daikon',
                     'lotus root', 'galangal', 'taro', 'kohlrabi', 'water chestnut',
                     'bamboo shoot', 'bean sprout', 'mung bean', 'enoki', 'shimeji',
-                    'burdock', 'gobo', 'chrysanthemum', 'perilla', 'shiso'
+                    'burdock', 'gobo', 'chrysanthemum', 'perilla', 'shiso',
+                    'snake gourd', 'snake guard', 'bottle gourd', 'ridge gourd', 'ivy gourd',
+                    'pointed gourd', 'parwal', 'tindora', 'tinda', 'drumstick', 'moringa'
                 ],
-                keywords: ['asian', 'chinese', 'oriental', 'bok', 'choy', 'choi'],
+                keywords: ['asian', 'chinese', 'oriental', 'bok', 'choy', 'choi', 'gourd', 'guard'],
                 reasoning: 'Asian vegetable'
             },
             
