@@ -2528,7 +2528,7 @@
             showToast('Customer tier added!');
         }
 
-        // Render customer tiers list
+        // Render customer tiers list - compact chip design
         function renderCustomerTiersList() {
             const container = document.getElementById('customerTiersList');
             const noTiersMsg = document.getElementById('noTiersMessage');
@@ -2541,35 +2541,33 @@
 
             if (noTiersMsg) noTiersMsg.style.display = 'none';
 
-            let html = '';
+            let html = '<div style="display: flex; flex-wrap: wrap; gap: 8px;">';
             customers.forEach(customer => {
                 const adjustmentText = customer.adjustmentType === 'percentage'
                     ? (customer.adjustmentValue > 0 ? '+' : '') + customer.adjustmentValue + '%'
                     : (customer.adjustmentValue > 0 ? '+' : '') + '$' + Math.abs(customer.adjustmentValue);
 
                 const isActive = selectedCustomer && selectedCustomer.id === customer.id;
-                const bgColor = isActive ? '#f0fdf4' : '#f8fafc';
-                const borderColor = isActive ? '#22c55e' : '#e2e8f0';
-                const badgeColor = customer.adjustmentValue < 0 ? '#ef4444' : '#22c55e';
-                const initial = customer.name.charAt(0).toUpperCase();
+                const isNegative = customer.adjustmentValue < 0;
 
-                html += '<div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: ' + bgColor + '; border: 1px solid ' + borderColor + '; border-radius: 10px; margin-bottom: 8px;">' +
-                    '<div style="display: flex; align-items: center; gap: 12px;">' +
-                        '<div style="width: 36px; height: 36px; background: ' + (isActive ? '#22c55e' : '#e2e8f0') + '; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: ' + (isActive ? 'white' : '#64748b') + '; font-weight: 600; font-size: 14px;">' + initial + '</div>' +
-                        '<div>' +
-                            '<div style="font-weight: 600; color: #1e293b; font-size: 14px;">' + customer.name + '</div>' +
-                            '<div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">' +
-                                '<span style="font-size: 12px; color: white; background: ' + badgeColor + '; padding: 2px 8px; border-radius: 4px; font-weight: 600;">' + adjustmentText + '</span>' +
-                                '<span style="font-size: 11px; color: #94a3b8;">' + customer.adjustmentType + '</span>' +
-                            '</div>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div style="display: flex; gap: 8px;">' +
-                        '<button onclick="applyCustomerPricing(' + customer.id + ')" style="padding: 8px 14px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; ' + (isActive ? 'background: #22c55e; color: white;' : 'background: #e2e8f0; color: #475569;') + '">' + (isActive ? '✓ Active' : 'Apply') + '</button>' +
-                        '<button onclick="deleteCustomerTier(' + customer.id + ')" style="padding: 8px 10px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; background: #fee2e2; color: #dc2626;">×</button>' +
-                    '</div>' +
-                '</div>';
+                if (isActive) {
+                    // Active chip - prominent green
+                    html += '<div onclick="applyCustomerPricing(' + customer.id + ')" style="display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); padding: 8px 12px; border-radius: 20px; cursor: pointer; box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);">' +
+                        '<span style="color: white; font-size: 13px; font-weight: 600;">' + customer.name + '</span>' +
+                        '<span style="background: rgba(255,255,255,0.25); color: white; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 8px;">' + adjustmentText + '</span>' +
+                        '<span style="color: rgba(255,255,255,0.8); font-size: 11px;">✓</span>' +
+                        '<button onclick="event.stopPropagation(); deleteCustomerTier(' + customer.id + ')" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 18px; height: 18px; border-radius: 50%; cursor: pointer; font-size: 12px; line-height: 1; margin-left: 2px;">×</button>' +
+                    '</div>';
+                } else {
+                    // Inactive chip - subtle gray
+                    html += '<div onclick="applyCustomerPricing(' + customer.id + ')" style="display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 20px; cursor: pointer; transition: all 0.2s;">' +
+                        '<span style="color: #475569; font-size: 13px; font-weight: 500;">' + customer.name + '</span>' +
+                        '<span style="background: ' + (isNegative ? '#fecaca' : '#dcfce7') + '; color: ' + (isNegative ? '#dc2626' : '#16a34a') + '; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 8px;">' + adjustmentText + '</span>' +
+                        '<button onclick="event.stopPropagation(); deleteCustomerTier(' + customer.id + ')" style="background: #fee2e2; border: none; color: #dc2626; width: 18px; height: 18px; border-radius: 50%; cursor: pointer; font-size: 12px; line-height: 1; margin-left: 2px;">×</button>' +
+                    '</div>';
+                }
             });
+            html += '</div>';
             container.innerHTML = html;
         }
 
