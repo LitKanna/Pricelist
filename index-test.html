@@ -3201,9 +3201,10 @@
 
                 priceData[categoryName].forEach((item, idx) => {
                     const cost = item[3] || '';
-                    const displayPrice = selectedCustomer 
+                    const rawPrice = selectedCustomer
                         ? calculateCustomerPrice(item[2], item[1], selectedCustomer)
                         : item[2];
+                    const displayPrice = formatPriceWithSymbol(rawPrice);
                     
                     html += `
                         <div class="product" data-category-encoded="${encodedCategoryName}" data-product-index="${idx}">
@@ -3912,19 +3913,26 @@
             inputs.forEach(input => {
                 const encodedCategory = input.dataset.categoryEncoded;
                 if (!encodedCategory) return;
-                
+
                 const category = decodeURIComponent(encodedCategory);
                 const row = parseInt(input.dataset.row);
                 const col = parseInt(input.dataset.col);
-                
+
                 if (!priceData[category] || !priceData[category][row]) return;
-                
+
                 // Ensure the array has enough elements (for cost column)
                 while (priceData[category][row].length <= col) {
                     priceData[category][row].push('');
                 }
-                
-                priceData[category][row][col] = input.value;
+
+                let value = input.value;
+                // Auto-add $ to price column (col 2) if user typed a number without $
+                if (col === 2) {
+                    value = formatPriceWithSymbol(value);
+                    input.value = value; // Update the input field too
+                }
+
+                priceData[category][row][col] = value;
             });
         }
 
@@ -4764,6 +4772,17 @@ Response format (JSON only, no markdown):
         }
 
         // Helper: Truncate text with ellipsis if it exceeds max width
+        // Ensure price has $ symbol
+        function formatPriceWithSymbol(price) {
+            if (!price) return '';
+            let p = price.toString().trim();
+            // If it's a number or starts with a number, add $
+            if (p && !p.startsWith('$') && /^\d/.test(p)) {
+                p = '$' + p;
+            }
+            return p;
+        }
+
         function truncateText(ctx, text, maxWidth) {
             if (!text) return '';
             text = text.toString();
@@ -5031,7 +5050,7 @@ Response format (JSON only, no markdown):
                             // Price - Deep forest green (with truncation)
                             ctx.fillStyle = '#1b4332';
                             ctx.font = 'bold 78px Arial, Helvetica, sans-serif';
-                            ctx.fillText(truncateText(ctx, item[2], priceMaxWidth), col3 + 60, y + 84);
+                            ctx.fillText(truncateText(ctx, formatPriceWithSymbol(item[2]), priceMaxWidth), col3 + 60, y + 84);
                             
                             y += rowHeight;
                         }
@@ -6308,7 +6327,7 @@ Response format (JSON only, no markdown):
                                 // Price - Deep forest green (with truncation)
                                 ctx.fillStyle = '#1b4332';
                                 ctx.font = 'bold 78px Arial, Helvetica, sans-serif';
-                                ctx.fillText(truncateText(ctx, item[2], priceMaxWidth), col3 + 60, y + 84);
+                                ctx.fillText(truncateText(ctx, formatPriceWithSymbol(item[2]), priceMaxWidth), col3 + 60, y + 84);
                                 
                                 y += rowHeight;
                             }
