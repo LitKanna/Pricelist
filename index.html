@@ -1982,6 +1982,7 @@
         let syncInProgress = false;
         let lastUploadTimestamp = 0;  // Track our uploads to ignore in listener
         let realtimeListener = null;  // Firebase real-time listener reference
+        let autoSaveTimer = null;     // Debounce timer for auto-save
 
         // ========================================
         // PHONE NUMBER UTILITIES
@@ -3320,10 +3321,17 @@
                 }
             });
 
-            // Also reset on input event for immediate typing feedback
+            // Also reset on input event for immediate typing feedback + auto-save
             container.addEventListener('input', function(e) {
                 if (e.target.tagName === 'INPUT') {
                     imageSavedThisSession = false;
+
+                    // Auto-save with debounce (1.5 seconds after user stops typing)
+                    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+                    autoSaveTimer = setTimeout(() => {
+                        console.log('[AutoSave] Saving changes...');
+                        saveToLocal(false); // Silent save (no toast)
+                    }, 1500);
                 }
             });
         }
