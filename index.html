@@ -4073,6 +4073,11 @@
                 }
                 // Auto-add $ to price column (col 2) if user typed a number without $
                 if (col === 2) {
+                    // Skip collecting price when customer pricing is active
+                    // because the input shows adjusted price, not base price
+                    if (selectedCustomer) {
+                        return; // Don't overwrite base price with adjusted price
+                    }
                     value = formatPriceWithSymbol(value);
                     input.value = value; // Update the input field too
                 }
