@@ -999,6 +999,43 @@
         transform: translateY(0);
     }
     
+    
+    /* Desktop layout for Pricing Tiers panel only */
+    @media (min-width: 900px) {
+        #customerPricingPanel {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        #pricingCardsGrid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        #pricingCardsGrid > div {
+            margin-bottom: 0 !important;
+        }
+
+        #pricingCardsGrid + div {
+            margin-top: 24px;
+        }
+    }
+
+    @media (min-width: 1400px) {
+        #customerPricingPanel {
+            padding: 48px 80px;
+            max-width: 1600px;
+        }
+
+        #pricingCardsGrid {
+            gap: 32px;
+        }
+    }
+
     .settings-panel h3 {
         font-size: 22px;
         font-weight: 700;
@@ -1935,6 +1972,8 @@
                 </button>
             </div>
 
+            <!-- Desktop Grid Wrapper -->
+            <div id="pricingCardsGrid">
             <!-- Add New Tier Card -->
             <div style="background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); border-radius: 16px; padding: 20px; margin-bottom: 20px; color: white;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
@@ -1988,6 +2027,7 @@
                 <div id="customerTiersList" style="max-height: 280px; overflow-y: auto; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; overscroll-behavior-y: contain; border-radius: 12px; background: rgba(248,250,252,0.8);"></div>
                 <div id="noTiersMessage" style="text-align: center; padding: 24px; color: #94a3b8; font-size: 13px;">No pricing tiers yet</div>
             </div>
+            </div><!-- End pricingCardsGrid -->
 
             <!-- Pricing Logic Info Card -->
             <div style="background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0;">
