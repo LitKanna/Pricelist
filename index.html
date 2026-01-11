@@ -2587,6 +2587,9 @@
                 showToast(`Applied pricing for ${selectedCustomer.name}`);
             }
             
+            // Reset image cache so new image is generated with new prices
+            imageSavedThisSession = false;
+            
             renderCustomerTiersList();
             renderCategories();
             
