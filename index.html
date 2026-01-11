@@ -6489,30 +6489,50 @@ Response format (JSON only, no markdown):
 
         // Start real-time sync listener
         function startRealtimeSync() {
-            if (!currentUserPhone) return;
+            if (!currentUserPhone) {
+                console.log('[Sync] Cannot start listener: no phone number');
+                return;
+            }
 
             // Remove existing listener if any
             stopRealtimeSync();
 
             console.log('[Sync] Starting real-time listener for:', 'users/' + currentUserPhone);
 
+            // Show that we're connecting
+            const statusText = document.getElementById('syncStatusText');
+            if (statusText) statusText.textContent = 'Listening...';
+
             const userRef = database.ref('users/' + currentUserPhone);
+
+            // Add listener with error handling
             realtimeListener = userRef.on('value', (snapshot) => {
                 const cloudData = snapshot.val();
 
+                console.log('[Sync] Listener fired! Data exists:', !!cloudData);
+
                 if (!cloudData) {
                     console.log('[Sync] Real-time: No cloud data yet');
+                    const statusText = document.getElementById('syncStatusText');
+                    if (statusText) statusText.textContent = 'Synced';
                     return;
                 }
+
+                console.log('[Sync] Cloud timestamp:', cloudData.lastUpdated, 'Local timestamp:', lastUploadTimestamp);
 
                 // Ignore our own uploads (check if timestamp matches what we just uploaded)
                 if (cloudData.lastUpdated === lastUploadTimestamp) {
                     console.log('[Sync] Real-time: Ignoring our own upload');
+                    const statusText = document.getElementById('syncStatusText');
+                    if (statusText) statusText.textContent = 'Synced';
                     return;
                 }
 
                 // This is data from another device - apply it!
-                console.log('[Sync] Real-time: New data from another device!', new Date(cloudData.lastUpdated).toLocaleTimeString());
+                console.log('[Sync] Real-time: New data from another device!');
+
+                // Update lastUploadTimestamp to this value so we don't re-apply on next trigger
+                lastUploadTimestamp = cloudData.lastUpdated;
 
                 // Apply cloud data
                 if (cloudData.priceData) {
@@ -6542,12 +6562,25 @@ Response format (JSON only, no markdown):
                 renderCategories();
                 renderCustomersList();
 
-                // Flash the sync icon to show data received
+                // Show sync received indicator
                 const statusIcon = document.getElementById('syncStatusIcon');
+                const statusTextEl = document.getElementById('syncStatusText');
                 if (statusIcon) {
                     statusIcon.textContent = '↓';
-                    setTimeout(() => { statusIcon.textContent = '●'; }, 500);
+                    setTimeout(() => { statusIcon.textContent = '●'; }, 1000);
                 }
+                if (statusTextEl) {
+                    statusTextEl.textContent = 'Updated!';
+                    setTimeout(() => { statusTextEl.textContent = 'Synced'; }, 2000);
+                }
+
+            }, (error) => {
+                // Error callback for listener
+                console.error('[Sync] Listener error:', error);
+                const statusIcon = document.getElementById('syncStatusIcon');
+                const statusText = document.getElementById('syncStatusText');
+                if (statusIcon) statusIcon.textContent = '!';
+                if (statusText) statusText.textContent = 'Error: ' + error.code;
             });
         }
 
