@@ -4656,15 +4656,17 @@
             const url = URL.createObjectURL(currentInvoiceBlob);
             const printWindow = window.open('', '_blank');
             if (printWindow) {
-                const img = printWindow.document.createElement('img');
-                img.src = url;
-                img.style.cssText = 'max-width:100%; max-height:100vh;';
-                img.onload = function() {
-                    printWindow.print();
-                    printWindow.close();
-                };
-                printWindow.document.body.style.cssText = 'margin:0; display:flex; justify-content:center; align-items:center; min-height:100vh;';
-                printWindow.document.body.appendChild(img);
+                const doc = printWindow.document;
+                doc.write('<!DOCTYPE html><html><head><title>Print Invoice</title>');
+                doc.write('<style>');
+                doc.write('@page { size: auto; margin: 5mm; }');
+                doc.write('@media print { html, body { margin: 0; padding: 0; } img { width: 100%; height: auto; max-height: 100vh; page-break-inside: avoid; } }');
+                doc.write('body { margin: 0; padding: 0; display: flex; justify-content: center; }');
+                doc.write('img { max-width: 100%; height: auto; }');
+                doc.write('</style></head><body>');
+                doc.write('<img src="' + url + '" onload="setTimeout(function(){window.print();window.close();},200);">');
+                doc.write('</body></html>');
+                doc.close();
             }
         }
 
@@ -4675,77 +4677,76 @@
 
         async function shareInvoiceVia(method) {
             if (!currentInvoiceBlob) {
-                showToast('Preview not ready');
+                showToast('Preview not ready yet');
                 return;
             }
 
             const order = orders.find(o => o.id === currentViewingOrderId);
-            if (!order) return;
+            if (!order) {
+                showToast('Order not found');
+                return;
+            }
 
             const fileName = 'invoice-' + (order.invoiceNumber || 'order') + '.png';
-            const file = new File([currentInvoiceBlob], fileName, { type: 'image/png' });
 
             try {
+                // Download option - works on all platforms
                 if (method === 'download') {
                     const url = URL.createObjectURL(currentInvoiceBlob);
                     const a = document.createElement('a');
                     a.href = url;
                     a.download = fileName;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
                     a.click();
-                    URL.revokeObjectURL(url);
-                    showToast('Invoice downloaded');
+                    document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(url), 100);
+                    showToast('Invoice downloaded!');
                     return;
                 }
 
-                if (method === 'email') {
-                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            files: [file],
-                            title: 'Invoice ' + order.invoiceNumber,
-                            text: 'Please find attached invoice ' + order.invoiceNumber
-                        });
-                    } else {
-                        const url = URL.createObjectURL(currentInvoiceBlob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = fileName;
-                        a.click();
-                        URL.revokeObjectURL(url);
+                // Try Web Share API for file sharing (iOS/Android)
+                const file = new File([currentInvoiceBlob], fileName, { type: 'image/png' });
+                const canShareFiles = navigator.share && navigator.canShare && navigator.canShare({ files: [file] });
 
+                if (canShareFiles) {
+                    // Use native share sheet
+                    await navigator.share({
+                        files: [file],
+                        title: 'Invoice ' + order.invoiceNumber
+                    });
+                    showToast('Shared!');
+                } else {
+                    // Fallback: download the file
+                    const url = URL.createObjectURL(currentInvoiceBlob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(url), 100);
+
+                    // Open appropriate app
+                    if (method === 'whatsapp') {
+                        setTimeout(() => {
+                            window.open('https://wa.me/?text=' + encodeURIComponent('Invoice ' + order.invoiceNumber), '_blank');
+                        }, 300);
+                        showToast('Invoice saved - attach in WhatsApp');
+                    } else if (method === 'email') {
                         setTimeout(() => {
                             window.location.href = 'mailto:?subject=Invoice ' + order.invoiceNumber + '&body=Please find the attached invoice.';
-                        }, 500);
-                        showToast('Invoice downloaded - attach to email');
-                    }
-                    return;
-                }
-
-                if (method === 'imessage' || method === 'whatsapp') {
-                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            files: [file],
-                            title: 'Invoice ' + order.invoiceNumber
-                        });
+                        }, 300);
+                        showToast('Invoice saved - attach to email');
                     } else {
-                        const url = URL.createObjectURL(currentInvoiceBlob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = fileName;
-                        a.click();
-                        URL.revokeObjectURL(url);
-
-                        if (method === 'whatsapp') {
-                            setTimeout(() => {
-                                window.open('https://wa.me/?text=' + encodeURIComponent('Invoice ' + order.invoiceNumber), '_blank');
-                            }, 500);
-                        }
-                        showToast('Invoice downloaded');
+                        showToast('Invoice saved to downloads');
                     }
                 }
             } catch (err) {
                 if (err.name !== 'AbortError') {
                     console.error('Share error:', err);
-                    showToast('Could not share');
+                    showToast('Share failed - try Download');
                 }
             }
         }
