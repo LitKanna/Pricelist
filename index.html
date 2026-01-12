@@ -3912,51 +3912,135 @@
                 canvas.width = width;
                 canvas.height = height;
 
-                // Price list color palette
+                // Premium color palette
                 const colors = {
-                    forestGreen: '#2d6a4f',    // Header, total box
-                    freshGreen: '#52b788',      // Accents, subtitles
-                    paleGreen: '#b7e4c7',       // Divider lines
-                    lightGreen: '#d8f3dc',      // Note bg, dotted lines
-                    barelyWhite: '#fafdf7',     // Table header bg
-                    darkestGreen: '#1b4332',    // Main text
+                    forestGreen: '#2d6a4f',
+                    mediumGreen: '#40916c',
+                    freshGreen: '#52b788',
+                    lightGreen: '#74c69d',
+                    paleGreen: '#b7e4c7',
+                    veryLightGreen: '#d8f3dc',
+                    barelyWhite: '#fafdf7',
+                    darkestGreen: '#1b4332',
                     white: '#ffffff'
                 };
 
                 const margin = 60;
                 const contentWidth = width - (margin * 2);
 
-                // White background
-                ctx.fillStyle = colors.white;
+                // Helper: Draw rounded rectangle
+                function roundRect(x, y, w, h, r) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + r, y);
+                    ctx.lineTo(x + w - r, y);
+                    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+                    ctx.lineTo(x + w, y + h - r);
+                    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                    ctx.lineTo(x + r, y + h);
+                    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+                    ctx.lineTo(x, y + r);
+                    ctx.quadraticCurveTo(x, y, x + r, y);
+                    ctx.closePath();
+                }
+
+                // Helper: Draw leaf shape
+                function drawLeaf(x, y, size, rotation) {
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(rotation);
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.bezierCurveTo(size * 0.5, -size * 0.3, size * 0.8, -size * 0.1, size, 0);
+                    ctx.bezierCurveTo(size * 0.8, size * 0.1, size * 0.5, size * 0.3, 0, 0);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                // ===== BACKGROUND GRADIENT =====
+                const bgGradient = ctx.createLinearGradient(0, 0, 0, height);
+                bgGradient.addColorStop(0, colors.barelyWhite);
+                bgGradient.addColorStop(1, colors.veryLightGreen);
+                ctx.fillStyle = bgGradient;
                 ctx.fillRect(0, 0, width, height);
 
                 let y = 0;
 
-                // ===== HEADER =====
-                const headerHeight = 220;
-                ctx.fillStyle = colors.forestGreen;
-                ctx.fillRect(0, 0, width, headerHeight);
+                // ===== TOP ACCENT BAR =====
+                const topBarGradient = ctx.createLinearGradient(0, 0, width, 0);
+                topBarGradient.addColorStop(0, colors.forestGreen);
+                topBarGradient.addColorStop(1, colors.mediumGreen);
+                ctx.fillStyle = topBarGradient;
+                ctx.fillRect(0, 0, width, 10);
 
-                // Company name
+                // ===== HEADER CARD =====
+                y = 30;
+                ctx.shadowColor = 'rgba(0,0,0,0.08)';
+                ctx.shadowBlur = 20;
+                ctx.shadowOffsetY = 4;
                 ctx.fillStyle = colors.white;
-                ctx.font = 'bold 42px Arial, Helvetica, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('EVERFRESH PRODUCE GROUP', width / 2, 80);
+                roundRect(40, y, width - 80, 260, 20);
+                ctx.fill();
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetY = 0;
 
-                // Stand details
-                ctx.fillStyle = colors.paleGreen;
-                ctx.font = '28px Arial, Helvetica, sans-serif';
-                ctx.fillText('Stand 275, Shed C', width / 2, 130);
-                ctx.fillText('Sydney Markets', width / 2, 165);
-
-                y = headerHeight + 40;
-
-                // ===== CUSTOMER NAME =====
+                // Company name with letter spacing
+                y = 90;
                 ctx.fillStyle = colors.darkestGreen;
-                ctx.font = 'bold 36px Arial, Helvetica, sans-serif';
-                ctx.textAlign = 'left';
+                ctx.font = 'bold 52px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'center';
+                const companyText = 'EVERFRESH';
+                ctx.fillText(companyText, width / 2, y);
 
-                // Get business name
+                y = 135;
+                ctx.fillStyle = colors.freshGreen;
+                ctx.font = '26px Arial, Helvetica, sans-serif';
+                ctx.fillText('PRODUCE GROUP', width / 2, y);
+
+                // Decorative leaves
+                ctx.fillStyle = colors.lightGreen;
+                ctx.globalAlpha = 0.6;
+                drawLeaf(340, 150, 40, -0.3);
+                drawLeaf(740, 150, 40, 0.3 + Math.PI);
+                ctx.globalAlpha = 1;
+
+                // Address
+                y = 190;
+                ctx.fillStyle = colors.mediumGreen;
+                ctx.font = '22px Arial, Helvetica, sans-serif';
+                ctx.fillText('Stand 275, Shed C', width / 2, y);
+                ctx.fillText('Sydney Markets', width / 2, y + 28);
+
+                // Decorative dots
+                y = 265;
+                ctx.fillStyle = colors.lightGreen;
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.arc(width / 2 - 20 + (i * 20), y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // ===== INVOICE INFO BAR =====
+                y = 310;
+                const infoBarGradient = ctx.createLinearGradient(0, y, width, y);
+                infoBarGradient.addColorStop(0, colors.veryLightGreen);
+                infoBarGradient.addColorStop(1, colors.paleGreen);
+                ctx.fillStyle = infoBarGradient;
+                ctx.fillRect(0, y, width, 140);
+
+                // Invoice badge
+                ctx.fillStyle = colors.forestGreen;
+                roundRect(margin, y + 20, 200, 100, 14);
+                ctx.fill();
+
+                ctx.fillStyle = colors.white;
+                ctx.font = '16px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('INVOICE', margin + 100, y + 50);
+                ctx.font = 'bold 28px Arial, Helvetica, sans-serif';
+                ctx.fillText('#' + Date.now().toString().slice(-6), margin + 100, y + 85);
+
+                // Customer info (right side)
                 let billToName = 'Walk-in Customer';
                 if (orderCustomerName && orderCustomerName !== 'Walk-in Customer') {
                     const contact = customerContacts.find(c =>
@@ -3977,186 +4061,244 @@
                         }
                     }
                 }
-                ctx.fillText(billToName, margin, y);
 
-                y += 15;
-
-                // Divider line
-                ctx.strokeStyle = colors.paleGreen;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(margin, y);
-                ctx.lineTo(width - margin, y);
-                ctx.stroke();
-
-                y += 35;
-
-                // Date, Order, Sales info
-                ctx.font = '26px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'right';
                 ctx.fillStyle = colors.darkestGreen;
+                ctx.font = 'bold 26px Arial, Helvetica, sans-serif';
+                // Truncate long names
+                const maxNameLen = 22;
+                const displayBillTo = billToName.length > maxNameLen ? billToName.substring(0, maxNameLen) + '...' : billToName;
+                ctx.fillText(displayBillTo, width - margin, y + 50);
 
                 const dateStr = new Date().toLocaleDateString('en-AU', {
                     day: 'numeric',
                     month: 'short',
                     year: 'numeric'
                 });
-                ctx.fillText('Date: ' + dateStr, margin, y);
-
-                y += 35;
-
-                // Order number
-                ctx.fillStyle = colors.freshGreen;
-                ctx.fillText('Order: #' + Date.now().toString().slice(-6), margin, y);
-
-                y += 35;
+                ctx.fillStyle = colors.mediumGreen;
+                ctx.font = '22px Arial, Helvetica, sans-serif';
+                ctx.fillText(dateStr, width - margin, y + 80);
 
                 // Salesman info
                 if (salesmanInfo.name || salesmanInfo.phone) {
-                    ctx.fillStyle = colors.darkestGreen;
-                    let salesText = 'Sales: ';
+                    ctx.fillStyle = colors.freshGreen;
+                    ctx.font = '20px Arial, Helvetica, sans-serif';
+                    let salesText = '';
                     if (salesmanInfo.name) salesText += salesmanInfo.name;
                     if (salesmanInfo.name && salesmanInfo.phone) salesText += ' · ';
                     if (salesmanInfo.phone) salesText += salesmanInfo.phone;
-                    ctx.fillText(salesText, margin, y);
-                    y += 35;
+                    ctx.fillText(salesText, width - margin, y + 110);
                 }
 
-                y += 10;
+                // ===== ITEMS TABLE =====
+                y = 470;
 
-                // Accent line
-                ctx.strokeStyle = colors.freshGreen;
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(margin, y);
-                ctx.lineTo(width - margin, y);
-                ctx.stroke();
-
-                y += 30;
-
-                // ===== TABLE HEADER =====
-                ctx.fillStyle = colors.barelyWhite;
-                ctx.fillRect(margin, y, contentWidth, 50);
-
+                // Table header with rounded top
                 ctx.fillStyle = colors.forestGreen;
-                ctx.font = 'bold 22px Arial, Helvetica, sans-serif';
+                roundRect(margin, y, contentWidth, 55, 12);
+                ctx.fill();
+                // Cover bottom rounded corners
+                ctx.fillRect(margin, y + 30, contentWidth, 25);
+
+                ctx.fillStyle = colors.white;
+                ctx.font = 'bold 20px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'left';
-                ctx.fillText('ITEM', margin + 15, y + 33);
+                ctx.fillText('ITEM', margin + 20, y + 36);
                 ctx.textAlign = 'center';
-                ctx.fillText('QTY', width - margin - 180, y + 33);
+                ctx.fillText('QTY', width - margin - 160, y + 36);
                 ctx.textAlign = 'right';
-                ctx.fillText('AMT', width - margin - 15, y + 33);
+                ctx.fillText('AMOUNT', width - margin - 20, y + 36);
 
-                y += 50;
+                y += 55;
 
-                // ===== TABLE ROWS =====
-                const rowHeight = 55;
+                // Table rows
+                const rowHeight = 65;
                 let grandTotal = 0;
 
                 currentOrderItems.forEach((item, idx) => {
-                    // Dotted divider between rows
-                    if (idx > 0) {
-                        ctx.strokeStyle = colors.lightGreen;
-                        ctx.lineWidth = 2;
-                        ctx.setLineDash([8, 8]);
-                        ctx.beginPath();
-                        ctx.moveTo(margin + 15, y);
-                        ctx.lineTo(width - margin - 15, y);
-                        ctx.stroke();
-                        ctx.setLineDash([]);
+                    // Alternating row backgrounds
+                    if (idx % 2 === 0) {
+                        ctx.fillStyle = colors.barelyWhite;
+                    } else {
+                        ctx.fillStyle = 'rgba(216, 243, 220, 0.4)';
                     }
+                    ctx.fillRect(margin, y, contentWidth, rowHeight);
 
-                    y += 8;
+                    // Left accent strip
+                    ctx.fillStyle = colors.freshGreen;
+                    ctx.fillRect(margin, y, 4, rowHeight);
+
+                    // Bottom border
+                    ctx.strokeStyle = colors.paleGreen;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(margin, y + rowHeight);
+                    ctx.lineTo(width - margin, y + rowHeight);
+                    ctx.stroke();
+
+                    // Item arrow accent
+                    ctx.fillStyle = colors.lightGreen;
+                    ctx.font = '20px Arial, Helvetica, sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('›', margin + 15, y + 40);
 
                     // Item name
                     const displayName = item.product || item.name || 'Item';
+                    const maxItemLen = 28;
+                    const truncatedName = displayName.length > maxItemLen ? displayName.substring(0, maxItemLen) + '...' : displayName;
                     ctx.fillStyle = colors.darkestGreen;
-                    ctx.font = '28px Arial, Helvetica, sans-serif';
-                    ctx.textAlign = 'left';
-                    ctx.fillText(displayName, margin + 15, y + 32);
+                    ctx.font = '24px Arial, Helvetica, sans-serif';
+                    ctx.fillText(truncatedName, margin + 35, y + 40);
 
                     // Quantity
+                    ctx.fillStyle = colors.mediumGreen;
                     ctx.textAlign = 'center';
-                    ctx.fillText(item.qty.toString(), width - margin - 180, y + 32);
+                    ctx.fillText(item.qty.toString(), width - margin - 160, y + 40);
 
                     // Amount
-                    ctx.font = 'bold 28px Arial, Helvetica, sans-serif';
+                    ctx.fillStyle = colors.darkestGreen;
+                    ctx.font = 'bold 26px Arial, Helvetica, sans-serif';
                     ctx.textAlign = 'right';
-                    ctx.fillText('$' + item.lineTotal.toFixed(item.lineTotal % 1 === 0 ? 0 : 2), width - margin - 15, y + 32);
+                    ctx.fillText('$' + item.lineTotal.toFixed(item.lineTotal % 1 === 0 ? 0 : 2), width - margin - 20, y + 42);
 
                     grandTotal += item.lineTotal;
                     y += rowHeight;
                 });
 
-                y += 15;
+                // ===== DECORATIVE SPACER =====
+                y += 25;
+                ctx.strokeStyle = colors.paleGreen;
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 6]);
+                ctx.beginPath();
+                ctx.moveTo(margin + 50, y);
+                ctx.lineTo(width - margin - 50, y);
+                ctx.stroke();
+                ctx.setLineDash([]);
 
-                // Divider line
+                y += 30;
+
+                // ===== NOTES SECTION =====
+                const notes = document.getElementById('orderNotes').value.trim();
+                if (notes) {
+                    ctx.fillStyle = '#f0f9f4';
+                    roundRect(margin + 20, y, contentWidth - 40, 80, 10);
+                    ctx.fill();
+
+                    // Dashed border
+                    ctx.strokeStyle = colors.paleGreen;
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 4]);
+                    roundRect(margin + 20, y, contentWidth - 40, 80, 10);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // Small leaf accent
+                    ctx.fillStyle = colors.lightGreen;
+                    ctx.globalAlpha = 0.5;
+                    drawLeaf(margin + 40, y + 20, 20, -0.5);
+                    ctx.globalAlpha = 1;
+
+                    // Notes text
+                    ctx.fillStyle = colors.mediumGreen;
+                    ctx.font = 'bold 16px Arial, Helvetica, sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('NOTES', margin + 70, y + 30);
+
+                    ctx.fillStyle = colors.darkestGreen;
+                    ctx.font = '20px Arial, Helvetica, sans-serif';
+                    const maxLen = 45;
+                    const noteText = notes.length > maxLen ? notes.substring(0, maxLen) + '...' : notes;
+                    ctx.fillText(noteText, margin + 70, y + 58);
+
+                    y += 100;
+                }
+
+                y += 20;
+
+                // ===== GRAND TOTAL BADGE =====
+                const totalGradient = ctx.createLinearGradient(margin, y, width - margin, y);
+                totalGradient.addColorStop(0, colors.forestGreen);
+                totalGradient.addColorStop(1, colors.darkestGreen);
+
+                ctx.shadowColor = 'rgba(45, 106, 79, 0.3)';
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetY = 5;
+                ctx.fillStyle = totalGradient;
+                roundRect(margin, y, contentWidth, 90, 16);
+                ctx.fill();
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetY = 0;
+
+                // Corner accents
+                ctx.fillStyle = colors.freshGreen;
+                ctx.beginPath();
+                ctx.arc(margin + 20, y + 20, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(width - margin - 20, y + 20, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(margin + 20, y + 70, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(width - margin - 20, y + 70, 8, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Total text
+                ctx.fillStyle = colors.white;
+                ctx.font = 'bold 26px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('TOTAL', margin + 45, y + 55);
+
+                ctx.font = 'bold 48px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText('$' + grandTotal.toFixed(grandTotal % 1 === 0 ? 0 : 2), width - margin - 45, y + 60);
+
+                y += 130;
+
+                // ===== FOOTER =====
+                // Decorative divider
                 ctx.strokeStyle = colors.paleGreen;
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.moveTo(margin, y);
-                ctx.lineTo(width - margin, y);
+                ctx.moveTo(width / 2 - 150, y);
+                ctx.lineTo(width / 2 + 150, y);
                 ctx.stroke();
 
-                y += 25;
-
-                // ===== NOTES =====
-                const notes = document.getElementById('orderNotes').value.trim();
-                if (notes) {
-                    ctx.fillStyle = colors.lightGreen;
-                    ctx.fillRect(margin, y, contentWidth, 55);
-
-                    ctx.fillStyle = colors.darkestGreen;
-                    ctx.font = '24px Arial, Helvetica, sans-serif';
-                    ctx.textAlign = 'left';
-                    const maxLen = 40;
-                    const noteText = notes.length > maxLen ? notes.substring(0, maxLen) + '...' : notes;
-                    ctx.fillText('📝 ' + noteText, margin + 15, y + 36);
-
-                    y += 75;
+                // Dots
+                ctx.fillStyle = colors.lightGreen;
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.arc(width / 2 - 15 + (i * 15), y, 3, 0, Math.PI * 2);
+                    ctx.fill();
                 }
 
-                // Accent line
-                ctx.strokeStyle = colors.freshGreen;
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(margin, y);
-                ctx.lineTo(width - margin, y);
-                ctx.stroke();
+                y += 40;
 
-                y += 35;
-
-                // ===== TOTAL BOX =====
-                const totalBoxHeight = 70;
-                ctx.fillStyle = colors.forestGreen;
-                ctx.fillRect(margin, y, contentWidth, totalBoxHeight);
-
-                ctx.fillStyle = colors.white;
-                ctx.font = 'bold 28px Arial, Helvetica, sans-serif';
-                ctx.textAlign = 'left';
-                ctx.fillText('TOTAL', margin + 25, y + 45);
-
-                ctx.font = 'bold 38px Arial, Helvetica, sans-serif';
-                ctx.textAlign = 'right';
-                ctx.fillText('$' + grandTotal.toFixed(grandTotal % 1 === 0 ? 0 : 2), width - margin - 25, y + 48);
-
-                y += totalBoxHeight + 40;
-
-                // ===== FOOTER =====
-                ctx.fillStyle = colors.freshGreen;
-                ctx.font = '26px Arial, Helvetica, sans-serif';
+                // Thank you message
+                ctx.fillStyle = colors.mediumGreen;
+                ctx.font = 'italic 28px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('Thank you for your', width / 2, y);
-                ctx.fillText('business!', width / 2, y + 35);
+                ctx.fillText('Thank you for your business!', width / 2, y);
 
-                y += 60;
+                y += 30;
 
-                // Footer accent line
-                ctx.strokeStyle = colors.freshGreen;
-                ctx.lineWidth = 3;
+                // Decorative flourish curve
+                ctx.strokeStyle = colors.paleGreen;
+                ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.moveTo(margin, y);
-                ctx.lineTo(width - margin, y);
+                ctx.moveTo(width / 2 - 100, y);
+                ctx.quadraticCurveTo(width / 2, y + 15, width / 2 + 100, y);
                 ctx.stroke();
+
+                // Small leaves at ends
+                ctx.fillStyle = colors.lightGreen;
+                ctx.globalAlpha = 0.5;
+                drawLeaf(width / 2 - 110, y - 5, 25, Math.PI);
+                drawLeaf(width / 2 + 110, y - 5, 25, 0);
+                ctx.globalAlpha = 1;
 
                 canvas.toBlob(blob => resolve(blob), 'image/png');
             });
