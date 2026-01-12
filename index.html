@@ -3951,50 +3951,49 @@
                 let y = 0;
 
                 // ===== HEADER - Company details only =====
-                const headerHeight = 190;
+                const headerHeight = 170;
                 ctx.fillStyle = colors.forestGreen;
                 ctx.fillRect(0, 0, width, headerHeight);
 
-                // Company name - Large and bold
+                // Company name - Primary heading
                 ctx.fillStyle = colors.white;
-                ctx.font = 'bold 38px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 32px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('EVERFRESH PRODUCE GROUP PTY LTD', width / 2, 45);
+                ctx.fillText('EVERFRESH PRODUCE GROUP PTY LTD', width / 2, 40);
 
-                // ABN
-                ctx.font = '15px Arial, Helvetica, sans-serif';
+                // ABN - Small text
+                ctx.font = '14px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.white;
-                ctx.fillText('ABN: 54 683 292 551', width / 2, 75);
+                ctx.fillText('ABN: 54 683 292 551', width / 2, 65);
 
-                // Address
-                ctx.font = '17px Arial, Helvetica, sans-serif';
+                // Address - Small text (same as ABN for consistency)
+                ctx.font = '14px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.white;
-                ctx.fillText('PO Box 448, Stand 275, Shed C', width / 2, 108);
-                ctx.fillText('Sydney Markets, NSW 2129', width / 2, 130);
+                ctx.fillText('PO Box 448, Stand 275, Shed C, Sydney Markets, NSW 2129', width / 2, 100);
 
-                // Contact details
-                ctx.font = '15px Arial, Helvetica, sans-serif';
+                // Contact details - Small text
+                ctx.font = '14px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.white;
-                ctx.fillText('Phone: (02) 9746 6416   |   Fax: (02) 9763 1551   |   accounts@everfresh.net.au', width / 2, 165);
+                ctx.fillText('Phone: (02) 9746 6416   |   Fax: (02) 9763 1551   |   accounts@everfresh.net.au', width / 2, 130);
 
                 // ===== INVOICE TITLE - Standalone section =====
-                y = headerHeight + 45;
-                ctx.font = 'bold 36px Arial, Helvetica, sans-serif';
+                y = headerHeight + 40;
+                ctx.font = 'bold 40px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.forestGreen;
                 ctx.textAlign = 'center';
                 ctx.fillText('INVOICE', width / 2, y);
 
                 // Underline below INVOICE
-                const underlineWidth = 120;
+                const underlineWidth = 130;
                 ctx.strokeStyle = colors.forestGreen;
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.moveTo((width - underlineWidth) / 2, y + 10);
-                ctx.lineTo((width + underlineWidth) / 2, y + 10);
+                ctx.moveTo((width - underlineWidth) / 2, y + 12);
+                ctx.lineTo((width + underlineWidth) / 2, y + 12);
                 ctx.stroke();
 
                 // ===== TWO COLUMN INFO SECTION =====
-                y += 50;
+                y += 45;
 
                 // Get customer name
                 let billToName = 'Walk-in Customer';
@@ -4028,68 +4027,68 @@
 
                 // Left box - Bill To
                 const boxWidth = (contentWidth - 30) / 2;
-                const boxHeight = 100;
+                const boxHeight = 85;
 
                 // Bill To Box
                 ctx.fillStyle = colors.veryLightGreen;
-                roundRect(margin, y, boxWidth, boxHeight, 10);
+                roundRect(margin, y, boxWidth, boxHeight, 8);
                 ctx.fill();
 
                 ctx.fillStyle = colors.gray;
-                ctx.font = '14px Arial, Helvetica, sans-serif';
+                ctx.font = '12px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'left';
-                ctx.fillText('BILL TO', margin + 20, y + 28);
+                ctx.fillText('BILL TO', margin + 20, y + 24);
 
                 ctx.fillStyle = colors.darkestGreen;
-                ctx.font = 'bold 28px Arial, Helvetica, sans-serif';
-                ctx.fillText(billToName, margin + 20, y + 68);
+                ctx.font = 'bold 22px Arial, Helvetica, sans-serif';
+                ctx.fillText(billToName, margin + 20, y + 58);
 
                 // Right box - Invoice Details
                 const rightBoxX = margin + boxWidth + 30;
                 ctx.fillStyle = colors.veryLightGreen;
-                roundRect(rightBoxX, y, boxWidth, boxHeight, 10);
+                roundRect(rightBoxX, y, boxWidth, boxHeight, 8);
                 ctx.fill();
 
                 // Invoice Number - aligned with customer name
                 ctx.fillStyle = colors.gray;
-                ctx.font = '14px Arial, Helvetica, sans-serif';
+                ctx.font = '12px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'left';
-                ctx.fillText('INVOICE NO.', rightBoxX + 20, y + 28);
+                ctx.fillText('INVOICE NO.', rightBoxX + 20, y + 24);
 
                 ctx.fillStyle = colors.darkestGreen;
-                ctx.font = 'bold 26px Arial, Helvetica, sans-serif';
-                ctx.fillText('#' + invoiceNum, rightBoxX + 20, y + 68);
+                ctx.font = 'bold 20px Arial, Helvetica, sans-serif';
+                ctx.fillText('#' + invoiceNum, rightBoxX + 20, y + 58);
 
                 // Date - aligned with customer name
                 ctx.fillStyle = colors.gray;
-                ctx.font = '14px Arial, Helvetica, sans-serif';
+                ctx.font = '12px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'right';
-                ctx.fillText('DATE', rightBoxX + boxWidth - 20, y + 28);
+                ctx.fillText('DATE', rightBoxX + boxWidth - 20, y + 24);
 
                 ctx.fillStyle = colors.darkestGreen;
-                ctx.font = 'bold 26px Arial, Helvetica, sans-serif';
-                ctx.fillText(dateStr, rightBoxX + boxWidth - 20, y + 68);
+                ctx.font = 'bold 20px Arial, Helvetica, sans-serif';
+                ctx.fillText(dateStr, rightBoxX + boxWidth - 20, y + 58);
 
-                y += boxHeight + 25;
+                y += boxHeight + 20;
 
                 // ===== TABLE HEADER =====
                 ctx.fillStyle = colors.forestGreen;
-                roundRect(margin, y, contentWidth, 55, 8);
+                roundRect(margin, y, contentWidth, 48, 8);
                 ctx.fill();
 
                 ctx.fillStyle = colors.white;
-                ctx.font = 'bold 22px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'left';
-                ctx.fillText('ITEM', margin + 25, y + 36);
+                ctx.fillText('ITEM', margin + 20, y + 30);
                 ctx.textAlign = 'center';
-                ctx.fillText('QTY', width - margin - 160, y + 36);
+                ctx.fillText('QTY', width - margin - 150, y + 30);
                 ctx.textAlign = 'right';
-                ctx.fillText('AMOUNT', width - margin - 25, y + 36);
+                ctx.fillText('AMOUNT', width - margin - 20, y + 30);
 
-                y += 55;
+                y += 48;
 
                 // ===== TABLE ROWS =====
-                const rowHeight = 60;
+                const rowHeight = 52;
                 let grandTotal = 0;
 
                 currentOrderItems.forEach((item, idx) => {
@@ -4099,7 +4098,7 @@
 
                     // Left accent strip
                     ctx.fillStyle = colors.freshGreen;
-                    ctx.fillRect(margin, y, 4, rowHeight);
+                    ctx.fillRect(margin, y, 3, rowHeight);
 
                     // Bottom border
                     ctx.strokeStyle = colors.paleGreen;
@@ -4111,46 +4110,46 @@
 
                     // Item name
                     const displayName = item.product || item.name || 'Item';
-                    const maxItemLen = 32;
+                    const maxItemLen = 35;
                     const truncatedName = displayName.length > maxItemLen ? displayName.substring(0, maxItemLen) + '...' : displayName;
                     ctx.fillStyle = colors.darkestGreen;
-                    ctx.font = '24px Arial, Helvetica, sans-serif';
+                    ctx.font = '18px Arial, Helvetica, sans-serif';
                     ctx.textAlign = 'left';
-                    ctx.fillText(truncatedName, margin + 25, y + 38);
+                    ctx.fillText(truncatedName, margin + 20, y + 32);
 
                     // Quantity
                     ctx.fillStyle = colors.mediumGreen;
-                    ctx.font = '24px Arial, Helvetica, sans-serif';
+                    ctx.font = '18px Arial, Helvetica, sans-serif';
                     ctx.textAlign = 'center';
-                    ctx.fillText(item.qty.toString(), width - margin - 160, y + 38);
+                    ctx.fillText(item.qty.toString(), width - margin - 150, y + 32);
 
                     // Amount
                     ctx.fillStyle = colors.darkestGreen;
-                    ctx.font = 'bold 26px Arial, Helvetica, sans-serif';
+                    ctx.font = 'bold 20px Arial, Helvetica, sans-serif';
                     ctx.textAlign = 'right';
-                    ctx.fillText('$' + item.lineTotal.toFixed(item.lineTotal % 1 === 0 ? 0 : 2), width - margin - 25, y + 40);
+                    ctx.fillText('$' + item.lineTotal.toFixed(item.lineTotal % 1 === 0 ? 0 : 2), width - margin - 20, y + 32);
 
                     grandTotal += item.lineTotal;
                     y += rowHeight;
                 });
 
-                y += 25;
+                y += 20;
 
                 // ===== NOTES SECTION =====
                 const notes = document.getElementById('orderNotes').value.trim();
                 if (notes) {
                     ctx.fillStyle = colors.veryLightGreen;
-                    roundRect(margin, y, contentWidth, 70, 8);
+                    roundRect(margin, y, contentWidth, 60, 8);
                     ctx.fill();
 
                     ctx.fillStyle = colors.darkestGreen;
-                    ctx.font = '22px Arial, Helvetica, sans-serif';
+                    ctx.font = '16px Arial, Helvetica, sans-serif';
                     ctx.textAlign = 'left';
-                    const maxLen = 50;
+                    const maxLen = 60;
                     const noteText = notes.length > maxLen ? notes.substring(0, maxLen) + '...' : notes;
-                    ctx.fillText('Note: ' + noteText, margin + 20, y + 44);
+                    ctx.fillText('Note: ' + noteText, margin + 20, y + 38);
 
-                    y += 90;
+                    y += 75;
                 }
 
                 y += 15;
@@ -4161,96 +4160,96 @@
                 totalGradient.addColorStop(1, colors.darkestGreen);
 
                 ctx.fillStyle = totalGradient;
-                roundRect(margin, y, contentWidth, 90, 12);
+                roundRect(margin, y, contentWidth, 70, 10);
                 ctx.fill();
 
                 // Total text
                 ctx.fillStyle = colors.white;
-                ctx.font = 'bold 28px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 22px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'left';
-                ctx.fillText('TOTAL', margin + 35, y + 55);
+                ctx.fillText('TOTAL', margin + 25, y + 44);
 
-                ctx.font = 'bold 48px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 38px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'right';
-                ctx.fillText('$' + grandTotal.toFixed(grandTotal % 1 === 0 ? 0 : 2), width - margin - 35, y + 58);
+                ctx.fillText('$' + grandTotal.toFixed(grandTotal % 1 === 0 ? 0 : 2), width - margin - 25, y + 48);
 
-                y += 130;
+                y += 100;
 
                 // ===== DIRECT DEPOSIT DETAILS - Centered compact box =====
-                const depositBoxWidth = 700;
-                const depositBoxHeight = 180;
+                const depositBoxWidth = 650;
+                const depositBoxHeight = 160;
                 const depositBoxX = (width - depositBoxWidth) / 2;
                 const depositBoxY = y;
 
                 // Box background with subtle border
                 ctx.fillStyle = colors.veryLightGreen;
-                roundRect(depositBoxX, depositBoxY, depositBoxWidth, depositBoxHeight, 12);
+                roundRect(depositBoxX, depositBoxY, depositBoxWidth, depositBoxHeight, 10);
                 ctx.fill();
 
                 // Border
                 ctx.strokeStyle = colors.paleGreen;
-                ctx.lineWidth = 2;
-                roundRect(depositBoxX, depositBoxY, depositBoxWidth, depositBoxHeight, 12);
+                ctx.lineWidth = 1;
+                roundRect(depositBoxX, depositBoxY, depositBoxWidth, depositBoxHeight, 10);
                 ctx.stroke();
 
                 // Header text
                 ctx.fillStyle = colors.forestGreen;
-                ctx.font = 'bold 20px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 16px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('PAYMENT DETAILS', width / 2, depositBoxY + 35);
+                ctx.fillText('PAYMENT DETAILS', width / 2, depositBoxY + 28);
 
                 // Divider inside box
                 ctx.strokeStyle = colors.paleGreen;
                 ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.moveTo(depositBoxX + 30, depositBoxY + 55);
-                ctx.lineTo(depositBoxX + depositBoxWidth - 30, depositBoxY + 55);
+                ctx.moveTo(depositBoxX + 25, depositBoxY + 45);
+                ctx.lineTo(depositBoxX + depositBoxWidth - 25, depositBoxY + 45);
                 ctx.stroke();
 
                 // Bank details - stacked layout
-                ctx.font = '18px Arial, Helvetica, sans-serif';
+                ctx.font = '14px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.darkGray;
 
-                const detailsStartY = depositBoxY + 80;
-                const lineHeight = 28;
-                const labelX = depositBoxX + 40;
-                const valueX = depositBoxX + depositBoxWidth - 40;
+                const detailsStartY = depositBoxY + 68;
+                const lineHeight = 24;
+                const labelX = depositBoxX + 30;
+                const valueX = depositBoxX + depositBoxWidth - 30;
 
                 // Bank
                 ctx.textAlign = 'left';
                 ctx.fillText('Bank:', labelX, detailsStartY);
                 ctx.fillStyle = colors.darkestGreen;
-                ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 14px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'right';
                 ctx.fillText('ANZ', valueX, detailsStartY);
 
                 // Account Name
-                ctx.font = '18px Arial, Helvetica, sans-serif';
+                ctx.font = '14px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.darkGray;
                 ctx.textAlign = 'left';
                 ctx.fillText('Account:', labelX, detailsStartY + lineHeight);
                 ctx.fillStyle = colors.darkestGreen;
-                ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 14px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'right';
                 ctx.fillText('EVERFRESH PRODUCE GROUP P/L', valueX, detailsStartY + lineHeight);
 
                 // BSB
-                ctx.font = '18px Arial, Helvetica, sans-serif';
+                ctx.font = '14px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.darkGray;
                 ctx.textAlign = 'left';
                 ctx.fillText('BSB:', labelX, detailsStartY + lineHeight * 2);
                 ctx.fillStyle = colors.darkestGreen;
-                ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 14px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'right';
                 ctx.fillText('012-432', valueX, detailsStartY + lineHeight * 2);
 
                 // Account Number
-                ctx.font = '18px Arial, Helvetica, sans-serif';
+                ctx.font = '14px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.darkGray;
                 ctx.textAlign = 'left';
                 ctx.fillText('Account No:', labelX, detailsStartY + lineHeight * 3);
                 ctx.fillStyle = colors.darkestGreen;
-                ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 14px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'right';
                 ctx.fillText('669189407', valueX, detailsStartY + lineHeight * 3);
 
