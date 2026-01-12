@@ -3951,34 +3951,34 @@
                 let y = 0;
 
                 // ===== HEADER - Company details only =====
-                const headerHeight = 170;
+                const headerHeight = 175;
                 ctx.fillStyle = colors.forestGreen;
                 ctx.fillRect(0, 0, width, headerHeight);
 
-                // Company name - Primary heading
+                // Company name - PRIMARY (largest in header, business identity)
                 ctx.fillStyle = colors.white;
-                ctx.font = 'bold 32px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 38px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('EVERFRESH PRODUCE GROUP PTY LTD', width / 2, 40);
+                ctx.fillText('EVERFRESH PRODUCE GROUP PTY LTD', width / 2, 42);
 
-                // ABN - Small text
-                ctx.font = '14px Arial, Helvetica, sans-serif';
+                // ABN - Secondary info (16px for readability on mobile)
+                ctx.font = '16px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.white;
-                ctx.fillText('ABN: 54 683 292 551', width / 2, 65);
+                ctx.fillText('ABN: 54 683 292 551', width / 2, 70);
 
-                // Address - Small text (same as ABN for consistency)
-                ctx.font = '14px Arial, Helvetica, sans-serif';
+                // Address - Secondary info (same as ABN for consistency)
+                ctx.font = '16px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.white;
-                ctx.fillText('PO Box 448, Stand 275, Shed C, Sydney Markets, NSW 2129', width / 2, 100);
+                ctx.fillText('PO Box 448, Stand 275, Shed C, Sydney Markets, NSW 2129', width / 2, 105);
 
-                // Contact details - Small text
-                ctx.font = '14px Arial, Helvetica, sans-serif';
+                // Contact details - Secondary info (same as above)
+                ctx.font = '16px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.white;
-                ctx.fillText('Phone: (02) 9746 6416   |   Fax: (02) 9763 1551   |   accounts@everfresh.net.au', width / 2, 130);
+                ctx.fillText('Phone: (02) 9746 6416   |   Fax: (02) 9763 1551   |   accounts@everfresh.net.au', width / 2, 140);
 
-                // ===== INVOICE TITLE - Standalone section =====
+                // ===== INVOICE TITLE - Document type (smaller than company name) =====
                 y = headerHeight + 40;
-                ctx.font = 'bold 40px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 34px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.forestGreen;
                 ctx.textAlign = 'center';
                 ctx.fillText('INVOICE', width / 2, y);
@@ -4035,7 +4035,7 @@
                 ctx.fill();
 
                 ctx.fillStyle = colors.gray;
-                ctx.font = '12px Arial, Helvetica, sans-serif';
+                ctx.font = '14px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'left';
                 ctx.fillText('BILL TO', margin + 20, y + 24);
 
@@ -4051,7 +4051,7 @@
 
                 // Invoice Number - aligned with customer name
                 ctx.fillStyle = colors.gray;
-                ctx.font = '12px Arial, Helvetica, sans-serif';
+                ctx.font = '14px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'left';
                 ctx.fillText('INVOICE NO.', rightBoxX + 20, y + 24);
 
@@ -4061,7 +4061,7 @@
 
                 // Date - aligned with customer name
                 ctx.fillStyle = colors.gray;
-                ctx.font = '12px Arial, Helvetica, sans-serif';
+                ctx.font = '14px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'right';
                 ctx.fillText('DATE', rightBoxX + boxWidth - 20, y + 24);
 
@@ -4123,9 +4123,9 @@
                     ctx.textAlign = 'center';
                     ctx.fillText(item.qty.toString(), width - margin - 150, y + 32);
 
-                    // Amount
+                    // Amount - same size as items, bold for emphasis
                     ctx.fillStyle = colors.darkestGreen;
-                    ctx.font = 'bold 20px Arial, Helvetica, sans-serif';
+                    ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
                     ctx.textAlign = 'right';
                     ctx.fillText('$' + item.lineTotal.toFixed(item.lineTotal % 1 === 0 ? 0 : 2), width - margin - 20, y + 32);
 
