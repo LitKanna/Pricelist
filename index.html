@@ -3922,7 +3922,8 @@
                     darkestGreen: '#1b4332',
                     white: '#ffffff',
                     lightGray: '#f8f9fa',
-                    gray: '#6c757d'
+                    gray: '#6c757d',
+                    darkGray: '#495057'
                 };
 
                 const margin = 60;
@@ -3949,43 +3950,59 @@
 
                 let y = 0;
 
-                // ===== HEADER =====
+                // ===== HEADER - Clean professional layout =====
+                const headerHeight = 320;
                 ctx.fillStyle = colors.forestGreen;
-                ctx.fillRect(0, 0, width, 280);
+                ctx.fillRect(0, 0, width, headerHeight);
 
-                // Company name
+                // Company name - Large and bold
                 ctx.fillStyle = colors.white;
-                ctx.font = 'bold 38px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 42px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('EVERFRESH PRODUCE GROUP PTY LTD', width / 2, 45);
+                ctx.fillText('EVERFRESH PRODUCE GROUP PTY LTD', width / 2, 55);
 
-                // ABN
-                ctx.font = '20px Arial, Helvetica, sans-serif';
-                ctx.fillStyle = colors.paleGreen;
-                ctx.fillText('ABN: 54683292551', width / 2, 75);
-
-                // Address line 1
-                ctx.fillStyle = colors.white;
-                ctx.font = '20px Arial, Helvetica, sans-serif';
-                ctx.fillText('PO BOX 448, STAND 275, SHED C', width / 2, 110);
-
-                // Address line 2
-                ctx.fillText('SYDNEY MARKETS, NSW 2129', width / 2, 135);
-
-                // Contact details
+                // ABN - Subtle below company name
                 ctx.font = '18px Arial, Helvetica, sans-serif';
-                ctx.fillStyle = colors.paleGreen;
-                ctx.fillText('PHONE: 0297466416  |  FAX: 0297631551', width / 2, 170);
-                ctx.fillText('EMAIL: accounts@everfresh.net.au', width / 2, 195);
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                ctx.fillText('ABN: 54 683 292 551', width / 2, 88);
 
-                // Invoice label
-                ctx.font = 'bold 36px Arial, Helvetica, sans-serif';
+                // Separator line
+                ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(width * 0.25, 110);
+                ctx.lineTo(width * 0.75, 110);
+                ctx.stroke();
+
+                // Address - Clean two lines
                 ctx.fillStyle = colors.white;
-                ctx.fillText('INVOICE', width / 2, 250);
+                ctx.font = '20px Arial, Helvetica, sans-serif';
+                ctx.fillText('PO Box 448, Stand 275, Shed C', width / 2, 145);
+                ctx.fillText('Sydney Markets, NSW 2129', width / 2, 172);
 
-                y = 310;
+                // Contact row - Phone | Fax | Email
+                ctx.font = '17px Arial, Helvetica, sans-serif';
+                ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                ctx.fillText('Phone: (02) 9746 6416   •   Fax: (02) 9763 1551', width / 2, 210);
+                ctx.fillText('accounts@everfresh.net.au', width / 2, 235);
 
-                // ===== INVOICE INFO ROW =====
+                // INVOICE badge - Clean pill shape
+                const badgeWidth = 200;
+                const badgeHeight = 50;
+                const badgeX = (width - badgeWidth) / 2;
+                const badgeY = 265;
+
+                ctx.fillStyle = colors.white;
+                roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 25);
+                ctx.fill();
+
+                ctx.fillStyle = colors.forestGreen;
+                ctx.font = 'bold 28px Arial, Helvetica, sans-serif';
+                ctx.fillText('INVOICE', width / 2, badgeY + 34);
+
+                // ===== CUSTOMER SECTION - With proper spacing =====
+                y = headerHeight + 50; // Good gap after header
+
                 // Get customer name
                 let billToName = 'Walk-in Customer';
                 if (orderCustomerName && orderCustomerName !== 'Walk-in Customer') {
@@ -4008,29 +4025,39 @@
                     }
                 }
 
-                // Customer name - larger and prominent
-                ctx.fillStyle = colors.darkestGreen;
-                ctx.font = 'bold 38px Arial, Helvetica, sans-serif';
+                // "Bill To" label
+                ctx.fillStyle = colors.gray;
+                ctx.font = '16px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'left';
+                ctx.fillText('BILL TO', margin, y);
+
+                y += 35;
+
+                // Customer name - Large and prominent
+                ctx.fillStyle = colors.darkestGreen;
+                ctx.font = 'bold 36px Arial, Helvetica, sans-serif';
                 ctx.fillText(billToName, margin, y);
 
-                y += 50;
+                y += 55;
 
-                // Date and Invoice number row
+                // Date and Invoice number - Clean row
                 const dateStr = new Date().toLocaleDateString('en-AU', {
                     day: 'numeric',
                     month: 'short',
                     year: 'numeric'
                 });
-                ctx.font = '22px Arial, Helvetica, sans-serif';
-                ctx.fillStyle = colors.gray;
+
+                // Date on left
+                ctx.font = '18px Arial, Helvetica, sans-serif';
+                ctx.fillStyle = colors.darkGray;
                 ctx.textAlign = 'left';
                 ctx.fillText('Date: ' + dateStr, margin, y);
 
+                // Invoice # on right
                 ctx.textAlign = 'right';
                 ctx.fillText('Invoice #: ' + Date.now().toString().slice(-6), width - margin, y);
 
-                y += 40;
+                y += 35;
 
                 // Divider line
                 ctx.strokeStyle = colors.paleGreen;
@@ -4040,7 +4067,7 @@
                 ctx.lineTo(width - margin, y);
                 ctx.stroke();
 
-                y += 30;
+                y += 25;
 
                 // ===== TABLE HEADER =====
                 ctx.fillStyle = colors.forestGreen;
@@ -4146,21 +4173,79 @@
 
                 y += 130;
 
-                // ===== DIRECT DEPOSIT DETAILS =====
-                ctx.fillStyle = colors.gray;
-                ctx.font = '20px Arial, Helvetica, sans-serif';
+                // ===== DIRECT DEPOSIT DETAILS - Professional box =====
+                const depositBoxHeight = 180;
+                const depositBoxY = y;
+
+                // Box background with subtle border
+                ctx.fillStyle = colors.veryLightGreen;
+                roundRect(margin, depositBoxY, contentWidth, depositBoxHeight, 12);
+                ctx.fill();
+
+                // Border
+                ctx.strokeStyle = colors.paleGreen;
+                ctx.lineWidth = 2;
+                roundRect(margin, depositBoxY, contentWidth, depositBoxHeight, 12);
+                ctx.stroke();
+
+                // Header text
+                ctx.fillStyle = colors.forestGreen;
+                ctx.font = 'bold 20px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('Direct Deposit Details', width / 2, y);
+                ctx.fillText('PAYMENT DETAILS', width / 2, depositBoxY + 35);
 
-                y += 30;
+                // Divider inside box
+                ctx.strokeStyle = colors.paleGreen;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(margin + 40, depositBoxY + 55);
+                ctx.lineTo(width - margin - 40, depositBoxY + 55);
+                ctx.stroke();
 
-                ctx.fillStyle = colors.darkestGreen;
+                // Bank details - stacked layout
                 ctx.font = '18px Arial, Helvetica, sans-serif';
-                ctx.fillText('Bank: ANZ  |  Account: EVERFRESH PRODUCE GROUP P/L', width / 2, y);
+                ctx.fillStyle = colors.darkGray;
 
-                y += 28;
+                const detailsStartY = depositBoxY + 80;
+                const lineHeight = 28;
 
-                ctx.fillText('BSB: 012-432  |  Account No: 669189407', width / 2, y);
+                // Bank
+                ctx.textAlign = 'left';
+                ctx.fillText('Bank:', margin + 60, detailsStartY);
+                ctx.fillStyle = colors.darkestGreen;
+                ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText('ANZ', width - margin - 60, detailsStartY);
+
+                // Account Name
+                ctx.font = '18px Arial, Helvetica, sans-serif';
+                ctx.fillStyle = colors.darkGray;
+                ctx.textAlign = 'left';
+                ctx.fillText('Account:', margin + 60, detailsStartY + lineHeight);
+                ctx.fillStyle = colors.darkestGreen;
+                ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText('EVERFRESH PRODUCE GROUP P/L', width - margin - 60, detailsStartY + lineHeight);
+
+                // BSB
+                ctx.font = '18px Arial, Helvetica, sans-serif';
+                ctx.fillStyle = colors.darkGray;
+                ctx.textAlign = 'left';
+                ctx.fillText('BSB:', margin + 60, detailsStartY + lineHeight * 2);
+                ctx.fillStyle = colors.darkestGreen;
+                ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText('012-432', width - margin - 60, detailsStartY + lineHeight * 2);
+
+                // Account Number
+                ctx.font = '18px Arial, Helvetica, sans-serif';
+                ctx.fillStyle = colors.darkGray;
+                ctx.textAlign = 'left';
+                ctx.fillText('Account No:', margin + 60, detailsStartY + lineHeight * 3);
+                ctx.fillStyle = colors.darkestGreen;
+                ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText('669189407', width - margin - 60, detailsStartY + lineHeight * 3);
 
                 canvas.toBlob(blob => resolve(blob), 'image/png');
             });
