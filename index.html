@@ -3978,14 +3978,23 @@
                 ctx.fillText('Phone: (02) 9746 6416   |   Fax: (02) 9763 1551   |   accounts@everfresh.net.au', width / 2, 165);
 
                 // ===== INVOICE TITLE - Standalone section =====
-                y = headerHeight + 30;
+                y = headerHeight + 45;
                 ctx.font = 'bold 36px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.forestGreen;
                 ctx.textAlign = 'center';
                 ctx.fillText('INVOICE', width / 2, y);
 
+                // Underline below INVOICE
+                const underlineWidth = 120;
+                ctx.strokeStyle = colors.forestGreen;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo((width - underlineWidth) / 2, y + 10);
+                ctx.lineTo((width + underlineWidth) / 2, y + 10);
+                ctx.stroke();
+
                 // ===== TWO COLUMN INFO SECTION =====
-                y += 40;
+                y += 50;
 
                 // Get customer name
                 let billToName = 'Walk-in Customer';
