@@ -3951,27 +3951,41 @@
 
                 // ===== HEADER =====
                 ctx.fillStyle = colors.forestGreen;
-                ctx.fillRect(0, 0, width, 200);
+                ctx.fillRect(0, 0, width, 280);
 
                 // Company name
                 ctx.fillStyle = colors.white;
-                ctx.font = 'bold 46px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 38px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('EVERFRESH PRODUCE GROUP', width / 2, 75);
+                ctx.fillText('EVERFRESH PRODUCE GROUP PTY LTD', width / 2, 45);
 
-                // Address
-                ctx.font = '24px Arial, Helvetica, sans-serif';
+                // ABN
+                ctx.font = '20px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.paleGreen;
-                ctx.fillText('Stand 275, Shed C · Sydney Markets', width / 2, 120);
+                ctx.fillText('ABN: 54683292551', width / 2, 75);
+
+                // Address line 1
+                ctx.fillStyle = colors.white;
+                ctx.font = '20px Arial, Helvetica, sans-serif';
+                ctx.fillText('PO BOX 448, STAND 275, SHED C', width / 2, 110);
+
+                // Address line 2
+                ctx.fillText('SYDNEY MARKETS, NSW 2129', width / 2, 135);
+
+                // Contact details
+                ctx.font = '18px Arial, Helvetica, sans-serif';
+                ctx.fillStyle = colors.paleGreen;
+                ctx.fillText('PHONE: 0297466416  |  FAX: 0297631551', width / 2, 170);
+                ctx.fillText('EMAIL: accounts@everfresh.net.au', width / 2, 195);
 
                 // Invoice label
-                ctx.font = 'bold 32px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 36px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.white;
-                ctx.fillText('INVOICE', width / 2, 175);
+                ctx.fillText('INVOICE', width / 2, 250);
 
-                y = 230;
+                y = 310;
 
-                // ===== INVOICE DETAILS =====
+                // ===== INVOICE INFO ROW =====
                 // Get customer name
                 let billToName = 'Walk-in Customer';
                 if (orderCustomerName && orderCustomerName !== 'Walk-in Customer') {
@@ -3994,40 +4008,29 @@
                     }
                 }
 
-                // Customer name - prominent
+                // Customer name - larger and prominent
                 ctx.fillStyle = colors.darkestGreen;
-                ctx.font = 'bold 32px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 38px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'left';
                 ctx.fillText(billToName, margin, y);
 
-                // Date and Order on right
+                y += 50;
+
+                // Date and Invoice number row
                 const dateStr = new Date().toLocaleDateString('en-AU', {
                     day: 'numeric',
                     month: 'short',
                     year: 'numeric'
                 });
-                ctx.textAlign = 'right';
-                ctx.fillStyle = colors.gray;
                 ctx.font = '22px Arial, Helvetica, sans-serif';
-                ctx.fillText(dateStr, width - margin, y - 8);
-                ctx.fillText('#' + Date.now().toString().slice(-6), width - margin, y + 20);
+                ctx.fillStyle = colors.gray;
+                ctx.textAlign = 'left';
+                ctx.fillText('Date: ' + dateStr, margin, y);
 
-                y += 45;
+                ctx.textAlign = 'right';
+                ctx.fillText('Invoice #: ' + Date.now().toString().slice(-6), width - margin, y);
 
-                // Salesman info
-                if (salesmanInfo.name || salesmanInfo.phone) {
-                    ctx.textAlign = 'left';
-                    ctx.fillStyle = colors.mediumGreen;
-                    ctx.font = '22px Arial, Helvetica, sans-serif';
-                    let salesText = 'Sales: ';
-                    if (salesmanInfo.name) salesText += salesmanInfo.name;
-                    if (salesmanInfo.name && salesmanInfo.phone) salesText += ' · ';
-                    if (salesmanInfo.phone) salesText += salesmanInfo.phone;
-                    ctx.fillText(salesText, margin, y);
-                    y += 35;
-                }
-
-                y += 20;
+                y += 40;
 
                 // Divider line
                 ctx.strokeStyle = colors.paleGreen;
@@ -4041,22 +4044,22 @@
 
                 // ===== TABLE HEADER =====
                 ctx.fillStyle = colors.forestGreen;
-                roundRect(margin, y, contentWidth, 50, 8);
+                roundRect(margin, y, contentWidth, 55, 8);
                 ctx.fill();
 
                 ctx.fillStyle = colors.white;
-                ctx.font = 'bold 20px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 22px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'left';
-                ctx.fillText('ITEM', margin + 20, y + 32);
+                ctx.fillText('ITEM', margin + 25, y + 36);
                 ctx.textAlign = 'center';
-                ctx.fillText('QTY', width - margin - 150, y + 32);
+                ctx.fillText('QTY', width - margin - 160, y + 36);
                 ctx.textAlign = 'right';
-                ctx.fillText('AMOUNT', width - margin - 20, y + 32);
+                ctx.fillText('AMOUNT', width - margin - 25, y + 36);
 
-                y += 50;
+                y += 55;
 
                 // ===== TABLE ROWS =====
-                const rowHeight = 65;
+                const rowHeight = 60;
                 let grandTotal = 0;
 
                 currentOrderItems.forEach((item, idx) => {
@@ -4078,29 +4081,30 @@
 
                     // Item name
                     const displayName = item.product || item.name || 'Item';
-                    const maxItemLen = 30;
+                    const maxItemLen = 32;
                     const truncatedName = displayName.length > maxItemLen ? displayName.substring(0, maxItemLen) + '...' : displayName;
                     ctx.fillStyle = colors.darkestGreen;
                     ctx.font = '24px Arial, Helvetica, sans-serif';
                     ctx.textAlign = 'left';
-                    ctx.fillText(truncatedName, margin + 20, y + 40);
+                    ctx.fillText(truncatedName, margin + 25, y + 38);
 
                     // Quantity
                     ctx.fillStyle = colors.mediumGreen;
+                    ctx.font = '24px Arial, Helvetica, sans-serif';
                     ctx.textAlign = 'center';
-                    ctx.fillText(item.qty.toString(), width - margin - 150, y + 40);
+                    ctx.fillText(item.qty.toString(), width - margin - 160, y + 38);
 
                     // Amount
                     ctx.fillStyle = colors.darkestGreen;
                     ctx.font = 'bold 26px Arial, Helvetica, sans-serif';
                     ctx.textAlign = 'right';
-                    ctx.fillText('$' + item.lineTotal.toFixed(item.lineTotal % 1 === 0 ? 0 : 2), width - margin - 20, y + 42);
+                    ctx.fillText('$' + item.lineTotal.toFixed(item.lineTotal % 1 === 0 ? 0 : 2), width - margin - 25, y + 40);
 
                     grandTotal += item.lineTotal;
                     y += rowHeight;
                 });
 
-                y += 20;
+                y += 25;
 
                 // ===== NOTES SECTION =====
                 const notes = document.getElementById('orderNotes').value.trim();
@@ -4119,7 +4123,7 @@
                     y += 90;
                 }
 
-                y += 10;
+                y += 15;
 
                 // ===== GRAND TOTAL =====
                 const totalGradient = ctx.createLinearGradient(margin, y, width - margin, y);
@@ -4134,19 +4138,29 @@
                 ctx.fillStyle = colors.white;
                 ctx.font = 'bold 28px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'left';
-                ctx.fillText('TOTAL', margin + 30, y + 55);
+                ctx.fillText('TOTAL', margin + 35, y + 55);
 
                 ctx.font = 'bold 48px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'right';
-                ctx.fillText('$' + grandTotal.toFixed(grandTotal % 1 === 0 ? 0 : 2), width - margin - 30, y + 58);
+                ctx.fillText('$' + grandTotal.toFixed(grandTotal % 1 === 0 ? 0 : 2), width - margin - 35, y + 58);
 
                 y += 130;
 
-                // ===== FOOTER =====
-                ctx.fillStyle = colors.mediumGreen;
-                ctx.font = '26px Arial, Helvetica, sans-serif';
+                // ===== DIRECT DEPOSIT DETAILS =====
+                ctx.fillStyle = colors.gray;
+                ctx.font = '20px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('Thank you for your business!', width / 2, y);
+                ctx.fillText('Direct Deposit Details', width / 2, y);
+
+                y += 30;
+
+                ctx.fillStyle = colors.darkestGreen;
+                ctx.font = '18px Arial, Helvetica, sans-serif';
+                ctx.fillText('Bank: ANZ  |  Account: EVERFRESH PRODUCE GROUP P/L', width / 2, y);
+
+                y += 28;
+
+                ctx.fillText('BSB: 012-432  |  Account No: 669189407', width / 2, y);
 
                 canvas.toBlob(blob => resolve(blob), 'image/png');
             });
