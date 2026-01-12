@@ -4659,10 +4659,12 @@
                 const doc = printWindow.document;
                 doc.write('<!DOCTYPE html><html><head><title>Print Invoice</title>');
                 doc.write('<style>');
-                doc.write('@page { size: auto; margin: 5mm; }');
-                doc.write('@media print { html, body { margin: 0; padding: 0; } img { width: 100%; height: auto; max-height: 100vh; page-break-inside: avoid; } }');
-                doc.write('body { margin: 0; padding: 0; display: flex; justify-content: center; }');
-                doc.write('img { max-width: 100%; height: auto; }');
+                doc.write('@page { size: A4 portrait; margin: 8mm; }');
+                doc.write('* { margin: 0; padding: 0; box-sizing: border-box; }');
+                doc.write('html, body { width: 100%; height: 100%; }');
+                doc.write('body { display: flex; justify-content: center; align-items: center; min-height: 100vh; }');
+                doc.write('img { height: 100vh; width: auto; max-width: 100%; object-fit: contain; }');
+                doc.write('@media print { body { height: 100%; } img { height: 100%; width: auto; max-width: 100%; page-break-inside: avoid; } }');
                 doc.write('</style></head><body>');
                 doc.write('<img src="' + url + '" onload="setTimeout(function(){window.print();window.close();},200);">');
                 doc.write('</body></html>');
