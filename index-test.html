@@ -1041,6 +1041,376 @@
         font-weight: 700;
         margin-bottom: 24px;
     }
+
+    /* ========================================
+       ORDER TAKING STYLES
+       ======================================== */
+    .order-search-container {
+        position: relative;
+        margin-bottom: 16px;
+    }
+
+    .order-search-input {
+        width: 100%;
+        padding: 14px 16px 14px 44px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 16px;
+        background: #f8fafc;
+        box-sizing: border-box;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .order-search-input:focus {
+        outline: none;
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        background: white;
+    }
+
+    .order-search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+
+    .order-search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        max-height: 250px;
+        overflow-y: auto;
+        z-index: 100;
+        display: none;
+    }
+
+    .order-search-results.show {
+        display: block;
+    }
+
+    .search-result-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.15s;
+    }
+
+    .search-result-item:last-child {
+        border-bottom: none;
+    }
+
+    .search-result-item:hover {
+        background: #f0fdf4;
+    }
+
+    .search-result-item:active {
+        background: #dcfce7;
+    }
+
+    .search-result-name {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 14px;
+    }
+
+    .search-result-details {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    .search-result-price {
+        float: right;
+        font-weight: 700;
+        color: #16a34a;
+        font-size: 14px;
+    }
+
+    .order-items-container {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .order-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: white;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .order-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .order-item-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .order-item-name {
+        font-weight: 600;
+        font-size: 14px;
+        color: #1e293b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .order-item-grade {
+        font-size: 12px;
+        color: #64748b;
+    }
+
+    .order-item-qty {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .qty-btn {
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s;
+    }
+
+    .qty-btn-minus {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .qty-btn-minus:hover {
+        background: #fecaca;
+    }
+
+    .qty-btn-plus {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .qty-btn-plus:hover {
+        background: #bbf7d0;
+    }
+
+    .qty-value {
+        font-weight: 700;
+        font-size: 16px;
+        color: #1e293b;
+        min-width: 28px;
+        text-align: center;
+    }
+
+    .order-item-price {
+        text-align: right;
+        min-width: 70px;
+    }
+
+    .order-item-unit {
+        font-size: 12px;
+        color: #64748b;
+    }
+
+    .order-item-total {
+        font-weight: 700;
+        font-size: 15px;
+        color: #16a34a;
+    }
+
+    .order-item-delete {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 4px;
+        transition: color 0.15s;
+    }
+
+    .order-item-delete:hover {
+        color: #ef4444;
+    }
+
+    .order-empty {
+        text-align: center;
+        padding: 32px;
+        color: #94a3b8;
+    }
+
+    .order-empty-icon {
+        font-size: 48px;
+        margin-bottom: 8px;
+    }
+
+    .order-notes-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 14px;
+        resize: none;
+        min-height: 60px;
+        box-sizing: border-box;
+        font-family: inherit;
+    }
+
+    .order-notes-input:focus {
+        outline: none;
+        border-color: #10b981;
+    }
+
+    .order-total-section {
+        background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 16px 0;
+        text-align: center;
+        color: white;
+    }
+
+    .order-total-label {
+        font-size: 13px;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .order-total-amount {
+        font-size: 36px;
+        font-weight: 800;
+        margin-top: 4px;
+    }
+
+    .order-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .order-btn {
+        padding: 14px 20px;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+    .order-btn-save {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .order-btn-save:hover {
+        background: #e2e8f0;
+    }
+
+    .order-btn-share {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .order-btn-share:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .order-customer-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 10px;
+        margin-bottom: 16px;
+    }
+
+    .order-customer-badge-icon {
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .order-customer-badge-name {
+        font-weight: 600;
+        color: #166534;
+        font-size: 14px;
+    }
+
+    .order-customer-badge-tier {
+        font-size: 12px;
+        color: #16a34a;
+    }
+
+    .order-history-item {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        border: 1px solid #e2e8f0;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .order-history-item:hover {
+        border-color: #10b981;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .order-history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .order-history-customer {
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .order-history-total {
+        font-weight: 700;
+        color: #16a34a;
+    }
+
+    .order-history-meta {
+        font-size: 12px;
+        color: #64748b;
+    }
+
+
     
     .input-group {
         margin-bottom: 20px;
@@ -1577,6 +1947,15 @@
         </div>
         
         <div class="share-controls">
+            <button class="btn btn-secondary" onclick="openOrderPanel()" style="margin-right: 8px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                New Order
+            </button>
             <button class="btn btn-share" onclick="showShareMenu()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="18" cy="5" r="3"/>
@@ -2053,6 +2432,63 @@
             </div>
         </div>
 
+        <!-- Order Taking Panel -->
+        <div class="settings-panel" id="orderPanel">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;">
+                <h2 style="font-size: 22px; font-weight: 700; color: #0f172a; margin: 0;">New Order</h2>
+                <button onclick="closeOrderPanel()" style="background: none; border: none; padding: 8px; cursor: pointer; color: #64748b;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div id="orderCustomerBadge" class="order-customer-badge">
+                <div class="order-customer-badge-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <div>
+                    <div class="order-customer-badge-name" id="orderCustomerName">Walk-in Customer</div>
+                    <div class="order-customer-badge-tier" id="orderCustomerTier">Standard Pricing</div>
+                </div>
+            </div>
+            <div class="order-search-container">
+                <svg class="order-search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="orderSearchInput" class="order-search-input" placeholder="Search products..." oninput="searchOrderProducts(this.value)" onfocus="showSearchResults()">
+                <div id="orderSearchResults" class="order-search-results"></div>
+            </div>
+            <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Order Items</div>
+            <div id="orderItemsContainer" class="order-items-container">
+                <div class="order-empty" id="orderEmpty"><div class="order-empty-icon">📦</div><div>Search and add products above</div></div>
+            </div>
+            <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Notes</div>
+            <textarea id="orderNotes" class="order-notes-input" placeholder="Delivery instructions, special requests..."></textarea>
+            <div class="order-total-section">
+                <div class="order-total-label">Grand Total</div>
+                <div class="order-total-amount" id="orderGrandTotal">$0</div>
+            </div>
+            <div class="order-actions">
+                <button class="order-btn order-btn-save" onclick="saveCurrentOrder()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Save Order
+                </button>
+                <button class="order-btn order-btn-share" onclick="shareCurrentOrder()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    Share Order
+                </button>
+            </div>
+            <button onclick="openOrderHistory()" style="width: 100%; margin-top: 16px; padding: 12px; background: none; border: 1px solid #e2e8f0; border-radius: 10px; color: #64748b; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                View Order History
+            </button>
+        </div>
+        <div class="settings-panel" id="orderHistoryPanel">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;">
+                <h2 style="font-size: 22px; font-weight: 700; color: #0f172a; margin: 0;">Order History</h2>
+                <button onclick="closeOrderHistory()" style="background: none; border: none; padding: 8px; cursor: pointer; color: #64748b;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div id="orderHistoryList"></div>
+        </div>
+
         <div class="content" id="categoriesContainer">
             <!-- Categories will be loaded here -->
         </div>
@@ -2284,7 +2720,9 @@
 
         // Customer Pricing System
         let customers = [];
-        let selectedCustomer = null; // For applying custom pricing
+        let selectedCustomer = null;
+        let orders = [];
+        let currentOrderItems = []; // For applying custom pricing
 
         // Smart rounding logic
         function shouldRoundToWholeDollar(gradeSize) {
@@ -2685,6 +3123,371 @@
             if (cloudSyncEnabled && currentUserPhone) {
                 syncToCloud(true);
             }
+        }
+
+        // ========================================
+        // ORDER TAKING FUNCTIONS
+        // ========================================
+        function openOrderPanel() {
+            currentOrderItems = [];
+            document.getElementById('orderNotes').value = '';
+            document.getElementById('orderSearchInput').value = '';
+            document.getElementById('orderSearchResults').classList.remove('show');
+            updateOrderCustomerDisplay();
+            renderOrderItems();
+            document.getElementById('orderPanel').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeOrderPanel() {
+            document.getElementById('orderPanel').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        function updateOrderCustomerDisplay() {
+            const nameEl = document.getElementById('orderCustomerName');
+            const tierEl = document.getElementById('orderCustomerTier');
+            if (selectedCustomer) {
+                const adj = selectedCustomer.adjustmentType === 'percentage'
+                    ? (selectedCustomer.adjustmentValue > 0 ? '+' : '') + selectedCustomer.adjustmentValue + '%'
+                    : (selectedCustomer.adjustmentValue > 0 ? '+' : '-') + '$' + Math.abs(selectedCustomer.adjustmentValue);
+                nameEl.textContent = selectedCustomer.name;
+                tierEl.textContent = adj + ' pricing';
+            } else {
+                nameEl.textContent = 'Walk-in Customer';
+                tierEl.textContent = 'Standard Pricing';
+            }
+        }
+
+        function searchOrderProducts(query) {
+            const resultsEl = document.getElementById('orderSearchResults');
+            if (!query || query.length < 2) { resultsEl.classList.remove('show'); return; }
+            const results = [];
+            const lowerQuery = query.toLowerCase();
+            for (const category in priceData) {
+                priceData[category].forEach((item, idx) => {
+                    const name = item[0] || '';
+                    const grade = item[1] || '';
+                    const price = item[2] || '';
+                    if (name.toLowerCase().includes(lowerQuery) || grade.toLowerCase().includes(lowerQuery) || category.toLowerCase().includes(lowerQuery)) {
+                        let displayPrice = price;
+                        if (selectedCustomer && price) {
+                            const numPrice = parseFloat(price.replace(/[^0-9.-]/g, ''));
+                            if (!isNaN(numPrice)) {
+                                let adjusted = numPrice;
+                                if (selectedCustomer.adjustmentType === 'percentage') adjusted = numPrice * (1 + selectedCustomer.adjustmentValue / 100);
+                                else adjusted = numPrice + selectedCustomer.adjustmentValue;
+                                if (shouldRoundToWholeDollar(grade)) adjusted = Math.round(adjusted);
+                                else adjusted = Math.round(adjusted * 100) / 100;
+                                displayPrice = '$' + adjusted.toFixed(adjusted % 1 === 0 ? 0 : 2);
+                            }
+                        }
+                        results.push({ category, index: idx, name, grade, price: displayPrice });
+                    }
+                });
+            }
+            if (results.length === 0) {
+                resultsEl.textContent = '';
+                const div = document.createElement('div');
+                div.style.cssText = 'padding: 16px; text-align: center; color: #94a3b8;';
+                div.textContent = 'No products found';
+                resultsEl.appendChild(div);
+            } else {
+                resultsEl.textContent = '';
+                results.slice(0, 10).forEach(r => {
+                    const div = document.createElement('div');
+                    div.className = 'search-result-item';
+                    div.onclick = () => addProductToOrder(r.category, r.index);
+                    const priceSpan = document.createElement('span');
+                    priceSpan.className = 'search-result-price';
+                    priceSpan.textContent = r.price;
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'search-result-name';
+                    nameDiv.textContent = r.name;
+                    const detailsDiv = document.createElement('div');
+                    detailsDiv.className = 'search-result-details';
+                    detailsDiv.textContent = r.grade + ' - ' + r.category;
+                    div.appendChild(priceSpan);
+                    div.appendChild(nameDiv);
+                    div.appendChild(detailsDiv);
+                    resultsEl.appendChild(div);
+                });
+            }
+            resultsEl.classList.add('show');
+        }
+
+        function showSearchResults() {
+            const query = document.getElementById('orderSearchInput').value;
+            if (query.length >= 2) document.getElementById('orderSearchResults').classList.add('show');
+        }
+
+        function addProductToOrder(category, index) {
+            const item = priceData[category][index];
+            const name = item[0], grade = item[1], basePrice = item[2];
+            let unitPrice = parseFloat(basePrice.replace(/[^0-9.-]/g, '')) || 0;
+            if (selectedCustomer) {
+                if (selectedCustomer.adjustmentType === 'percentage') unitPrice = unitPrice * (1 + selectedCustomer.adjustmentValue / 100);
+                else unitPrice = unitPrice + selectedCustomer.adjustmentValue;
+                if (shouldRoundToWholeDollar(grade)) unitPrice = Math.round(unitPrice);
+                else unitPrice = Math.round(unitPrice * 100) / 100;
+            }
+            const existing = currentOrderItems.find(i => i.category === category && i.name === name && i.grade === grade);
+            if (existing) { existing.qty += 1; existing.lineTotal = existing.qty * existing.unitPrice; }
+            else { currentOrderItems.push({ category, name, grade, qty: 1, unitPrice, lineTotal: unitPrice }); }
+            document.getElementById('orderSearchInput').value = '';
+            document.getElementById('orderSearchResults').classList.remove('show');
+            renderOrderItems();
+            showToast(name + ' added');
+        }
+
+        function updateOrderQty(index, delta) {
+            const item = currentOrderItems[index];
+            item.qty = Math.max(1, item.qty + delta);
+            item.lineTotal = item.qty * item.unitPrice;
+            renderOrderItems();
+        }
+
+        function removeOrderItem(index) {
+            currentOrderItems.splice(index, 1);
+            renderOrderItems();
+        }
+
+        function renderOrderItems() {
+            const container = document.getElementById('orderItemsContainer');
+            const totalEl = document.getElementById('orderGrandTotal');
+            container.textContent = '';
+            if (currentOrderItems.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'order-empty';
+                empty.innerHTML = '<div class="order-empty-icon">📦</div><div>Search and add products above</div>';
+                container.appendChild(empty);
+                totalEl.textContent = '$0';
+                return;
+            }
+            let grandTotal = 0;
+            currentOrderItems.forEach((item, idx) => {
+                grandTotal += item.lineTotal;
+                const row = document.createElement('div');
+                row.className = 'order-item';
+                const info = document.createElement('div');
+                info.className = 'order-item-info';
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'order-item-name';
+                nameDiv.textContent = item.name;
+                const gradeDiv = document.createElement('div');
+                gradeDiv.className = 'order-item-grade';
+                gradeDiv.textContent = item.grade;
+                info.appendChild(nameDiv);
+                info.appendChild(gradeDiv);
+                const qtyDiv = document.createElement('div');
+                qtyDiv.className = 'order-item-qty';
+                const minusBtn = document.createElement('button');
+                minusBtn.className = 'qty-btn qty-btn-minus';
+                minusBtn.textContent = '−';
+                minusBtn.onclick = () => updateOrderQty(idx, -1);
+                const qtySpan = document.createElement('span');
+                qtySpan.className = 'qty-value';
+                qtySpan.textContent = item.qty;
+                const plusBtn = document.createElement('button');
+                plusBtn.className = 'qty-btn qty-btn-plus';
+                plusBtn.textContent = '+';
+                plusBtn.onclick = () => updateOrderQty(idx, 1);
+                qtyDiv.appendChild(minusBtn);
+                qtyDiv.appendChild(qtySpan);
+                qtyDiv.appendChild(plusBtn);
+                const priceDiv = document.createElement('div');
+                priceDiv.className = 'order-item-price';
+                const unitDiv = document.createElement('div');
+                unitDiv.className = 'order-item-unit';
+                unitDiv.textContent = '$' + item.unitPrice.toFixed(item.unitPrice % 1 === 0 ? 0 : 2) + ' ea';
+                const totalDiv = document.createElement('div');
+                totalDiv.className = 'order-item-total';
+                totalDiv.textContent = '$' + item.lineTotal.toFixed(item.lineTotal % 1 === 0 ? 0 : 2);
+                priceDiv.appendChild(unitDiv);
+                priceDiv.appendChild(totalDiv);
+                const delBtn = document.createElement('button');
+                delBtn.className = 'order-item-delete';
+                delBtn.textContent = '×';
+                delBtn.onclick = () => removeOrderItem(idx);
+                row.appendChild(info);
+                row.appendChild(qtyDiv);
+                row.appendChild(priceDiv);
+                row.appendChild(delBtn);
+                container.appendChild(row);
+            });
+            totalEl.textContent = '$' + grandTotal.toFixed(grandTotal % 1 === 0 ? 0 : 2);
+        }
+
+        function saveCurrentOrder() {
+            if (currentOrderItems.length === 0) { showToast('Add items to save'); return; }
+            const grandTotal = currentOrderItems.reduce((sum, i) => sum + i.lineTotal, 0);
+            const order = {
+                id: Date.now(),
+                customerId: selectedCustomer ? selectedCustomer.id : null,
+                customerName: selectedCustomer ? selectedCustomer.name : 'Walk-in',
+                items: [...currentOrderItems],
+                notes: document.getElementById('orderNotes').value,
+                grandTotal,
+                createdAt: new Date().toISOString(),
+                status: 'saved'
+            };
+            orders.unshift(order);
+            saveOrdersToLocal();
+            showToast('Order saved!');
+            closeOrderPanel();
+        }
+
+        function saveOrdersToLocal() {
+            localStorage.setItem('everfresh_orders', JSON.stringify(orders));
+            if (cloudSyncEnabled && currentUserPhone) syncToCloud(true);
+        }
+
+        function loadOrdersFromLocal() {
+            const saved = localStorage.getItem('everfresh_orders');
+            if (saved) { try { orders = JSON.parse(saved); } catch (e) { orders = []; } }
+        }
+
+        function openOrderHistory() {
+            renderOrderHistory();
+            document.getElementById('orderHistoryPanel').classList.add('show');
+        }
+
+        function closeOrderHistory() {
+            document.getElementById('orderHistoryPanel').classList.remove('show');
+        }
+
+        function renderOrderHistory() {
+            const container = document.getElementById('orderHistoryList');
+            container.textContent = '';
+            if (orders.length === 0) {
+                const empty = document.createElement('div');
+                empty.style.cssText = 'text-align: center; padding: 40px; color: #94a3b8;';
+                empty.innerHTML = '<div style="font-size: 48px; margin-bottom: 8px;">📋</div><div>No orders yet</div>';
+                container.appendChild(empty);
+                return;
+            }
+            orders.forEach(order => {
+                const date = new Date(order.createdAt);
+                const dateStr = date.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+                const timeStr = date.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+                const itemCount = order.items.reduce((sum, i) => sum + i.qty, 0);
+                const div = document.createElement('div');
+                div.className = 'order-history-item';
+                div.onclick = () => viewOrder(order.id);
+                div.innerHTML = '<div class="order-history-header"><span class="order-history-customer">' + order.customerName + '</span><span class="order-history-total">$' + order.grandTotal.toFixed(0) + '</span></div><div class="order-history-meta">' + dateStr + ' at ' + timeStr + ' - ' + itemCount + ' items</div>';
+                container.appendChild(div);
+            });
+        }
+
+        function viewOrder(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            currentOrderItems = order.items.map(i => ({...i}));
+            document.getElementById('orderNotes').value = order.notes || '';
+            document.getElementById('orderCustomerName').textContent = order.customerName;
+            document.getElementById('orderCustomerTier').textContent = 'Previous Order';
+            renderOrderItems();
+            closeOrderHistory();
+            document.getElementById('orderPanel').classList.add('show');
+        }
+
+        async function shareCurrentOrder() {
+            if (currentOrderItems.length === 0) { showToast('Add items to share'); return; }
+            saveCurrentOrder();
+            try {
+                const blob = await generateOrderImageBlob();
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'order.png', { type: 'image/png' })] })) {
+                    await navigator.share({ files: [new File([blob], 'order.png', { type: 'image/png' })], title: 'Order Summary' });
+                } else {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'order-' + Date.now() + '.png';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showToast('Order image downloaded');
+                }
+            } catch (err) { console.error(err); showToast('Could not share'); }
+        }
+
+        function generateOrderImageBlob() {
+            return new Promise((resolve) => {
+                const canvas = document.getElementById('downloadCanvas');
+                const ctx = canvas.getContext('2d');
+                const width = 2400, margin = 120, rowHeight = 90;
+                let height = 600 + currentOrderItems.length * rowHeight + 300;
+                canvas.width = width;
+                canvas.height = height;
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, width, height);
+                let y = margin;
+                ctx.fillStyle = '#15803d';
+                ctx.font = 'bold 96px -apple-system, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('ORDER SUMMARY', width / 2, y);
+                y += 60;
+                const dateStr = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+                ctx.fillStyle = '#64748b';
+                ctx.font = '48px -apple-system, sans-serif';
+                ctx.fillText(dateStr, width / 2, y);
+                y += 100;
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 56px -apple-system, sans-serif';
+                ctx.fillText('Customer: ' + (selectedCustomer ? selectedCustomer.name : 'Walk-in'), width / 2, y);
+                y += 80;
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(margin, y);
+                ctx.lineTo(width - margin, y);
+                ctx.stroke();
+                y += 40;
+                ctx.fillStyle = '#64748b';
+                ctx.font = 'bold 42px -apple-system, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('QTY', margin, y);
+                ctx.fillText('ITEM', margin + 200, y);
+                ctx.textAlign = 'right';
+                ctx.fillText('PRICE', width - margin - 300, y);
+                ctx.fillText('TOTAL', width - margin, y);
+                y += 60;
+                ctx.font = '48px -apple-system, sans-serif';
+                let grandTotal = 0;
+                currentOrderItems.forEach(item => {
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillText(item.qty.toString(), margin, y);
+                    ctx.fillText(item.name, margin + 200, y);
+                    ctx.textAlign = 'right';
+                    ctx.fillText('$' + item.unitPrice.toFixed(0), width - margin - 300, y);
+                    ctx.fillStyle = '#16a34a';
+                    ctx.font = 'bold 48px -apple-system, sans-serif';
+                    ctx.fillText('$' + item.lineTotal.toFixed(0), width - margin, y);
+                    ctx.font = '48px -apple-system, sans-serif';
+                    grandTotal += item.lineTotal;
+                    y += rowHeight;
+                });
+                y += 20;
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.beginPath();
+                ctx.moveTo(margin, y);
+                ctx.lineTo(width - margin, y);
+                ctx.stroke();
+                y += 60;
+                const notes = document.getElementById('orderNotes').value;
+                if (notes) {
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = '42px -apple-system, sans-serif';
+                    ctx.fillText('Notes: ' + notes, margin, y);
+                    y += 60;
+                }
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 72px -apple-system, sans-serif';
+                ctx.fillText('TOTAL: $' + grandTotal.toFixed(0), width - margin, y);
+                canvas.toBlob(blob => resolve(blob), 'image/png');
+            });
         }
 
         // Apply customer pricing
@@ -7018,6 +7821,10 @@ Response format (JSON only, no markdown):
                 if (cloudData.customers) {
                     customers = cloudData.customers;
                 }
+                if (cloudData.orders) {
+                    orders = cloudData.orders;
+                    localStorage.setItem('everfresh_orders', JSON.stringify(orders));
+                }
                 if (cloudData.selectedCustomerId) {
                     selectedCustomer = customers.find(c => c.id === cloudData.selectedCustomerId) || null;
                 } else {
@@ -7109,6 +7916,7 @@ Response format (JSON only, no markdown):
                     selectedCustomerId: selectedCustomer ? selectedCustomer.id : null,
                     salesmanInfo: salesmanInfo,
                     categoryOrder: Object.keys(priceData),
+                    orders: orders,
                     lastUpdated: timestamp
                 };
 
@@ -7163,6 +7971,10 @@ Response format (JSON only, no markdown):
                 }
                 if (cloudData.customers) {
                     customers = cloudData.customers;
+                }
+                if (cloudData.orders) {
+                    orders = cloudData.orders;
+                    localStorage.setItem('everfresh_orders', JSON.stringify(orders));
                 }
                 if (cloudData.selectedCustomerId) {
                     selectedCustomer = customers.find(c => c.id === cloudData.selectedCustomerId) || null;
@@ -7238,6 +8050,7 @@ Response format (JSON only, no markdown):
 
         // Initialize
         loadFromLocal();
+        loadOrdersFromLocal();
         renderCategories();
         updateTierNameSuggestions();
         setupGlobalEventDelegation();
