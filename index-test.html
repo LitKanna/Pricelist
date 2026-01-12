@@ -1040,8 +1040,138 @@
     .settings-panel.show {
         transform: translateY(0);
     }
-    
-    
+
+    /* Invoice Management Styles */
+    .invoice-filter-btn.active {
+        background: #0f172a !important;
+        color: white !important;
+        border-color: #0f172a !important;
+    }
+
+    .invoice-customer-group {
+        margin-bottom: 24px;
+    }
+
+    .invoice-customer-header {
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .invoice-list-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        background: #f8fafc;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .invoice-list-item:hover {
+        background: #f1f5f9;
+    }
+
+    .invoice-list-item.cancelled {
+        opacity: 0.7;
+        background: #fef2f2;
+    }
+
+    .invoice-list-item.cancelled .invoice-number {
+        text-decoration: line-through;
+        color: #dc2626;
+    }
+
+    .invoice-info {
+        flex: 1;
+    }
+
+    .invoice-number {
+        font-size: 14px;
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 2px;
+    }
+
+    .invoice-meta {
+        font-size: 12px;
+        color: #64748b;
+    }
+
+    .invoice-total {
+        font-size: 16px;
+        font-weight: 700;
+        color: #0f172a;
+        margin-right: 8px;
+    }
+
+    .invoice-cancelled-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        background: #dc2626;
+        color: white;
+        font-size: 10px;
+        font-weight: 600;
+        border-radius: 4px;
+        text-transform: uppercase;
+        margin-left: 8px;
+    }
+
+    .invoice-arrow {
+        color: #94a3b8;
+    }
+
+    /* Invoice Detail Modal */
+    .invoice-detail-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 10000;
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    .invoice-detail-modal.show {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding-top: 40px;
+    }
+
+    .invoice-detail-content {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        width: 100%;
+        max-width: 500px;
+        max-height: calc(100vh - 80px);
+        overflow-y: auto;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    }
+
+    .invoice-detail-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .invoice-detail-cancelled .invoice-action-btn:not(#cancelInvoiceBtn) {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+
     /* Desktop layout for Pricing Tiers panel only */
     @media (min-width: 900px) {
         #customerPricingPanel {
@@ -2752,10 +2882,16 @@
                     Share Order
                 </button>
             </div>
-            <button onclick="openOrderHistory()" style="width: 100%; margin-top: 16px; padding: 12px; background: none; border: 1px solid #e2e8f0; border-radius: 10px; color: #64748b; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                View Order History
-            </button>
+            <div style="display: flex; gap: 10px; margin-top: 16px;">
+                <button onclick="openOrderHistory()" style="flex: 1; padding: 12px; background: none; border: 1px solid #e2e8f0; border-radius: 10px; color: #64748b; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Orders
+                </button>
+                <button onclick="openInvoiceManagement()" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); border: none; border-radius: 10px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    Invoices
+                </button>
+            </div>
         </div>
         <div class="settings-panel" id="orderHistoryPanel">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;">
@@ -2765,6 +2901,130 @@
                 </button>
             </div>
             <div id="orderHistoryList"></div>
+        </div>
+
+        <!-- Invoice Management Panel -->
+        <div class="settings-panel" id="invoiceManagementPanel">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;">
+                <h2 style="font-size: 22px; font-weight: 700; color: #0f172a; margin: 0;">Invoice Management</h2>
+                <button onclick="closeInvoiceManagement()" style="background: none; border: none; padding: 8px; cursor: pointer; color: #64748b;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+
+            <!-- Search Box -->
+            <div style="margin-bottom: 16px;">
+                <div style="position: relative;">
+                    <svg style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="invoiceSearchInput" placeholder="Search customer name, business, or invoice #..." oninput="filterInvoices()" style="width: 100%; padding: 14px 14px 14px 44px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; box-sizing: border-box; transition: border-color 0.2s;">
+                </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px;">
+                <button onclick="setInvoiceFilter('all')" id="filterAll" class="invoice-filter-btn active" style="padding: 8px 16px; border: 1.5px solid #e2e8f0; border-radius: 20px; background: white; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.2s;">All Invoices</button>
+                <button onclick="setInvoiceFilter('active')" id="filterActive" class="invoice-filter-btn" style="padding: 8px 16px; border: 1.5px solid #e2e8f0; border-radius: 20px; background: white; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.2s;">Active</button>
+                <button onclick="setInvoiceFilter('cancelled')" id="filterCancelled" class="invoice-filter-btn" style="padding: 8px 16px; border: 1.5px solid #e2e8f0; border-radius: 20px; background: white; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.2s;">Cancelled</button>
+            </div>
+
+            <!-- Invoice List Container -->
+            <div id="invoiceListContainer"></div>
+        </div>
+
+        <!-- Invoice Detail Modal -->
+        <div class="invoice-detail-modal" id="invoiceDetailModal">
+            <div class="invoice-detail-content">
+                <div class="invoice-detail-header">
+                    <h3 id="invoiceDetailNumber" style="margin: 0; font-size: 18px; font-weight: 700; color: #0f172a;">INV-20260112-0001</h3>
+                    <button onclick="closeInvoiceDetail()" style="background: none; border: none; padding: 8px; cursor: pointer; color: #64748b;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+
+                <!-- Preview Container -->
+                <div id="invoicePreviewContainer" style="background: #f8fafc; border-radius: 12px; padding: 16px; margin-bottom: 20px; cursor: pointer; text-align: center;" onclick="expandInvoicePreview()">
+                    <img id="invoicePreviewImage" src="" alt="Invoice Preview" style="max-width: 100%; max-height: 300px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="margin-top: 8px; font-size: 12px; color: #64748b;">Tap to expand</div>
+                </div>
+
+                <!-- Invoice Info -->
+                <div style="margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div>
+                            <div style="font-size: 12px; color: #64748b; margin-bottom: 2px;">Customer</div>
+                            <div id="invoiceDetailCustomer" style="font-size: 15px; font-weight: 600; color: #0f172a;">-</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #64748b; margin-bottom: 2px;">Total</div>
+                            <div id="invoiceDetailTotal" style="font-size: 15px; font-weight: 600; color: #0f172a;">$0</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #64748b; margin-bottom: 2px;">Date</div>
+                            <div id="invoiceDetailDate" style="font-size: 15px; color: #0f172a;">-</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #64748b; margin-bottom: 2px;">Items</div>
+                            <div id="invoiceDetailItems" style="font-size: 15px; color: #0f172a;">-</div>
+                        </div>
+                    </div>
+                    <div id="invoiceCancelledInfo" style="display: none; margin-top: 12px; padding: 10px; background: #fef2f2; border-radius: 8px; color: #dc2626; font-size: 13px;">
+                        <strong>CANCELLED</strong> - <span id="invoiceCancelledDate"></span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div id="invoiceActions" style="display: flex; gap: 10px;">
+                    <button onclick="printInvoice()" class="invoice-action-btn" style="flex: 1; padding: 14px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: #f1f5f9; color: #475569;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        Print
+                    </button>
+                    <button onclick="openInvoiceShareMenu()" class="invoice-action-btn" style="flex: 1; padding: 14px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); color: white;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                        Share
+                    </button>
+                    <button onclick="confirmCancelInvoice()" id="cancelInvoiceBtn" class="invoice-action-btn" style="flex: 1; padding: 14px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: #fef2f2; color: #dc2626;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        Cancel
+                    </button>
+                </div>
+
+                <!-- Share Submenu (hidden by default) -->
+                <div id="invoiceShareSubmenu" style="display: none; margin-top: 16px; padding: 16px; background: #f8fafc; border-radius: 12px;">
+                    <div style="font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 12px;">Share via</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <button onclick="shareInvoiceVia('imessage')" style="width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; background: white; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #34C759 0%, #30D158 100%); display: flex; align-items: center; justify-content: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/></svg>
+                            </div>
+                            <div style="text-align: left;"><div style="font-weight: 600; color: #0f172a;">iMessage</div><div style="font-size: 12px; color: #64748b;">Send via iOS</div></div>
+                        </button>
+                        <button onclick="shareInvoiceVia('whatsapp')" style="width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; background: white; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); display: flex; align-items: center; justify-content: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                            </div>
+                            <div style="text-align: left;"><div style="font-weight: 600; color: #0f172a;">WhatsApp</div><div style="font-size: 12px; color: #64748b;">Open in WhatsApp</div></div>
+                        </button>
+                        <button onclick="shareInvoiceVia('email')" style="width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; background: white; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); display: flex; align-items: center; justify-content: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            </div>
+                            <div style="text-align: left;"><div style="font-weight: 600; color: #0f172a;">Email</div><div style="font-size: 12px; color: #64748b;">Attach to email</div></div>
+                        </button>
+                        <button onclick="shareInvoiceVia('download')" style="width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; background: white; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #64748b 0%, #475569 100%); display: flex; align-items: center; justify-content: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            </div>
+                            <div style="text-align: left;"><div style="font-weight: 600; color: #0f172a;">Download</div><div style="font-size: 12px; color: #64748b;">Save as PNG</div></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fullscreen Invoice Preview -->
+        <div id="invoiceFullscreenPreview" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10001; padding: 20px; overflow: auto;" onclick="closeFullscreenPreview()">
+            <button style="position: fixed; top: 16px; right: 16px; background: rgba(255,255,255,0.2); border: none; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; color: white; font-size: 24px; z-index: 10002;">&times;</button>
+            <img id="invoiceFullscreenImage" src="" alt="Invoice" style="max-width: 100%; max-height: 100%; margin: auto; display: block;">
         </div>
 
         <div class="content" id="categoriesContainer">
@@ -3814,13 +4074,15 @@
             const grandTotal = currentOrderItems.reduce((sum, i) => sum + i.lineTotal, 0);
             const order = {
                 id: Date.now(),
+                invoiceNumber: generateInvoiceNumber(),
                 customerId: selectedCustomer ? selectedCustomer.id : null,
                 customerName: orderCustomerName || 'Walk-in',
+                businessName: selectedCustomer && selectedCustomer.businessName ? selectedCustomer.businessName : null,
                 items: [...currentOrderItems],
                 notes: document.getElementById('orderNotes').value,
                 grandTotal,
                 createdAt: new Date().toISOString(),
-                status: 'saved'
+                status: 'active'
             };
             orders.unshift(order);
             saveOrdersToLocal();
@@ -3899,6 +4161,608 @@
                     showToast('Order image downloaded');
                 }
             } catch (err) { console.error(err); showToast('Could not share'); }
+        }
+
+        // ========================================
+        // INVOICE MANAGEMENT SYSTEM
+        // ========================================
+        let currentInvoiceFilter = 'all';
+        let currentViewingOrderId = null;
+        let currentInvoiceBlob = null;
+
+        // Generate persistent invoice number
+        function generateInvoiceNumber() {
+            const now = new Date();
+            const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+            const counterKey = `everfresh_invoice_counter_${dateStr}`;
+            let counter = parseInt(localStorage.getItem(counterKey) || '0') + 1;
+            localStorage.setItem(counterKey, counter.toString());
+            return `INV-${dateStr}-${counter.toString().padStart(4, '0')}`;
+        }
+
+        // Migrate existing orders to have invoice numbers
+        function migrateOrdersForInvoice() {
+            let needsSave = false;
+            orders.forEach(order => {
+                if (!order.invoiceNumber) {
+                    const date = new Date(order.createdAt);
+                    const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
+                    const orderTime = date.getTime().toString().slice(-4);
+                    order.invoiceNumber = `INV-${dateStr}-${orderTime}`;
+                    needsSave = true;
+                }
+                if (!order.status || order.status === 'saved') {
+                    order.status = 'active';
+                    needsSave = true;
+                }
+                if (order.customerId && !order.businessName) {
+                    const customer = customers.find(c => c.id === order.customerId);
+                    if (customer && customer.businessName) {
+                        order.businessName = customer.businessName;
+                        needsSave = true;
+                    }
+                }
+            });
+            if (needsSave) saveOrdersToLocal();
+        }
+
+        function openInvoiceManagement() {
+            migrateOrdersForInvoice();
+            renderInvoiceList();
+            document.getElementById('invoiceManagementPanel').classList.add('show');
+        }
+
+        function closeInvoiceManagement() {
+            document.getElementById('invoiceManagementPanel').classList.remove('show');
+            document.getElementById('invoiceSearchInput').value = '';
+            currentInvoiceFilter = 'all';
+            updateFilterButtons();
+        }
+
+        function setInvoiceFilter(filter) {
+            currentInvoiceFilter = filter;
+            updateFilterButtons();
+            filterInvoices();
+        }
+
+        function updateFilterButtons() {
+            document.querySelectorAll('.invoice-filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('filter' + currentInvoiceFilter.charAt(0).toUpperCase() + currentInvoiceFilter.slice(1)).classList.add('active');
+        }
+
+        function filterInvoices() {
+            const query = document.getElementById('invoiceSearchInput').value.toLowerCase().trim();
+            let filtered = [...orders];
+
+            if (currentInvoiceFilter === 'active') {
+                filtered = filtered.filter(o => o.status === 'active');
+            } else if (currentInvoiceFilter === 'cancelled') {
+                filtered = filtered.filter(o => o.status === 'cancelled');
+            }
+
+            if (query) {
+                filtered = filtered.filter(o =>
+                    (o.customerName && o.customerName.toLowerCase().includes(query)) ||
+                    (o.businessName && o.businessName.toLowerCase().includes(query)) ||
+                    (o.invoiceNumber && o.invoiceNumber.toLowerCase().includes(query))
+                );
+            }
+
+            renderInvoiceList(filtered);
+        }
+
+        function renderInvoiceList(filteredOrders = null) {
+            const container = document.getElementById('invoiceListContainer');
+            container.textContent = '';
+
+            const ordersToRender = filteredOrders || orders;
+
+            if (ordersToRender.length === 0) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.style.cssText = 'text-align: center; padding: 40px; color: #94a3b8;';
+                const iconDiv = document.createElement('div');
+                iconDiv.style.cssText = 'font-size: 48px; margin-bottom: 8px;';
+                iconDiv.textContent = '📋';
+                const textDiv = document.createElement('div');
+                textDiv.textContent = 'No invoices found';
+                emptyDiv.appendChild(iconDiv);
+                emptyDiv.appendChild(textDiv);
+                container.appendChild(emptyDiv);
+                return;
+            }
+
+            const grouped = {};
+            ordersToRender.forEach(order => {
+                const key = order.businessName || order.customerName || 'Walk-in';
+                if (!grouped[key]) grouped[key] = [];
+                grouped[key].push(order);
+            });
+
+            const sortedCustomers = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
+
+            sortedCustomers.forEach(customerName => {
+                const customerOrders = grouped[customerName].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'invoice-customer-group';
+
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'invoice-customer-header';
+                headerDiv.textContent = customerName + ' (' + customerOrders.length + ')';
+                groupDiv.appendChild(headerDiv);
+
+                customerOrders.forEach(order => {
+                    const date = new Date(order.createdAt);
+                    const dateStr = date.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+                    const itemCount = order.items.reduce((sum, i) => sum + i.qty, 0);
+
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'invoice-list-item' + (order.status === 'cancelled' ? ' cancelled' : '');
+                    itemDiv.onclick = () => openInvoiceDetail(order.id);
+
+                    const infoDiv = document.createElement('div');
+                    infoDiv.className = 'invoice-info';
+
+                    const numDiv = document.createElement('div');
+                    numDiv.className = 'invoice-number';
+                    numDiv.textContent = order.invoiceNumber || 'N/A';
+                    if (order.status === 'cancelled') {
+                        const badge = document.createElement('span');
+                        badge.className = 'invoice-cancelled-badge';
+                        badge.textContent = 'Cancelled';
+                        numDiv.appendChild(badge);
+                    }
+
+                    const metaDiv = document.createElement('div');
+                    metaDiv.className = 'invoice-meta';
+                    metaDiv.textContent = dateStr + ' \u2022 ' + itemCount + ' items';
+
+                    infoDiv.appendChild(numDiv);
+                    infoDiv.appendChild(metaDiv);
+
+                    const rightDiv = document.createElement('div');
+                    rightDiv.style.cssText = 'display: flex; align-items: center;';
+
+                    const totalSpan = document.createElement('span');
+                    totalSpan.className = 'invoice-total';
+                    totalSpan.textContent = '$' + order.grandTotal.toFixed(0);
+
+                    const arrowSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    arrowSvg.setAttribute('class', 'invoice-arrow');
+                    arrowSvg.setAttribute('width', '20');
+                    arrowSvg.setAttribute('height', '20');
+                    arrowSvg.setAttribute('viewBox', '0 0 24 24');
+                    arrowSvg.setAttribute('fill', 'none');
+                    arrowSvg.setAttribute('stroke', 'currentColor');
+                    arrowSvg.setAttribute('stroke-width', '2');
+                    const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+                    polyline.setAttribute('points', '9 18 15 12 9 6');
+                    arrowSvg.appendChild(polyline);
+
+                    rightDiv.appendChild(totalSpan);
+                    rightDiv.appendChild(arrowSvg);
+
+                    itemDiv.appendChild(infoDiv);
+                    itemDiv.appendChild(rightDiv);
+                    groupDiv.appendChild(itemDiv);
+                });
+
+                container.appendChild(groupDiv);
+            });
+        }
+
+        async function openInvoiceDetail(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+
+            currentViewingOrderId = orderId;
+
+            document.getElementById('invoiceDetailNumber').textContent = order.invoiceNumber || 'N/A';
+            document.getElementById('invoiceDetailCustomer').textContent = order.businessName || order.customerName;
+            document.getElementById('invoiceDetailTotal').textContent = '$' + order.grandTotal.toFixed(0);
+
+            const date = new Date(order.createdAt);
+            document.getElementById('invoiceDetailDate').textContent = date.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            document.getElementById('invoiceDetailItems').textContent = order.items.reduce((sum, i) => sum + i.qty, 0) + ' items';
+
+            const modal = document.getElementById('invoiceDetailModal');
+            const cancelledInfo = document.getElementById('invoiceCancelledInfo');
+            const cancelBtn = document.getElementById('cancelInvoiceBtn');
+
+            if (order.status === 'cancelled') {
+                modal.querySelector('.invoice-detail-content').classList.add('invoice-detail-cancelled');
+                cancelledInfo.style.display = 'block';
+                cancelBtn.style.display = 'none';
+                if (order.cancelledAt) {
+                    document.getElementById('invoiceCancelledDate').textContent = new Date(order.cancelledAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+                }
+            } else {
+                modal.querySelector('.invoice-detail-content').classList.remove('invoice-detail-cancelled');
+                cancelledInfo.style.display = 'none';
+                cancelBtn.style.display = 'flex';
+            }
+
+            document.getElementById('invoiceShareSubmenu').style.display = 'none';
+
+            const previewImg = document.getElementById('invoicePreviewImage');
+            previewImg.src = '';
+            previewImg.alt = 'Loading...';
+
+            modal.classList.add('show');
+
+            try {
+                currentInvoiceBlob = await generateOrderImageBlobForOrder(order);
+                const url = URL.createObjectURL(currentInvoiceBlob);
+                previewImg.src = url;
+                document.getElementById('invoiceFullscreenImage').src = url;
+            } catch (err) {
+                console.error('Failed to generate preview:', err);
+                previewImg.alt = 'Preview unavailable';
+            }
+        }
+
+        function closeInvoiceDetail() {
+            document.getElementById('invoiceDetailModal').classList.remove('show');
+            currentViewingOrderId = null;
+            currentInvoiceBlob = null;
+        }
+
+        function generateOrderImageBlobForOrder(order) {
+            return new Promise((resolve) => {
+                const canvas = document.getElementById('downloadCanvas');
+                const ctx = canvas.getContext('2d');
+
+                const width = 1080;
+                const height = 1920;
+                canvas.width = width;
+                canvas.height = height;
+
+                const colors = {
+                    forestGreen: '#2d6a4f',
+                    mediumGreen: '#40916c',
+                    freshGreen: '#52b788',
+                    paleGreen: '#b7e4c7',
+                    veryLightGreen: '#d8f3dc',
+                    darkestGreen: '#1b4332',
+                    white: '#ffffff',
+                    lightGray: '#f8f9fa',
+                    gray: '#6b7280'
+                };
+
+                const margin = 60;
+                const contentWidth = width - (margin * 2);
+
+                ctx.fillStyle = colors.white;
+                ctx.fillRect(0, 0, width, height);
+
+                function roundRect(x, y, w, h, r) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + r, y);
+                    ctx.lineTo(x + w - r, y);
+                    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+                    ctx.lineTo(x + w, y + h - r);
+                    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                    ctx.lineTo(x + r, y + h);
+                    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+                    ctx.lineTo(x, y + r);
+                    ctx.quadraticCurveTo(x, y, x + r, y);
+                    ctx.closePath();
+                }
+
+                const headerHeight = 185;
+                ctx.fillStyle = colors.forestGreen;
+                ctx.fillRect(0, 0, width, headerHeight);
+
+                ctx.fillStyle = colors.white;
+                ctx.font = 'bold 38px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('EVERFRESH PRODUCE GROUP PTY LTD', width / 2, 48);
+
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo((width - 200) / 2, 66);
+                ctx.lineTo((width + 200) / 2, 66);
+                ctx.stroke();
+
+                ctx.font = '15px Arial, Helvetica, sans-serif';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fillText('ABN: 54 683 292 551', width / 2, 88);
+                ctx.fillText('PO Box 448, Stand 275, Shed C, Sydney Markets, NSW 2129', width / 2, 115);
+                ctx.fillText('Phone: (02) 9746 6416   |   Fax: (02) 9763 1551   |   accounts@everfresh.net.au', width / 2, 142);
+
+                let y = headerHeight + 30;
+
+                ctx.fillStyle = colors.forestGreen;
+                ctx.font = 'bold 32px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('INVOICE', width / 2, y);
+
+                ctx.strokeStyle = colors.forestGreen;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo((width - 140) / 2, y + 8);
+                ctx.lineTo((width + 140) / 2, y + 8);
+                ctx.stroke();
+
+                y += 50;
+
+                const billToName = order.businessName || order.customerName || 'Walk-in Customer';
+                const dateStr = new Date(order.createdAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+                const invoiceNum = order.invoiceNumber || 'N/A';
+
+                const boxWidth = (contentWidth - 30) / 2;
+                const boxHeight = 85;
+
+                ctx.fillStyle = colors.veryLightGreen;
+                roundRect(margin, y, boxWidth, boxHeight, 8);
+                ctx.fill();
+
+                ctx.fillStyle = colors.gray;
+                ctx.font = '14px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('BILL TO', margin + 20, y + 24);
+
+                ctx.fillStyle = colors.darkestGreen;
+                ctx.font = 'bold 22px Arial, Helvetica, sans-serif';
+                ctx.fillText(billToName.toUpperCase(), margin + 20, y + 58);
+
+                const rightBoxX = margin + boxWidth + 30;
+                ctx.fillStyle = colors.veryLightGreen;
+                roundRect(rightBoxX, y, boxWidth, boxHeight, 8);
+                ctx.fill();
+
+                ctx.fillStyle = colors.gray;
+                ctx.font = '14px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('INVOICE NO.', rightBoxX + 20, y + 24);
+                ctx.fillText('DATE', rightBoxX + boxWidth/2 + 10, y + 24);
+
+                ctx.fillStyle = colors.darkestGreen;
+                ctx.font = 'bold 20px Arial, Helvetica, sans-serif';
+                ctx.fillText('#' + invoiceNum.replace('INV-', ''), rightBoxX + 20, y + 58);
+                ctx.fillText(dateStr, rightBoxX + boxWidth/2 + 10, y + 58);
+
+                y += boxHeight + 25;
+
+                ctx.fillStyle = colors.forestGreen;
+                roundRect(margin, y, contentWidth, 42, 6);
+                ctx.fill();
+
+                ctx.fillStyle = colors.white;
+                ctx.font = 'bold 15px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('ITEM', margin + 20, y + 27);
+                ctx.textAlign = 'center';
+                ctx.fillText('QTY', width - margin - 140, y + 27);
+                ctx.textAlign = 'right';
+                ctx.fillText('AMOUNT', width - margin - 20, y + 27);
+
+                y += 52;
+
+                order.items.forEach((item, idx) => {
+                    if (idx % 2 === 0) {
+                        ctx.fillStyle = '#f8fdf9';
+                        ctx.fillRect(margin, y - 5, contentWidth, 48);
+                    }
+
+                    ctx.fillStyle = colors.darkestGreen;
+                    ctx.font = '17px Arial, Helvetica, sans-serif';
+                    ctx.textAlign = 'left';
+
+                    let displayName = item.name;
+                    if (item.grade && item.grade !== '-') {
+                        displayName += ' - ' + item.grade;
+                    }
+                    if (displayName.length > 45) {
+                        displayName = displayName.substring(0, 42) + '...';
+                    }
+                    ctx.fillText(displayName, margin + 20, y + 22);
+
+                    ctx.textAlign = 'center';
+                    ctx.fillText(item.qty.toString(), width - margin - 140, y + 22);
+
+                    ctx.font = 'bold 17px Arial, Helvetica, sans-serif';
+                    ctx.textAlign = 'right';
+                    ctx.fillText('$' + item.lineTotal.toFixed(0), width - margin - 20, y + 22);
+
+                    y += 48;
+                });
+
+                y += 10;
+
+                ctx.fillStyle = colors.forestGreen;
+                roundRect(margin, y, contentWidth, 50, 6);
+                ctx.fill();
+
+                ctx.fillStyle = colors.white;
+                ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('TOTAL', margin + 20, y + 32);
+                ctx.font = 'bold 24px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText('$' + order.grandTotal.toFixed(0), width - margin - 20, y + 33);
+
+                y += 80;
+
+                const depositBoxWidth = 550;
+                const depositBoxHeight = 160;
+                const depositBoxX = (width - depositBoxWidth) / 2;
+
+                ctx.fillStyle = colors.veryLightGreen;
+                roundRect(depositBoxX, y, depositBoxWidth, depositBoxHeight, 10);
+                ctx.fill();
+
+                ctx.strokeStyle = colors.paleGreen;
+                ctx.lineWidth = 1;
+                roundRect(depositBoxX, y, depositBoxWidth, depositBoxHeight, 10);
+                ctx.stroke();
+
+                ctx.fillStyle = colors.forestGreen;
+                ctx.font = 'bold 16px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('PAYMENT DETAILS', width / 2, y + 35);
+
+                const detailsStartY = y + 68;
+                const lineHeight = 24;
+                const labelX = depositBoxX + 40;
+                const valueX = depositBoxX + depositBoxWidth - 40;
+
+                ctx.font = '15px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillStyle = colors.gray;
+                ctx.fillText('Bank:', labelX, detailsStartY);
+                ctx.fillText('Account:', labelX, detailsStartY + lineHeight);
+                ctx.fillText('BSB:', labelX, detailsStartY + lineHeight * 2);
+                ctx.fillText('Account No:', labelX, detailsStartY + lineHeight * 3);
+
+                ctx.textAlign = 'right';
+                ctx.fillStyle = colors.darkestGreen;
+                ctx.font = 'bold 15px Arial, Helvetica, sans-serif';
+                ctx.fillText('ANZ', valueX, detailsStartY);
+                ctx.fillText('EVERFRESH PRODUCE GROUP P/L', valueX, detailsStartY + lineHeight);
+                ctx.fillText('012-412', valueX, detailsStartY + lineHeight * 2);
+                ctx.fillText('869189407', valueX, detailsStartY + lineHeight * 3);
+
+                if (order.status === 'cancelled') {
+                    ctx.save();
+                    ctx.translate(width / 2, height / 2);
+                    ctx.rotate(-Math.PI / 4);
+                    ctx.fillStyle = 'rgba(220, 38, 38, 0.15)';
+                    ctx.font = 'bold 120px Arial, Helvetica, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('CANCELLED', 0, 0);
+                    ctx.restore();
+                }
+
+                canvas.toBlob(resolve, 'image/png', 1.0);
+            });
+        }
+
+        function expandInvoicePreview() {
+            document.getElementById('invoiceFullscreenPreview').style.display = 'flex';
+        }
+
+        function closeFullscreenPreview() {
+            document.getElementById('invoiceFullscreenPreview').style.display = 'none';
+        }
+
+        async function printInvoice() {
+            if (!currentInvoiceBlob) {
+                showToast('Preview not ready');
+                return;
+            }
+
+            const url = URL.createObjectURL(currentInvoiceBlob);
+            const printWindow = window.open('', '_blank');
+            if (printWindow) {
+                const img = printWindow.document.createElement('img');
+                img.src = url;
+                img.style.cssText = 'max-width:100%; max-height:100vh;';
+                img.onload = function() {
+                    printWindow.print();
+                    printWindow.close();
+                };
+                printWindow.document.body.style.cssText = 'margin:0; display:flex; justify-content:center; align-items:center; min-height:100vh;';
+                printWindow.document.body.appendChild(img);
+            }
+        }
+
+        function openInvoiceShareMenu() {
+            const submenu = document.getElementById('invoiceShareSubmenu');
+            submenu.style.display = submenu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function shareInvoiceVia(method) {
+            if (!currentInvoiceBlob) {
+                showToast('Preview not ready');
+                return;
+            }
+
+            const order = orders.find(o => o.id === currentViewingOrderId);
+            if (!order) return;
+
+            const fileName = 'invoice-' + (order.invoiceNumber || 'order') + '.png';
+            const file = new File([currentInvoiceBlob], fileName, { type: 'image/png' });
+
+            try {
+                if (method === 'download') {
+                    const url = URL.createObjectURL(currentInvoiceBlob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showToast('Invoice downloaded');
+                    return;
+                }
+
+                if (method === 'email') {
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: 'Invoice ' + order.invoiceNumber,
+                            text: 'Please find attached invoice ' + order.invoiceNumber
+                        });
+                    } else {
+                        const url = URL.createObjectURL(currentInvoiceBlob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = fileName;
+                        a.click();
+                        URL.revokeObjectURL(url);
+
+                        setTimeout(() => {
+                            window.location.href = 'mailto:?subject=Invoice ' + order.invoiceNumber + '&body=Please find the attached invoice.';
+                        }, 500);
+                        showToast('Invoice downloaded - attach to email');
+                    }
+                    return;
+                }
+
+                if (method === 'imessage' || method === 'whatsapp') {
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: 'Invoice ' + order.invoiceNumber
+                        });
+                    } else {
+                        const url = URL.createObjectURL(currentInvoiceBlob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = fileName;
+                        a.click();
+                        URL.revokeObjectURL(url);
+
+                        if (method === 'whatsapp') {
+                            setTimeout(() => {
+                                window.open('https://wa.me/?text=' + encodeURIComponent('Invoice ' + order.invoiceNumber), '_blank');
+                            }, 500);
+                        }
+                        showToast('Invoice downloaded');
+                    }
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('Share error:', err);
+                    showToast('Could not share');
+                }
+            }
+        }
+
+        function confirmCancelInvoice() {
+            const order = orders.find(o => o.id === currentViewingOrderId);
+            if (!order) return;
+
+            if (confirm('Are you sure you want to cancel invoice ' + order.invoiceNumber + '?\n\nThis invoice will be marked as cancelled but will remain in your records.')) {
+                order.status = 'cancelled';
+                order.cancelledAt = new Date().toISOString();
+                saveOrdersToLocal();
+                showToast('Invoice cancelled');
+                closeInvoiceDetail();
+                renderInvoiceList();
+                filterInvoices();
+            }
         }
 
         function generateOrderImageBlob() {
