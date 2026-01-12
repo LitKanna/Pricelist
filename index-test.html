@@ -4173,19 +4173,21 @@
 
                 y += 130;
 
-                // ===== DIRECT DEPOSIT DETAILS - Professional box =====
+                // ===== DIRECT DEPOSIT DETAILS - Centered compact box =====
+                const depositBoxWidth = 700;
                 const depositBoxHeight = 180;
+                const depositBoxX = (width - depositBoxWidth) / 2;
                 const depositBoxY = y;
 
                 // Box background with subtle border
                 ctx.fillStyle = colors.veryLightGreen;
-                roundRect(margin, depositBoxY, contentWidth, depositBoxHeight, 12);
+                roundRect(depositBoxX, depositBoxY, depositBoxWidth, depositBoxHeight, 12);
                 ctx.fill();
 
                 // Border
                 ctx.strokeStyle = colors.paleGreen;
                 ctx.lineWidth = 2;
-                roundRect(margin, depositBoxY, contentWidth, depositBoxHeight, 12);
+                roundRect(depositBoxX, depositBoxY, depositBoxWidth, depositBoxHeight, 12);
                 ctx.stroke();
 
                 // Header text
@@ -4198,8 +4200,8 @@
                 ctx.strokeStyle = colors.paleGreen;
                 ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.moveTo(margin + 40, depositBoxY + 55);
-                ctx.lineTo(width - margin - 40, depositBoxY + 55);
+                ctx.moveTo(depositBoxX + 30, depositBoxY + 55);
+                ctx.lineTo(depositBoxX + depositBoxWidth - 30, depositBoxY + 55);
                 ctx.stroke();
 
                 // Bank details - stacked layout
@@ -4208,44 +4210,46 @@
 
                 const detailsStartY = depositBoxY + 80;
                 const lineHeight = 28;
+                const labelX = depositBoxX + 40;
+                const valueX = depositBoxX + depositBoxWidth - 40;
 
                 // Bank
                 ctx.textAlign = 'left';
-                ctx.fillText('Bank:', margin + 60, detailsStartY);
+                ctx.fillText('Bank:', labelX, detailsStartY);
                 ctx.fillStyle = colors.darkestGreen;
                 ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'right';
-                ctx.fillText('ANZ', width - margin - 60, detailsStartY);
+                ctx.fillText('ANZ', valueX, detailsStartY);
 
                 // Account Name
                 ctx.font = '18px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.darkGray;
                 ctx.textAlign = 'left';
-                ctx.fillText('Account:', margin + 60, detailsStartY + lineHeight);
+                ctx.fillText('Account:', labelX, detailsStartY + lineHeight);
                 ctx.fillStyle = colors.darkestGreen;
                 ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'right';
-                ctx.fillText('EVERFRESH PRODUCE GROUP P/L', width - margin - 60, detailsStartY + lineHeight);
+                ctx.fillText('EVERFRESH PRODUCE GROUP P/L', valueX, detailsStartY + lineHeight);
 
                 // BSB
                 ctx.font = '18px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.darkGray;
                 ctx.textAlign = 'left';
-                ctx.fillText('BSB:', margin + 60, detailsStartY + lineHeight * 2);
+                ctx.fillText('BSB:', labelX, detailsStartY + lineHeight * 2);
                 ctx.fillStyle = colors.darkestGreen;
                 ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'right';
-                ctx.fillText('012-432', width - margin - 60, detailsStartY + lineHeight * 2);
+                ctx.fillText('012-432', valueX, detailsStartY + lineHeight * 2);
 
                 // Account Number
                 ctx.font = '18px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.darkGray;
                 ctx.textAlign = 'left';
-                ctx.fillText('Account No:', margin + 60, detailsStartY + lineHeight * 3);
+                ctx.fillText('Account No:', labelX, detailsStartY + lineHeight * 3);
                 ctx.fillStyle = colors.darkestGreen;
                 ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'right';
-                ctx.fillText('669189407', width - margin - 60, detailsStartY + lineHeight * 3);
+                ctx.fillText('669189407', valueX, detailsStartY + lineHeight * 3);
 
                 canvas.toBlob(blob => resolve(blob), 'image/png');
             });
