@@ -3912,17 +3912,17 @@
                 canvas.width = width;
                 canvas.height = height;
 
-                // Premium color palette
+                // Professional color palette
                 const colors = {
                     forestGreen: '#2d6a4f',
                     mediumGreen: '#40916c',
                     freshGreen: '#52b788',
-                    lightGreen: '#74c69d',
                     paleGreen: '#b7e4c7',
                     veryLightGreen: '#d8f3dc',
-                    barelyWhite: '#fafdf7',
                     darkestGreen: '#1b4332',
-                    white: '#ffffff'
+                    white: '#ffffff',
+                    lightGray: '#f8f9fa',
+                    gray: '#6c757d'
                 };
 
                 const margin = 60;
@@ -3943,104 +3943,36 @@
                     ctx.closePath();
                 }
 
-                // Helper: Draw leaf shape
-                function drawLeaf(x, y, size, rotation) {
-                    ctx.save();
-                    ctx.translate(x, y);
-                    ctx.rotate(rotation);
-                    ctx.beginPath();
-                    ctx.moveTo(0, 0);
-                    ctx.bezierCurveTo(size * 0.5, -size * 0.3, size * 0.8, -size * 0.1, size, 0);
-                    ctx.bezierCurveTo(size * 0.8, size * 0.1, size * 0.5, size * 0.3, 0, 0);
-                    ctx.fill();
-                    ctx.restore();
-                }
-
-                // ===== BACKGROUND GRADIENT =====
-                const bgGradient = ctx.createLinearGradient(0, 0, 0, height);
-                bgGradient.addColorStop(0, colors.barelyWhite);
-                bgGradient.addColorStop(1, colors.veryLightGreen);
-                ctx.fillStyle = bgGradient;
+                // ===== WHITE BACKGROUND =====
+                ctx.fillStyle = colors.white;
                 ctx.fillRect(0, 0, width, height);
 
                 let y = 0;
 
-                // ===== TOP ACCENT BAR =====
-                const topBarGradient = ctx.createLinearGradient(0, 0, width, 0);
-                topBarGradient.addColorStop(0, colors.forestGreen);
-                topBarGradient.addColorStop(1, colors.mediumGreen);
-                ctx.fillStyle = topBarGradient;
-                ctx.fillRect(0, 0, width, 10);
+                // ===== HEADER =====
+                ctx.fillStyle = colors.forestGreen;
+                ctx.fillRect(0, 0, width, 200);
 
-                // ===== HEADER CARD =====
-                y = 30;
-                ctx.shadowColor = 'rgba(0,0,0,0.08)';
-                ctx.shadowBlur = 20;
-                ctx.shadowOffsetY = 4;
+                // Company name
                 ctx.fillStyle = colors.white;
-                roundRect(40, y, width - 80, 260, 20);
-                ctx.fill();
-                ctx.shadowColor = 'transparent';
-                ctx.shadowBlur = 0;
-                ctx.shadowOffsetY = 0;
-
-                // Company name with letter spacing
-                y = 90;
-                ctx.fillStyle = colors.darkestGreen;
-                ctx.font = 'bold 52px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 46px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'center';
-                const companyText = 'EVERFRESH';
-                ctx.fillText(companyText, width / 2, y);
-
-                y = 135;
-                ctx.fillStyle = colors.freshGreen;
-                ctx.font = '26px Arial, Helvetica, sans-serif';
-                ctx.fillText('PRODUCE GROUP', width / 2, y);
-
-                // Decorative leaves
-                ctx.fillStyle = colors.lightGreen;
-                ctx.globalAlpha = 0.6;
-                drawLeaf(340, 150, 40, -0.3);
-                drawLeaf(740, 150, 40, 0.3 + Math.PI);
-                ctx.globalAlpha = 1;
+                ctx.fillText('EVERFRESH PRODUCE GROUP', width / 2, 75);
 
                 // Address
-                y = 190;
-                ctx.fillStyle = colors.mediumGreen;
-                ctx.font = '22px Arial, Helvetica, sans-serif';
-                ctx.fillText('Stand 275, Shed C', width / 2, y);
-                ctx.fillText('Sydney Markets', width / 2, y + 28);
+                ctx.font = '24px Arial, Helvetica, sans-serif';
+                ctx.fillStyle = colors.paleGreen;
+                ctx.fillText('Stand 275, Shed C · Sydney Markets', width / 2, 120);
 
-                // Decorative dots
-                y = 265;
-                ctx.fillStyle = colors.lightGreen;
-                for (let i = 0; i < 3; i++) {
-                    ctx.beginPath();
-                    ctx.arc(width / 2 - 20 + (i * 20), y, 4, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-
-                // ===== INVOICE INFO BAR =====
-                y = 310;
-                const infoBarGradient = ctx.createLinearGradient(0, y, width, y);
-                infoBarGradient.addColorStop(0, colors.veryLightGreen);
-                infoBarGradient.addColorStop(1, colors.paleGreen);
-                ctx.fillStyle = infoBarGradient;
-                ctx.fillRect(0, y, width, 140);
-
-                // Invoice badge
-                ctx.fillStyle = colors.forestGreen;
-                roundRect(margin, y + 20, 200, 100, 14);
-                ctx.fill();
-
+                // Invoice label
+                ctx.font = 'bold 32px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.white;
-                ctx.font = '16px Arial, Helvetica, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('INVOICE', margin + 100, y + 50);
-                ctx.font = 'bold 28px Arial, Helvetica, sans-serif';
-                ctx.fillText('#' + Date.now().toString().slice(-6), margin + 100, y + 85);
+                ctx.fillText('INVOICE', width / 2, 175);
 
-                // Customer info (right side)
+                y = 230;
+
+                // ===== INVOICE DETAILS =====
+                // Get customer name
                 let billToName = 'Walk-in Customer';
                 if (orderCustomerName && orderCustomerName !== 'Walk-in Customer') {
                     const contact = customerContacts.find(c =>
@@ -4062,66 +3994,74 @@
                     }
                 }
 
-                ctx.textAlign = 'right';
+                // Customer name - prominent
                 ctx.fillStyle = colors.darkestGreen;
-                ctx.font = 'bold 26px Arial, Helvetica, sans-serif';
-                // Truncate long names
-                const maxNameLen = 22;
-                const displayBillTo = billToName.length > maxNameLen ? billToName.substring(0, maxNameLen) + '...' : billToName;
-                ctx.fillText(displayBillTo, width - margin, y + 50);
+                ctx.font = 'bold 32px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(billToName, margin, y);
 
+                // Date and Order on right
                 const dateStr = new Date().toLocaleDateString('en-AU', {
                     day: 'numeric',
                     month: 'short',
                     year: 'numeric'
                 });
-                ctx.fillStyle = colors.mediumGreen;
+                ctx.textAlign = 'right';
+                ctx.fillStyle = colors.gray;
                 ctx.font = '22px Arial, Helvetica, sans-serif';
-                ctx.fillText(dateStr, width - margin, y + 80);
+                ctx.fillText(dateStr, width - margin, y - 8);
+                ctx.fillText('#' + Date.now().toString().slice(-6), width - margin, y + 20);
+
+                y += 45;
 
                 // Salesman info
                 if (salesmanInfo.name || salesmanInfo.phone) {
-                    ctx.fillStyle = colors.freshGreen;
-                    ctx.font = '20px Arial, Helvetica, sans-serif';
-                    let salesText = '';
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = colors.mediumGreen;
+                    ctx.font = '22px Arial, Helvetica, sans-serif';
+                    let salesText = 'Sales: ';
                     if (salesmanInfo.name) salesText += salesmanInfo.name;
                     if (salesmanInfo.name && salesmanInfo.phone) salesText += ' · ';
                     if (salesmanInfo.phone) salesText += salesmanInfo.phone;
-                    ctx.fillText(salesText, width - margin, y + 110);
+                    ctx.fillText(salesText, margin, y);
+                    y += 35;
                 }
 
-                // ===== ITEMS TABLE =====
-                y = 470;
+                y += 20;
 
-                // Table header with rounded top
+                // Divider line
+                ctx.strokeStyle = colors.paleGreen;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(margin, y);
+                ctx.lineTo(width - margin, y);
+                ctx.stroke();
+
+                y += 30;
+
+                // ===== TABLE HEADER =====
                 ctx.fillStyle = colors.forestGreen;
-                roundRect(margin, y, contentWidth, 55, 12);
+                roundRect(margin, y, contentWidth, 50, 8);
                 ctx.fill();
-                // Cover bottom rounded corners
-                ctx.fillRect(margin, y + 30, contentWidth, 25);
 
                 ctx.fillStyle = colors.white;
                 ctx.font = 'bold 20px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'left';
-                ctx.fillText('ITEM', margin + 20, y + 36);
+                ctx.fillText('ITEM', margin + 20, y + 32);
                 ctx.textAlign = 'center';
-                ctx.fillText('QTY', width - margin - 160, y + 36);
+                ctx.fillText('QTY', width - margin - 150, y + 32);
                 ctx.textAlign = 'right';
-                ctx.fillText('AMOUNT', width - margin - 20, y + 36);
+                ctx.fillText('AMOUNT', width - margin - 20, y + 32);
 
-                y += 55;
+                y += 50;
 
-                // Table rows
+                // ===== TABLE ROWS =====
                 const rowHeight = 65;
                 let grandTotal = 0;
 
                 currentOrderItems.forEach((item, idx) => {
                     // Alternating row backgrounds
-                    if (idx % 2 === 0) {
-                        ctx.fillStyle = colors.barelyWhite;
-                    } else {
-                        ctx.fillStyle = 'rgba(216, 243, 220, 0.4)';
-                    }
+                    ctx.fillStyle = idx % 2 === 0 ? colors.white : colors.lightGray;
                     ctx.fillRect(margin, y, contentWidth, rowHeight);
 
                     // Left accent strip
@@ -4136,24 +4076,19 @@
                     ctx.lineTo(width - margin, y + rowHeight);
                     ctx.stroke();
 
-                    // Item arrow accent
-                    ctx.fillStyle = colors.lightGreen;
-                    ctx.font = '20px Arial, Helvetica, sans-serif';
-                    ctx.textAlign = 'left';
-                    ctx.fillText('›', margin + 15, y + 40);
-
                     // Item name
                     const displayName = item.product || item.name || 'Item';
-                    const maxItemLen = 28;
+                    const maxItemLen = 30;
                     const truncatedName = displayName.length > maxItemLen ? displayName.substring(0, maxItemLen) + '...' : displayName;
                     ctx.fillStyle = colors.darkestGreen;
                     ctx.font = '24px Arial, Helvetica, sans-serif';
-                    ctx.fillText(truncatedName, margin + 35, y + 40);
+                    ctx.textAlign = 'left';
+                    ctx.fillText(truncatedName, margin + 20, y + 40);
 
                     // Quantity
                     ctx.fillStyle = colors.mediumGreen;
                     ctx.textAlign = 'center';
-                    ctx.fillText(item.qty.toString(), width - margin - 160, y + 40);
+                    ctx.fillText(item.qty.toString(), width - margin - 150, y + 40);
 
                     // Amount
                     ctx.fillStyle = colors.darkestGreen;
@@ -4165,140 +4100,53 @@
                     y += rowHeight;
                 });
 
-                // ===== DECORATIVE SPACER =====
-                y += 25;
-                ctx.strokeStyle = colors.paleGreen;
-                ctx.lineWidth = 2;
-                ctx.setLineDash([4, 6]);
-                ctx.beginPath();
-                ctx.moveTo(margin + 50, y);
-                ctx.lineTo(width - margin - 50, y);
-                ctx.stroke();
-                ctx.setLineDash([]);
-
-                y += 30;
+                y += 20;
 
                 // ===== NOTES SECTION =====
                 const notes = document.getElementById('orderNotes').value.trim();
                 if (notes) {
-                    ctx.fillStyle = '#f0f9f4';
-                    roundRect(margin + 20, y, contentWidth - 40, 80, 10);
+                    ctx.fillStyle = colors.veryLightGreen;
+                    roundRect(margin, y, contentWidth, 70, 8);
                     ctx.fill();
 
-                    // Dashed border
-                    ctx.strokeStyle = colors.paleGreen;
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash([6, 4]);
-                    roundRect(margin + 20, y, contentWidth - 40, 80, 10);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-
-                    // Small leaf accent
-                    ctx.fillStyle = colors.lightGreen;
-                    ctx.globalAlpha = 0.5;
-                    drawLeaf(margin + 40, y + 20, 20, -0.5);
-                    ctx.globalAlpha = 1;
-
-                    // Notes text
-                    ctx.fillStyle = colors.mediumGreen;
-                    ctx.font = 'bold 16px Arial, Helvetica, sans-serif';
-                    ctx.textAlign = 'left';
-                    ctx.fillText('NOTES', margin + 70, y + 30);
-
                     ctx.fillStyle = colors.darkestGreen;
-                    ctx.font = '20px Arial, Helvetica, sans-serif';
-                    const maxLen = 45;
+                    ctx.font = '22px Arial, Helvetica, sans-serif';
+                    ctx.textAlign = 'left';
+                    const maxLen = 50;
                     const noteText = notes.length > maxLen ? notes.substring(0, maxLen) + '...' : notes;
-                    ctx.fillText(noteText, margin + 70, y + 58);
+                    ctx.fillText('Note: ' + noteText, margin + 20, y + 44);
 
-                    y += 100;
+                    y += 90;
                 }
 
-                y += 20;
+                y += 10;
 
-                // ===== GRAND TOTAL BADGE =====
+                // ===== GRAND TOTAL =====
                 const totalGradient = ctx.createLinearGradient(margin, y, width - margin, y);
                 totalGradient.addColorStop(0, colors.forestGreen);
                 totalGradient.addColorStop(1, colors.darkestGreen);
 
-                ctx.shadowColor = 'rgba(45, 106, 79, 0.3)';
-                ctx.shadowBlur = 15;
-                ctx.shadowOffsetY = 5;
                 ctx.fillStyle = totalGradient;
-                roundRect(margin, y, contentWidth, 90, 16);
-                ctx.fill();
-                ctx.shadowColor = 'transparent';
-                ctx.shadowBlur = 0;
-                ctx.shadowOffsetY = 0;
-
-                // Corner accents
-                ctx.fillStyle = colors.freshGreen;
-                ctx.beginPath();
-                ctx.arc(margin + 20, y + 20, 8, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(width - margin - 20, y + 20, 8, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(margin + 20, y + 70, 8, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(width - margin - 20, y + 70, 8, 0, Math.PI * 2);
+                roundRect(margin, y, contentWidth, 90, 12);
                 ctx.fill();
 
                 // Total text
                 ctx.fillStyle = colors.white;
-                ctx.font = 'bold 26px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 28px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'left';
-                ctx.fillText('TOTAL', margin + 45, y + 55);
+                ctx.fillText('TOTAL', margin + 30, y + 55);
 
                 ctx.font = 'bold 48px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'right';
-                ctx.fillText('$' + grandTotal.toFixed(grandTotal % 1 === 0 ? 0 : 2), width - margin - 45, y + 60);
+                ctx.fillText('$' + grandTotal.toFixed(grandTotal % 1 === 0 ? 0 : 2), width - margin - 30, y + 58);
 
                 y += 130;
 
                 // ===== FOOTER =====
-                // Decorative divider
-                ctx.strokeStyle = colors.paleGreen;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(width / 2 - 150, y);
-                ctx.lineTo(width / 2 + 150, y);
-                ctx.stroke();
-
-                // Dots
-                ctx.fillStyle = colors.lightGreen;
-                for (let i = 0; i < 3; i++) {
-                    ctx.beginPath();
-                    ctx.arc(width / 2 - 15 + (i * 15), y, 3, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-
-                y += 40;
-
-                // Thank you message
                 ctx.fillStyle = colors.mediumGreen;
-                ctx.font = 'italic 28px Arial, Helvetica, sans-serif';
+                ctx.font = '26px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText('Thank you for your business!', width / 2, y);
-
-                y += 30;
-
-                // Decorative flourish curve
-                ctx.strokeStyle = colors.paleGreen;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(width / 2 - 100, y);
-                ctx.quadraticCurveTo(width / 2, y + 15, width / 2 + 100, y);
-                ctx.stroke();
-
-                // Small leaves at ends
-                ctx.fillStyle = colors.lightGreen;
-                ctx.globalAlpha = 0.5;
-                drawLeaf(width / 2 - 110, y - 5, 25, Math.PI);
-                drawLeaf(width / 2 + 110, y - 5, 25, 0);
-                ctx.globalAlpha = 1;
 
                 canvas.toBlob(blob => resolve(blob), 'image/png');
             });
