@@ -3951,57 +3951,39 @@
                 let y = 0;
 
                 // ===== HEADER - Clean professional layout =====
-                const headerHeight = 320;
+                const headerHeight = 240;
                 ctx.fillStyle = colors.forestGreen;
                 ctx.fillRect(0, 0, width, headerHeight);
 
                 // Company name - Large and bold
                 ctx.fillStyle = colors.white;
-                ctx.font = 'bold 42px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 40px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('EVERFRESH PRODUCE GROUP PTY LTD', width / 2, 55);
+                ctx.fillText('EVERFRESH PRODUCE GROUP PTY LTD', width / 2, 50);
 
-                // ABN - Subtle below company name
+                // ABN
+                ctx.font = '16px Arial, Helvetica, sans-serif';
+                ctx.fillStyle = colors.white;
+                ctx.fillText('ABN: 54 683 292 551', width / 2, 80);
+
+                // Address
                 ctx.font = '18px Arial, Helvetica, sans-serif';
-                ctx.fillStyle = 'rgba(255,255,255,0.7)';
-                ctx.fillText('ABN: 54 683 292 551', width / 2, 88);
-
-                // Separator line
-                ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(width * 0.25, 110);
-                ctx.lineTo(width * 0.75, 110);
-                ctx.stroke();
-
-                // Address - Clean two lines
                 ctx.fillStyle = colors.white;
-                ctx.font = '20px Arial, Helvetica, sans-serif';
-                ctx.fillText('PO Box 448, Stand 275, Shed C', width / 2, 145);
-                ctx.fillText('Sydney Markets, NSW 2129', width / 2, 172);
+                ctx.fillText('PO Box 448, Stand 275, Shed C', width / 2, 115);
+                ctx.fillText('Sydney Markets, NSW 2129', width / 2, 140);
 
-                // Contact row - Phone | Fax | Email
-                ctx.font = '17px Arial, Helvetica, sans-serif';
-                ctx.fillStyle = 'rgba(255,255,255,0.85)';
-                ctx.fillText('Phone: (02) 9746 6416   •   Fax: (02) 9763 1551', width / 2, 210);
-                ctx.fillText('accounts@everfresh.net.au', width / 2, 235);
-
-                // INVOICE badge - Clean pill shape
-                const badgeWidth = 200;
-                const badgeHeight = 50;
-                const badgeX = (width - badgeWidth) / 2;
-                const badgeY = 265;
-
+                // Contact details
+                ctx.font = '16px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.white;
-                roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 25);
-                ctx.fill();
+                ctx.fillText('Phone: (02) 9746 6416   |   Fax: (02) 9763 1551   |   accounts@everfresh.net.au', width / 2, 175);
 
-                ctx.fillStyle = colors.forestGreen;
-                ctx.font = 'bold 28px Arial, Helvetica, sans-serif';
-                ctx.fillText('INVOICE', width / 2, badgeY + 34);
+                // INVOICE - Large text at bottom of header
+                ctx.font = 'bold 52px Arial, Helvetica, sans-serif';
+                ctx.fillStyle = colors.white;
+                ctx.fillText('INVOICE', width / 2, 225);
 
-                // ===== CUSTOMER SECTION - With proper spacing =====
-                y = headerHeight + 50; // Good gap after header
+                // ===== TWO COLUMN INFO SECTION =====
+                y = headerHeight + 35;
 
                 // Get customer name
                 let billToName = 'Walk-in Customer';
@@ -4025,49 +4007,59 @@
                     }
                 }
 
-                // "Bill To" label
-                ctx.fillStyle = colors.gray;
-                ctx.font = '16px Arial, Helvetica, sans-serif';
-                ctx.textAlign = 'left';
-                ctx.fillText('BILL TO', margin, y);
-
-                y += 35;
-
-                // Customer name - Large and prominent
-                ctx.fillStyle = colors.darkestGreen;
-                ctx.font = 'bold 36px Arial, Helvetica, sans-serif';
-                ctx.fillText(billToName, margin, y);
-
-                y += 55;
-
-                // Date and Invoice number - Clean row
+                // Date and Invoice number
                 const dateStr = new Date().toLocaleDateString('en-AU', {
                     day: 'numeric',
                     month: 'short',
                     year: 'numeric'
                 });
+                const invoiceNum = Date.now().toString().slice(-6);
 
-                // Date on left
-                ctx.font = '18px Arial, Helvetica, sans-serif';
-                ctx.fillStyle = colors.darkGray;
+                // Left box - Bill To
+                const boxWidth = (contentWidth - 30) / 2;
+                const boxHeight = 100;
+
+                // Bill To Box
+                ctx.fillStyle = colors.veryLightGreen;
+                roundRect(margin, y, boxWidth, boxHeight, 10);
+                ctx.fill();
+
+                ctx.fillStyle = colors.gray;
+                ctx.font = '14px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'left';
-                ctx.fillText('Date: ' + dateStr, margin, y);
+                ctx.fillText('BILL TO', margin + 20, y + 28);
 
-                // Invoice # on right
+                ctx.fillStyle = colors.darkestGreen;
+                ctx.font = 'bold 28px Arial, Helvetica, sans-serif';
+                ctx.fillText(billToName, margin + 20, y + 68);
+
+                // Right box - Invoice Details
+                const rightBoxX = margin + boxWidth + 30;
+                ctx.fillStyle = colors.veryLightGreen;
+                roundRect(rightBoxX, y, boxWidth, boxHeight, 10);
+                ctx.fill();
+
+                // Invoice Number
+                ctx.fillStyle = colors.gray;
+                ctx.font = '14px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('INVOICE NO.', rightBoxX + 20, y + 28);
+
+                ctx.fillStyle = colors.darkestGreen;
+                ctx.font = 'bold 24px Arial, Helvetica, sans-serif';
+                ctx.fillText('#' + invoiceNum, rightBoxX + 20, y + 58);
+
+                // Date
+                ctx.fillStyle = colors.gray;
+                ctx.font = '14px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'right';
-                ctx.fillText('Invoice #: ' + Date.now().toString().slice(-6), width - margin, y);
+                ctx.fillText('DATE', rightBoxX + boxWidth - 20, y + 28);
 
-                y += 35;
+                ctx.fillStyle = colors.darkestGreen;
+                ctx.font = 'bold 24px Arial, Helvetica, sans-serif';
+                ctx.fillText(dateStr, rightBoxX + boxWidth - 20, y + 58);
 
-                // Divider line
-                ctx.strokeStyle = colors.paleGreen;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(margin, y);
-                ctx.lineTo(width - margin, y);
-                ctx.stroke();
-
-                y += 25;
+                y += boxHeight + 25;
 
                 // ===== TABLE HEADER =====
                 ctx.fillStyle = colors.forestGreen;
