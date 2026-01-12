@@ -3951,7 +3951,7 @@
                 let y = 0;
 
                 // ===== HEADER - Company details only =====
-                const headerHeight = 175;
+                const headerHeight = 185;
                 ctx.fillStyle = colors.forestGreen;
                 ctx.fillRect(0, 0, width, headerHeight);
 
@@ -3959,22 +3959,28 @@
                 ctx.fillStyle = colors.white;
                 ctx.font = 'bold 38px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('EVERFRESH PRODUCE GROUP PTY LTD', width / 2, 42);
+                ctx.fillText('EVERFRESH PRODUCE GROUP PTY LTD', width / 2, 48);
+
+                // Decorative line below company name (premium touch)
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo((width - 200) / 2, 66);
+                ctx.lineTo((width + 200) / 2, 66);
+                ctx.stroke();
 
                 // ABN - Secondary info (16px for readability on mobile)
-                ctx.font = '16px Arial, Helvetica, sans-serif';
-                ctx.fillStyle = colors.white;
-                ctx.fillText('ABN: 54 683 292 551', width / 2, 70);
+                ctx.font = '15px Arial, Helvetica, sans-serif';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fillText('ABN: 54 683 292 551', width / 2, 88);
 
-                // Address - Secondary info (same as ABN for consistency)
-                ctx.font = '16px Arial, Helvetica, sans-serif';
-                ctx.fillStyle = colors.white;
-                ctx.fillText('PO Box 448, Stand 275, Shed C, Sydney Markets, NSW 2129', width / 2, 105);
+                // Address - Secondary info
+                ctx.font = '15px Arial, Helvetica, sans-serif';
+                ctx.fillText('PO Box 448, Stand 275, Shed C, Sydney Markets, NSW 2129', width / 2, 115);
 
-                // Contact details - Secondary info (same as above)
-                ctx.font = '16px Arial, Helvetica, sans-serif';
-                ctx.fillStyle = colors.white;
-                ctx.fillText('Phone: (02) 9746 6416   |   Fax: (02) 9763 1551   |   accounts@everfresh.net.au', width / 2, 140);
+                // Contact details - Secondary info
+                ctx.font = '15px Arial, Helvetica, sans-serif';
+                ctx.fillText('Phone: (02) 9746 6416   |   Fax: (02) 9763 1551   |   accounts@everfresh.net.au', width / 2, 142);
 
                 // ===== INVOICE TITLE - Document type (smaller than company name) =====
                 y = headerHeight + 40;
