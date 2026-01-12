@@ -4039,25 +4039,25 @@
                 roundRect(rightBoxX, y, boxWidth, boxHeight, 10);
                 ctx.fill();
 
-                // Invoice Number
+                // Invoice Number - aligned with customer name
                 ctx.fillStyle = colors.gray;
                 ctx.font = '14px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'left';
                 ctx.fillText('INVOICE NO.', rightBoxX + 20, y + 28);
 
                 ctx.fillStyle = colors.darkestGreen;
-                ctx.font = 'bold 24px Arial, Helvetica, sans-serif';
-                ctx.fillText('#' + invoiceNum, rightBoxX + 20, y + 58);
+                ctx.font = 'bold 26px Arial, Helvetica, sans-serif';
+                ctx.fillText('#' + invoiceNum, rightBoxX + 20, y + 68);
 
-                // Date
+                // Date - aligned with customer name
                 ctx.fillStyle = colors.gray;
                 ctx.font = '14px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'right';
                 ctx.fillText('DATE', rightBoxX + boxWidth - 20, y + 28);
 
                 ctx.fillStyle = colors.darkestGreen;
-                ctx.font = 'bold 24px Arial, Helvetica, sans-serif';
-                ctx.fillText(dateStr, rightBoxX + boxWidth - 20, y + 58);
+                ctx.font = 'bold 26px Arial, Helvetica, sans-serif';
+                ctx.fillText(dateStr, rightBoxX + boxWidth - 20, y + 68);
 
                 y += boxHeight + 25;
 
