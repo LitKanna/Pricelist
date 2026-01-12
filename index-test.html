@@ -3950,40 +3950,42 @@
 
                 let y = 0;
 
-                // ===== HEADER - Clean professional layout =====
-                const headerHeight = 240;
+                // ===== HEADER - Company details only =====
+                const headerHeight = 190;
                 ctx.fillStyle = colors.forestGreen;
                 ctx.fillRect(0, 0, width, headerHeight);
 
                 // Company name - Large and bold
                 ctx.fillStyle = colors.white;
-                ctx.font = 'bold 40px Arial, Helvetica, sans-serif';
+                ctx.font = 'bold 38px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('EVERFRESH PRODUCE GROUP PTY LTD', width / 2, 50);
+                ctx.fillText('EVERFRESH PRODUCE GROUP PTY LTD', width / 2, 45);
 
                 // ABN
-                ctx.font = '16px Arial, Helvetica, sans-serif';
+                ctx.font = '15px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.white;
-                ctx.fillText('ABN: 54 683 292 551', width / 2, 80);
+                ctx.fillText('ABN: 54 683 292 551', width / 2, 75);
 
                 // Address
-                ctx.font = '18px Arial, Helvetica, sans-serif';
+                ctx.font = '17px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.white;
-                ctx.fillText('PO Box 448, Stand 275, Shed C', width / 2, 115);
-                ctx.fillText('Sydney Markets, NSW 2129', width / 2, 140);
+                ctx.fillText('PO Box 448, Stand 275, Shed C', width / 2, 108);
+                ctx.fillText('Sydney Markets, NSW 2129', width / 2, 130);
 
                 // Contact details
-                ctx.font = '16px Arial, Helvetica, sans-serif';
+                ctx.font = '15px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.white;
-                ctx.fillText('Phone: (02) 9746 6416   |   Fax: (02) 9763 1551   |   accounts@everfresh.net.au', width / 2, 175);
+                ctx.fillText('Phone: (02) 9746 6416   |   Fax: (02) 9763 1551   |   accounts@everfresh.net.au', width / 2, 165);
 
-                // INVOICE - Large text at bottom of header
-                ctx.font = 'bold 52px Arial, Helvetica, sans-serif';
-                ctx.fillStyle = colors.white;
-                ctx.fillText('INVOICE', width / 2, 225);
+                // ===== INVOICE TITLE - Standalone section =====
+                y = headerHeight + 30;
+                ctx.font = 'bold 36px Arial, Helvetica, sans-serif';
+                ctx.fillStyle = colors.forestGreen;
+                ctx.textAlign = 'center';
+                ctx.fillText('INVOICE', width / 2, y);
 
                 // ===== TWO COLUMN INFO SECTION =====
-                y = headerHeight + 35;
+                y += 40;
 
                 // Get customer name
                 let billToName = 'Walk-in Customer';
