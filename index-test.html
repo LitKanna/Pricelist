@@ -4176,8 +4176,8 @@
                 y += 100;
 
                 // ===== DIRECT DEPOSIT DETAILS - Centered compact box =====
-                const depositBoxWidth = 650;
-                const depositBoxHeight = 135;
+                const depositBoxWidth = 550;
+                const depositBoxHeight = 160;
                 const depositBoxX = (width - depositBoxWidth) / 2;
                 const depositBoxY = y;
 
@@ -4196,21 +4196,21 @@
                 ctx.fillStyle = colors.forestGreen;
                 ctx.font = 'bold 16px Arial, Helvetica, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('PAYMENT DETAILS', width / 2, depositBoxY + 26);
+                ctx.fillText('PAYMENT DETAILS', width / 2, depositBoxY + 28);
 
                 // Divider inside box
                 ctx.strokeStyle = colors.paleGreen;
                 ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.moveTo(depositBoxX + 25, depositBoxY + 40);
-                ctx.lineTo(depositBoxX + depositBoxWidth - 25, depositBoxY + 40);
+                ctx.moveTo(depositBoxX + 25, depositBoxY + 45);
+                ctx.lineTo(depositBoxX + depositBoxWidth - 25, depositBoxY + 45);
                 ctx.stroke();
 
                 // Bank details - stacked layout
                 ctx.font = '14px Arial, Helvetica, sans-serif';
                 ctx.fillStyle = colors.darkGray;
 
-                const detailsStartY = depositBoxY + 58;
+                const detailsStartY = depositBoxY + 68;
                 const lineHeight = 24;
                 const labelX = depositBoxX + 30;
                 const valueX = depositBoxX + depositBoxWidth - 30;
