@@ -4673,6 +4673,10 @@
                     // Trigger shortcut immediately
                     const shortcutInput = `${phone},${message}`;
                     const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+
+                    // DEBUG: Confirm code reaches here
+                    alert('DEBUG: Triggering shortcut to ' + phone);
+
                     window.location.href = shortcutUrl;
                     return;
                 }
