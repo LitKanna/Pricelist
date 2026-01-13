@@ -2809,8 +2809,14 @@
                 </div>
 
                 <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 6px;">Business Name <span style="color: #94a3b8; font-weight: 400;">(optional, internal only)</span></label>
+                    <label style="display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 6px;">Business Name <span style="color: #94a3b8; font-weight: 400;">(shown on orders)</span></label>
                     <input type="text" id="customerBusinessName" placeholder="Tony's Restaurant"
+                           style="width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 16px; box-sizing: border-box;">
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 6px;">Delivery Location <span style="color: #94a3b8; font-weight: 400;">(for packing)</span></label>
+                    <input type="text" id="customerDeliveryLocation" placeholder="123 Main St, Sydney"
                            style="width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 16px; box-sizing: border-box;">
                 </div>
 
@@ -4599,11 +4605,25 @@
                 const isAddon = /add[\s-]?on/i.test(notes);
                 const orderTypeText = isAddon ? 'ADD-ON' : 'NEW ORDER';
 
-                // Get business name and delivery location from selected customer
-                const displayName = (selectedCustomer && selectedCustomer.businessName)
-                    ? selectedCustomer.businessName
-                    : (orderCustomerName || 'Walk-in Customer');
-                const deliveryLocation = selectedCustomer ? selectedCustomer.deliveryLocation : null;
+                // Get business name and delivery location from customer data
+                // Check both customerContacts (settings) and customers (pricing tiers)
+                let displayName = orderCustomerName || 'Walk-in Customer';
+                let deliveryLocation = null;
+
+                // First check customerContacts (settings page customers)
+                const contactMatch = customerContacts.find(c =>
+                    c.name === orderCustomerName || c.businessName === orderCustomerName
+                );
+                if (contactMatch) {
+                    if (contactMatch.businessName) displayName = contactMatch.businessName;
+                    if (contactMatch.deliveryLocation) deliveryLocation = contactMatch.deliveryLocation;
+                }
+
+                // Also check pricing tier customers
+                if (selectedCustomer) {
+                    if (selectedCustomer.businessName) displayName = selectedCustomer.businessName;
+                    if (selectedCustomer.deliveryLocation) deliveryLocation = selectedCustomer.deliveryLocation;
+                }
 
                 // Header height - taller for packing mode with delivery location
                 const headerHeight = (!showPrices && deliveryLocation) ? 480 : 400;
@@ -6474,6 +6494,7 @@
             const name = document.getElementById('customerName').value.trim();
             const phone = document.getElementById('customerPhone').value.trim();
             const businessName = document.getElementById('customerBusinessName').value.trim();
+            const deliveryLocation = document.getElementById('customerDeliveryLocation').value.trim();
 
             if (!name || !phone) {
                 alert('Please enter both contact name and phone number');
@@ -6490,7 +6511,8 @@
             // Create customer contact object
             const newContact = { name, phone, days };
             if (businessName) newContact.businessName = businessName;
-            
+            if (deliveryLocation) newContact.deliveryLocation = deliveryLocation;
+
             customerContacts.push(newContact);
             localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
 
@@ -6512,6 +6534,7 @@
             document.getElementById('customerName').value = '';
             document.getElementById('customerPhone').value = '';
             document.getElementById('customerBusinessName').value = '';
+            document.getElementById('customerDeliveryLocation').value = '';
             // Reset day checkboxes
             dayCheckboxes.forEach(cb => cb.checked = false);
 
@@ -6557,16 +6580,19 @@
                 }
 
                 const businessDisplay = customer.businessName ? `<div style="font-size: 12px; color: #8b5cf6; font-weight: 500;">${customer.businessName}</div>` : '';
+                const locationDisplay = customer.deliveryLocation ? `<div style="font-size: 11px; color: #64748b;">📍 ${customer.deliveryLocation}</div>` : '';
                 html += `
                     <div class="customer-item" style="flex-wrap: wrap;">
                         <div class="customer-info" style="flex: 1; min-width: 150px;">
                             <div class="customer-name">${customer.name}</div>
                             ${businessDisplay}
+                            ${locationDisplay}
                             <div class="customer-phone">${customer.phone}</div>
                             <div class="customer-days">${daysHtml}</div>
                         </div>
-                        <div class="customer-actions" style="display: flex; gap: 8px;">
-                            <button class="btn btn-secondary btn-small" onclick="editCustomerDays(${index})">Edit Days</button>
+                        <div class="customer-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn btn-secondary btn-small" onclick="openCustomerContactEditModal(${index})" style="background: rgba(59,130,246,0.1); color: #3b82f6; border: none;">Edit</button>
+                            <button class="btn btn-secondary btn-small" onclick="editCustomerDays(${index})">Days</button>
                             <button class="btn btn-danger btn-small" onclick="deleteCustomerContact(${index})">Delete</button>
                         </div>
                     </div>
@@ -6574,6 +6600,92 @@
             });
             html += '</div>';
             container.innerHTML = html;
+        }
+
+        // Edit customer contact details
+        function openCustomerContactEditModal(index) {
+            const customer = customerContacts[index];
+            if (!customer) return;
+
+            const modal = document.createElement('div');
+            modal.className = 'share-menu-overlay';
+            modal.id = 'customerContactEditModal';
+            modal.onclick = (e) => { if (e.target === modal) closeCustomerContactEditModal(); };
+
+            const menuDiv = document.createElement('div');
+            menuDiv.className = 'share-menu';
+            menuDiv.style.maxWidth = '360px';
+
+            menuDiv.innerHTML = `
+                <div class="share-menu-header" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border-bottom: none; padding: 20px;">
+                    <h3 style="color: white;">Edit Customer</h3>
+                    <button class="share-menu-close" onclick="closeCustomerContactEditModal()" style="background: rgba(255,255,255,0.15); color: white;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+                <div class="share-menu-body" style="padding: 20px;">
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px;">Contact Name</label>
+                        <input type="text" id="editContactName" value="${customer.name || ''}" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px;">Phone</label>
+                        <input type="text" id="editContactPhone" value="${customer.phone || ''}" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px;">Business Name <span style="color: #94a3b8;">(shown on orders)</span></label>
+                        <input type="text" id="editContactBusinessName" value="${customer.businessName || ''}" placeholder="e.g., Tony's Restaurant" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px;">Delivery Location <span style="color: #94a3b8;">(for packing)</span></label>
+                        <input type="text" id="editContactDeliveryLocation" value="${customer.deliveryLocation || ''}" placeholder="e.g., 123 Main St, Sydney" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
+                    </div>
+                    <button onclick="saveCustomerContactEdit(${index})" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border: none; border-radius: 12px; color: white; font-size: 15px; font-weight: 600; cursor: pointer;">
+                        Save Changes
+                    </button>
+                </div>
+            `;
+
+            modal.appendChild(menuDiv);
+            document.body.appendChild(modal);
+            requestAnimationFrame(() => modal.classList.add('show'));
+        }
+
+        function closeCustomerContactEditModal() {
+            const modal = document.getElementById('customerContactEditModal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.remove(), 200);
+            }
+        }
+
+        function saveCustomerContactEdit(index) {
+            const customer = customerContacts[index];
+            if (!customer) return;
+
+            const name = document.getElementById('editContactName').value.trim();
+            const phone = document.getElementById('editContactPhone').value.trim();
+            const businessName = document.getElementById('editContactBusinessName').value.trim();
+            const deliveryLocation = document.getElementById('editContactDeliveryLocation').value.trim();
+
+            if (!name) {
+                showToast('Name is required');
+                return;
+            }
+
+            customer.name = name;
+            customer.phone = phone;
+            customer.businessName = businessName || null;
+            customer.deliveryLocation = deliveryLocation || null;
+
+            localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
+            renderCustomersList();
+            closeCustomerContactEditModal();
+            showToast('Customer updated');
+
+            if (cloudSyncEnabled && currentUserPhone) {
+                syncToCloud(true);
+            }
         }
 
         // Edit customer days
