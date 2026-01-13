@@ -3949,6 +3949,7 @@
             const modal = document.createElement('div');
             modal.className = 'share-menu-overlay';
             modal.id = 'manualProductModal';
+            modal.onclick = (e) => { if (e.target === modal) closeManualProductModal(); };
 
             const menuDiv = document.createElement('div');
             menuDiv.className = 'share-menu';
@@ -4204,6 +4205,7 @@
             const modal = document.createElement('div');
             modal.className = 'share-menu-overlay';
             modal.id = 'priceEditModal';
+            modal.onclick = (e) => { if (e.target === modal) closePriceEditModal(); };
 
             const menuDiv = document.createElement('div');
             menuDiv.className = 'share-menu';
@@ -4352,6 +4354,7 @@
             const modal = document.createElement('div');
             modal.className = 'share-menu-overlay';
             modal.id = 'teamShareMenu';
+            modal.onclick = (e) => { if (e.target === modal) closeTeamShareMenu(); };
 
             const menuDiv = document.createElement('div');
             menuDiv.className = 'share-menu';
@@ -4640,6 +4643,7 @@
             const modal = document.createElement('div');
             modal.className = 'share-menu-overlay';
             modal.id = 'teamSettingsModal';
+            modal.onclick = (e) => { if (e.target === modal) closeTeamSettings(); };
 
             const menuDiv = document.createElement('div');
             menuDiv.className = 'share-menu';
@@ -4648,7 +4652,7 @@
             menuDiv.innerHTML = `
                 <div class="share-menu-header">
                     <h3>Team Members</h3>
-                    <button class="share-menu-close" onclick="closeTeamSettings()">
+                    <button type="button" class="share-menu-close" onclick="closeTeamSettings()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
                 </div>
