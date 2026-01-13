@@ -4551,11 +4551,9 @@
             if (contactMatch && contactMatch.businessName) customerDisplay = contactMatch.businessName;
             if (selectedCustomer && selectedCustomer.businessName) customerDisplay = selectedCustomer.businessName;
 
-            // Prepare message based on mode
-            const senderName = salesmanInfo.name || 'Team';
-            const message = mode === 'booking'
-                ? `Hey! New order in for ${customerDisplay} - can you book this one? Cheers, ${senderName}`
-                : `Hey! Order ready for packing - ${customerDisplay}. Let me know when it's done! ${senderName}`;
+            // Prepare message based on mode (will add team member name when selected)
+            const senderName = salesmanInfo.name || '';
+            window.teamShareData = { customerDisplay, senderName, mode };
 
             // Check if we have team members
             if (teamMembers.length === 0) {
@@ -4564,10 +4562,10 @@
             }
 
             // Show team member selection FIRST, generate image when they select
-            showTeamMemberSelector(mode, message, customerDisplay);
+            showTeamMemberSelector(mode);
         }
 
-        function showTeamMemberSelector(mode, message) {
+        function showTeamMemberSelector(mode) {
             const modal = document.createElement('div');
             modal.className = 'share-menu-overlay';
             modal.id = 'teamMemberSelector';
@@ -4593,6 +4591,11 @@
                 `;
             });
 
+            const data = window.teamShareData || {};
+            const previewMsg = mode === 'booking'
+                ? `Hi [Name], please book ${data.customerDisplay || 'customer'}'s order when you get a chance. Thanks, ${data.senderName || 'Me'}`
+                : `Hi [Name], please prepare ${data.customerDisplay || 'customer'}'s order for delivery. Thanks, ${data.senderName || 'Me'}`;
+
             menuDiv.innerHTML = `
                 <div class="share-menu-header" style="background: linear-gradient(135deg, ${modeColor} 0%, ${modeColor}dd 100%); border-bottom: none; padding: 20px;">
                     <h3 style="color: white;">${modeTitle}</h3>
@@ -4602,8 +4605,8 @@
                 </div>
                 <div class="share-menu-body" style="padding: 20px;">
                     <div style="margin-bottom: 16px; padding: 12px; background: #f0fdf4; border-radius: 10px; border-left: 4px solid #22c55e;">
-                        <div style="font-size: 12px; color: #166534; font-weight: 600;">MESSAGE</div>
-                        <div style="font-size: 13px; color: #15803d; margin-top: 4px;">${message}</div>
+                        <div style="font-size: 12px; color: #166534; font-weight: 600;">MESSAGE PREVIEW</div>
+                        <div style="font-size: 13px; color: #15803d; margin-top: 4px;">${previewMsg}</div>
                     </div>
                     <div style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 12px;">SELECT TEAM MEMBER</div>
                     ${membersHtml}
@@ -4616,9 +4619,6 @@
             modal.appendChild(menuDiv);
             document.body.appendChild(modal);
             requestAnimationFrame(() => modal.classList.add('show'));
-
-            // Store message for later use
-            window.teamShareMessage = message;
         }
 
         function closeTeamMemberSelector() {
@@ -4636,7 +4636,11 @@
             closeTeamMemberSelector();
             showToast('Generating order image...');
 
-            const message = window.teamShareMessage || (mode === 'booking' ? 'Please book this order' : 'Please prepare this order');
+            const data = window.teamShareData || {};
+            const memberName = member.name.split(' ')[0]; // First name only
+            const message = mode === 'booking'
+                ? `Hi ${memberName}, please book ${data.customerDisplay || 'customer'}'s order when you get a chance. Thanks, ${data.senderName || 'Me'}`
+                : `Hi ${memberName}, please prepare ${data.customerDisplay || 'customer'}'s order for delivery. Thanks, ${data.senderName || 'Me'}`;
             const phone = member.phone.replace(/\s+/g, '').replace(/^0/, '61'); // Format phone
 
             try {
