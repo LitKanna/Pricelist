@@ -4548,29 +4548,145 @@
 
             try {
                 const blob = await generateTeamOrderImage(mode);
-                const fileName = 'order-' + (mode === 'booking' ? 'booking' : 'pickpack') + '-' + Date.now() + '.png';
 
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], fileName, { type: 'image/png' })] })) {
-                    await navigator.share({
-                        files: [new File([blob], fileName, { type: 'image/png' })],
-                        title: 'Order - ' + orderCustomerName,
-                        text: mode === 'booking' ? 'Order with prices' : 'Pick/pack list'
-                    });
-                } else {
+                // Get customer display name
+                let customerDisplay = orderCustomerName || 'Walk-in Customer';
+                const contactMatch = customerContacts.find(c => c.name === orderCustomerName || c.businessName === orderCustomerName);
+                if (contactMatch && contactMatch.businessName) customerDisplay = contactMatch.businessName;
+                if (selectedCustomer && selectedCustomer.businessName) customerDisplay = selectedCustomer.businessName;
+
+                // Prepare message based on mode
+                const message = mode === 'booking'
+                    ? `Hi, please book this order for ${customerDisplay}. Thanks!`
+                    : `Hi, please prepare this order for ${customerDisplay}. Thanks!`;
+
+                // Check if we have team members
+                if (teamMembers.length === 0) {
+                    // No team members - use standard share sheet
+                    const fileName = 'order-' + (mode === 'booking' ? 'booking' : 'pickpack') + '-' + Date.now() + '.png';
+                    if (navigator.share && navigator.canShare) {
+                        const file = new File([blob], fileName, { type: 'image/png' });
+                        if (navigator.canShare({ files: [file] })) {
+                            await navigator.share({ files: [file], title: 'Order - ' + customerDisplay, text: message });
+                            return;
+                        }
+                    }
+                    // Fallback download
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
                     a.download = fileName;
-                    a.style.display = 'none';
-                    document.body.appendChild(a);
                     a.click();
-                    document.body.removeChild(a);
                     setTimeout(() => URL.revokeObjectURL(url), 100);
                     showToast('Order image downloaded');
+                    return;
                 }
+
+                // Copy image to clipboard first for iOS Shortcut
+                try {
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ 'image/png': blob })
+                    ]);
+                } catch (clipErr) {
+                    // Fallback: use Web Share if clipboard fails
+                    const fileName = 'order-' + mode + '-' + Date.now() + '.png';
+                    const file = new File([blob], fileName, { type: 'image/png' });
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({ files: [file], title: 'Order', text: message });
+                        return;
+                    }
+                }
+
+                // Show team member selection
+                showTeamMemberSelector(mode, message);
             } catch (err) {
                 console.error(err);
                 showToast('Could not share');
+            }
+        }
+
+        function showTeamMemberSelector(mode, message) {
+            const modal = document.createElement('div');
+            modal.className = 'share-menu-overlay';
+            modal.id = 'teamMemberSelector';
+            modal.onclick = (e) => { if (e.target === modal) closeTeamMemberSelector(); };
+
+            const menuDiv = document.createElement('div');
+            menuDiv.className = 'share-menu';
+            menuDiv.style.maxWidth = '360px';
+
+            const modeColor = mode === 'booking' ? '#1e40af' : '#c2410c';
+            const modeTitle = mode === 'booking' ? 'Send to Booking' : 'Send to Packer';
+
+            let membersHtml = '';
+            teamMembers.forEach((member, idx) => {
+                membersHtml += `
+                    <button onclick="sendToTeamMember(${idx}, '${mode}')" style="width: 100%; padding: 14px 16px; background: white; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; text-align: left; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div style="font-size: 16px; font-weight: 600; color: #0f172a;">${member.name}</div>
+                            <div style="font-size: 13px; color: #64748b;">${member.phone}</div>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                `;
+            });
+
+            menuDiv.innerHTML = `
+                <div class="share-menu-header" style="background: linear-gradient(135deg, ${modeColor} 0%, ${modeColor}dd 100%); border-bottom: none; padding: 20px;">
+                    <h3 style="color: white;">${modeTitle}</h3>
+                    <button class="share-menu-close" onclick="closeTeamMemberSelector()" style="background: rgba(255,255,255,0.15); color: white;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+                <div class="share-menu-body" style="padding: 20px;">
+                    <div style="margin-bottom: 16px; padding: 12px; background: #f0fdf4; border-radius: 10px; border-left: 4px solid #22c55e;">
+                        <div style="font-size: 12px; color: #166534; font-weight: 600;">MESSAGE</div>
+                        <div style="font-size: 13px; color: #15803d; margin-top: 4px;">${message}</div>
+                    </div>
+                    <div style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 12px;">SELECT TEAM MEMBER</div>
+                    ${membersHtml}
+                    <button onclick="closeTeamMemberSelector()" style="width: 100%; padding: 14px; background: #f1f5f9; border: none; border-radius: 12px; color: #64748b; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 6px;">
+                        Cancel
+                    </button>
+                </div>
+            `;
+
+            modal.appendChild(menuDiv);
+            document.body.appendChild(modal);
+            requestAnimationFrame(() => modal.classList.add('show'));
+
+            // Store message for later use
+            window.teamShareMessage = message;
+        }
+
+        function closeTeamMemberSelector() {
+            const modal = document.getElementById('teamMemberSelector');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.remove(), 200);
+            }
+        }
+
+        function sendToTeamMember(memberIndex, mode) {
+            const member = teamMembers[memberIndex];
+            if (!member) return;
+
+            closeTeamMemberSelector();
+
+            const message = window.teamShareMessage || (mode === 'booking' ? 'Please book this order' : 'Please prepare this order');
+            const phone = member.phone.replace(/\s+/g, '');
+
+            // Try iOS Shortcut first
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            if (isIOS) {
+                const shortcutInput = `${phone},${message}`;
+                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+                window.location.href = shortcutUrl;
+            } else {
+                // Non-iOS: Try WhatsApp or show instructions
+                const whatsappUrl = `https://wa.me/${phone.replace(/^0/, '61')}?text=${encodeURIComponent(message)}`;
+                window.open(whatsappUrl, '_blank');
+                showToast('Paste the image from clipboard');
             }
         }
 
