@@ -4636,7 +4636,7 @@
             showToast('Generating order image...');
 
             const message = window.teamShareMessage || (mode === 'booking' ? 'Please book this order' : 'Please prepare this order');
-            const phone = member.phone.replace(/\s+/g, '');
+            const phone = member.phone.replace(/\s+/g, '').replace(/^0/, '61'); // Format phone
 
             try {
                 // Generate the image
@@ -4644,46 +4644,44 @@
                 const fileName = 'order-' + mode + '-' + Date.now() + '.png';
                 const file = new File([blob], fileName, { type: 'image/png' });
 
-                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-                if (isIOS) {
-                    // iOS: Share image first, then trigger shortcut
+                if (isiOS) {
+                    // iOS: First save image to Photos via share sheet
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
-                            await navigator.share({
-                                files: [file],
-                                title: 'Order Image'
-                            });
-                            // After sharing, trigger the shortcut
-                            setTimeout(() => {
-                                const shortcutInput = `${phone},${message}`;
-                                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                                window.location.href = shortcutUrl;
-                            }, 500);
+                            await navigator.share({ files: [file] });
                         } catch (shareErr) {
-                            if (shareErr.name !== 'AbortError') {
-                                showToast('Could not share');
+                            if (shareErr.name === 'AbortError') {
+                                return; // User cancelled
                             }
                         }
                     }
+
+                    // Immediately trigger the iOS Shortcut with phone + message
+                    // The shortcut will get the last saved image and send via iMessage
+                    const shortcutInput = `${phone},${message}`;
+                    const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+                    window.location.href = shortcutUrl;
                 } else {
-                    // Non-iOS: Copy to clipboard and open WhatsApp
-                    try {
-                        await navigator.clipboard.write([
-                            new ClipboardItem({ 'image/png': blob })
-                        ]);
-                        showToast('Image copied! Paste in chat');
-                    } catch (e) {
-                        // Download as fallback
+                    // Non-iOS: Share with message included
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            text: message
+                        });
+                    } else {
+                        // Fallback: Download and open WhatsApp
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
                         a.download = fileName;
                         a.click();
                         setTimeout(() => URL.revokeObjectURL(url), 100);
+                        const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+                        window.open(whatsappUrl, '_blank');
+                        showToast('Image downloaded. Attach in WhatsApp.');
                     }
-                    const whatsappUrl = `https://wa.me/${phone.replace(/^0/, '61')}?text=${encodeURIComponent(message)}`;
-                    window.open(whatsappUrl, '_blank');
                 }
             } catch (err) {
                 console.error(err);
