@@ -4670,11 +4670,13 @@
                         }
                     }
 
-                    // Trigger shortcut immediately
+                    // Small delay after share sheet for iOS to accept URL scheme
                     const shortcutInput = `${phone},${message}`;
                     const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
 
-                    window.location.href = shortcutUrl;
+                    setTimeout(() => {
+                        window.location.href = shortcutUrl;
+                    }, 100);
                     return;
                 }
 
