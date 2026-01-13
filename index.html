@@ -4143,7 +4143,7 @@
 
             currentOrderItems.push({
                 category: 'CUSTOM',
-                product: name,
+                name: name,
                 grade: desc || 'Custom Item',
                 qty: 1,
                 unitPrice: price,
@@ -4151,7 +4151,8 @@
                 isManual: true
             });
 
-            renderOrderItems();
+            const addedIndex = currentOrderItems.length - 1;
+            renderOrderItems(addedIndex);
             closeManualProductModal();
             document.getElementById('orderSearchInput').value = '';
             document.getElementById('orderSearchResults').classList.remove('show');
@@ -4173,11 +4174,19 @@
                 else unitPrice = Math.round(unitPrice * 100) / 100;
             }
             const existing = currentOrderItems.find(i => i.category === category && i.name === name && i.grade === grade);
-            if (existing) { existing.qty += 1; existing.lineTotal = existing.qty * existing.unitPrice; }
-            else { currentOrderItems.push({ category, name, grade, qty: 1, unitPrice, lineTotal: unitPrice }); }
+            let addedIndex;
+            if (existing) {
+                existing.qty += 1;
+                existing.lineTotal = existing.qty * existing.unitPrice;
+                addedIndex = currentOrderItems.indexOf(existing);
+            }
+            else {
+                currentOrderItems.push({ category, name, grade, qty: 1, unitPrice, lineTotal: unitPrice });
+                addedIndex = currentOrderItems.length - 1;
+            }
             document.getElementById('orderSearchInput').value = '';
             document.getElementById('orderSearchResults').classList.remove('show');
-            renderOrderItems();
+            renderOrderItems(addedIndex);
             showToast(name + ' added');
         }
 
@@ -4193,7 +4202,7 @@
             renderOrderItems();
         }
 
-        function renderOrderItems() {
+        function renderOrderItems(scrollToIndex) {
             const container = document.getElementById('orderItemsContainer');
             const totalEl = document.getElementById('orderGrandTotal');
             container.innerHTML = '';
@@ -4209,7 +4218,8 @@
                 grandTotal += item.lineTotal;
 
                 const card = document.createElement('div');
-                card.style.cssText = 'background: white; border-radius: 12px; padding: 14px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #e2e8f0;';
+                card.id = 'order-item-' + idx;
+                card.style.cssText = 'background: white; border-radius: 12px; padding: 14px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; transition: background 0.3s;';
 
                 // Top row: Name + Delete button
                 const topRow = document.createElement('div');
@@ -4282,6 +4292,18 @@
             });
 
             totalEl.textContent = '$' + grandTotal.toFixed(grandTotal % 1 === 0 ? 0 : 2);
+
+            // Auto-scroll to added item with highlight
+            if (scrollToIndex !== undefined) {
+                const addedCard = document.getElementById('order-item-' + scrollToIndex);
+                if (addedCard) {
+                    setTimeout(() => {
+                        addedCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        addedCard.style.background = '#f0fdf4';
+                        setTimeout(() => { addedCard.style.background = 'white'; }, 600);
+                    }, 50);
+                }
+            }
         }
 
         function openPriceEditModal(itemIndex) {
