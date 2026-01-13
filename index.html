@@ -4652,27 +4652,24 @@
                 const fileName = 'order-' + mode + '-' + Date.now() + '.png';
                 const file = new File([blob], fileName, { type: 'image/png' });
 
-                const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-                if (isiOS) {
-                    // iOS: First save image to Photos via share sheet
-                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                        try {
-                            await navigator.share({ files: [file] });
-                        } catch (shareErr) {
-                            if (shareErr.name === 'AbortError') {
-                                return; // User cancelled
+                // iOS: Save image then trigger shortcut (matches sendToCustomerVia)
+                if (isIOS()) {
+                    if (navigator.share && navigator.canShare) {
+                        if (navigator.canShare({ files: [file] })) {
+                            try {
+                                await navigator.share({ files: [file] });
+                            } catch (shareErr) {
+                                if (shareErr.name === 'AbortError') {
+                                    return;
+                                }
                             }
                         }
                     }
 
-
-                    // Small delay to ensure share sheet fully closes
-                    setTimeout(() => {
-                        const shortcutInput = `${phone},${message}`;
-                        const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                        window.location.href = shortcutUrl;
-                    }, 300);
+                    // Trigger shortcut immediately - no delay
+                    const shortcutInput = `${phone},${message}`;
+                    const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+                    window.location.href = shortcutUrl;
                     return;
                 } else {
                     // Non-iOS: Share with message included
