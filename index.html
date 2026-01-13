@@ -4594,8 +4594,8 @@
             const data = window.teamShareData || {};
             const customerName = (data.customerDisplay || 'customer').toUpperCase();
             const previewMsg = mode === 'booking'
-                ? `Hi [Name] - please book ${customerName} order. Thanks ${data.senderName || ''}`
-                : `Hi [Name] - please prepare ${customerName} order for delivery. Thanks ${data.senderName || ''}`;
+                ? `Hey [Name] 👋 New booking for ${customerName}! Please process when you get a chance. Thanks! - ${data.senderName || 'Team'}`
+                : `Hey [Name] 👋 ${customerName} order ready for packing! Please prepare for delivery. Thanks! - ${data.senderName || 'Team'}`;
 
             menuDiv.innerHTML = `
                 <div class="share-menu-header" style="background: linear-gradient(135deg, ${modeColor} 0%, ${modeColor}dd 100%); border-bottom: none; padding: 20px;">
@@ -4641,8 +4641,8 @@
             const memberName = member.name.split(' ')[0];
             const customerName = (data.customerDisplay || 'customer').toUpperCase();
             const message = mode === 'booking'
-                ? `Hi ${memberName} - please book ${customerName} order. Thanks ${data.senderName || ''}`
-                : `Hi ${memberName} - please prepare ${customerName} order for delivery. Thanks ${data.senderName || ''}`;
+                ? `Hey ${memberName} 👋 New booking for ${customerName}! Please process when you get a chance. Thanks! - ${data.senderName || 'Team'}`
+                : `Hey ${memberName} 👋 ${customerName} order ready for packing! Please prepare for delivery. Thanks! - ${data.senderName || 'Team'}`;
             const phone = member.phone.replace(/\D/g, '');
 
             try {
@@ -4674,7 +4674,7 @@
                     const shortcutInput = `${phone},${message}`;
                     const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
 
-                    alert('DEBUG2: ' + phone); window.location.href = shortcutUrl;
+                    window.location.href = shortcutUrl;
                     return;
                 }
 
@@ -9307,7 +9307,7 @@ Response format (JSON only, no markdown):
                             // Step 2: Trigger shortcut - pass ASK,message so shortcut asks for contact
                             const shortcutInput = `ASK,${message}`;
                             const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                            alert('DEBUG2: ' + phone); window.location.href = shortcutUrl;
+                            window.location.href = shortcutUrl;
                             return;
                         }
                     }
@@ -9340,7 +9340,7 @@ Response format (JSON only, no markdown):
                         const startTime = Date.now();
 
                         // Trigger the shortcut
-                        alert('DEBUG2: ' + phone); window.location.href = shortcutUrl;
+                        window.location.href = shortcutUrl;
 
                         // Check if user bounces back quickly (shortcut not installed)
                         setTimeout(() => {
@@ -9779,7 +9779,7 @@ Response format (JSON only, no markdown):
                     // Trigger shortcut immediately (no confirmation)
                     const shortcutInput = `${phone},${message}`;
                     const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                    alert('DEBUG2: ' + phone); window.location.href = shortcutUrl;
+                    window.location.href = shortcutUrl;
                     return;
                 }
 
@@ -9819,7 +9819,7 @@ Response format (JSON only, no markdown):
                         if (userConfirm) {
                             const shortcutInput = `${phone},${message}`;
                             const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                            alert('DEBUG2: ' + phone); window.location.href = shortcutUrl;
+                            window.location.href = shortcutUrl;
                         }
                         return;
                     }
@@ -9953,7 +9953,7 @@ Response format (JSON only, no markdown):
                 sendAllBtn.style.display = 'flex';
                 closeCustomerShareMenu();
 
-                alert('DEBUG2: ' + phone); window.location.href = shortcutUrl;
+                window.location.href = shortcutUrl;
 
             } catch (error) {
                 console.error('Send all error:', error);
