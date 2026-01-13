@@ -4645,6 +4645,11 @@
 
             container.appendChild(btn);
             document.body.appendChild(container);
+
+            // Try auto-click after small delay
+            setTimeout(() => {
+                btn.click();
+            }, 50);
         }
 
 
