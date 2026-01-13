@@ -4674,7 +4674,7 @@
                     const shortcutInput = `${phone},${message}`;
                     const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
 
-                    window.location.href = shortcutUrl;
+                    alert('DEBUG2: ' + phone); window.location.href = shortcutUrl;
                     return;
                 }
 
@@ -9307,7 +9307,7 @@ Response format (JSON only, no markdown):
                             // Step 2: Trigger shortcut - pass ASK,message so shortcut asks for contact
                             const shortcutInput = `ASK,${message}`;
                             const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                            window.location.href = shortcutUrl;
+                            alert('DEBUG2: ' + phone); window.location.href = shortcutUrl;
                             return;
                         }
                     }
@@ -9340,7 +9340,7 @@ Response format (JSON only, no markdown):
                         const startTime = Date.now();
 
                         // Trigger the shortcut
-                        window.location.href = shortcutUrl;
+                        alert('DEBUG2: ' + phone); window.location.href = shortcutUrl;
 
                         // Check if user bounces back quickly (shortcut not installed)
                         setTimeout(() => {
@@ -9779,7 +9779,7 @@ Response format (JSON only, no markdown):
                     // Trigger shortcut immediately (no confirmation)
                     const shortcutInput = `${phone},${message}`;
                     const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                    window.location.href = shortcutUrl;
+                    alert('DEBUG2: ' + phone); window.location.href = shortcutUrl;
                     return;
                 }
 
@@ -9819,7 +9819,7 @@ Response format (JSON only, no markdown):
                         if (userConfirm) {
                             const shortcutInput = `${phone},${message}`;
                             const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                            window.location.href = shortcutUrl;
+                            alert('DEBUG2: ' + phone); window.location.href = shortcutUrl;
                         }
                         return;
                     }
@@ -9953,7 +9953,7 @@ Response format (JSON only, no markdown):
                 sendAllBtn.style.display = 'flex';
                 closeCustomerShareMenu();
 
-                window.location.href = shortcutUrl;
+                alert('DEBUG2: ' + phone); window.location.href = shortcutUrl;
 
             } catch (error) {
                 console.error('Send all error:', error);
