@@ -2844,52 +2844,95 @@
 
         <!-- Order Taking Panel -->
         <div class="settings-panel" id="orderPanel">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;">
-                <h2 style="font-size: 22px; font-weight: 700; color: #0f172a; margin: 0;">New Order</h2>
-                <button onclick="closeOrderPanel()" style="background: none; border: none; padding: 8px; cursor: pointer; color: #64748b;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
+            <!-- Premium Header -->
+            <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); margin: -24px -24px 20px -24px; padding: 20px 24px; border-radius: 20px 20px 0 0;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 40px; height: 40px; background: rgba(34, 197, 94, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                        </div>
+                        <h2 style="font-size: 20px; font-weight: 700; color: white; margin: 0;">New Order</h2>
+                    </div>
+                    <button onclick="closeOrderPanel()" style="width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.1); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
             </div>
-            <!-- Customer Selection -->
-            <div style="margin-bottom: 16px;">
-                <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Customer</label>
-                <select id="orderCustomerSelect" onchange="selectOrderCustomer(this.value)" style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; font-weight: 500; color: #1e293b; background: white; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2364748b%22 stroke-width=%222%22%3E%3Cpolyline points=%226 9 12 15 18 9%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 12px center; background-size: 18px;">
-                    <option value="">Walk-in Customer</option>
-                </select>
+
+            <!-- Customer Selection Card -->
+            <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid #bbf7d0;">
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #15803d; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Customer
+                </label>
+                <div id="customerSelectWrapper">
+                    <select id="orderCustomerSelect" onchange="selectOrderCustomer(this.value)" style="width: 100%; padding: 12px 16px; border: 2px solid #86efac; border-radius: 12px; font-size: 15px; font-weight: 600; color: #166534; background: white; cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2315803d%22 stroke-width=%222%22%3E%3Cpolyline points=%226 9 12 15 18 9%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 12px center; background-size: 18px; box-sizing: border-box;">
+                        <option value="">Walk-in Customer</option>
+                    </select>
+                    <input type="text" id="orderCustomerInput" placeholder="Type customer name..." style="display: none; width: 100%; padding: 12px 16px; border: 2px solid #22c55e; border-radius: 12px; font-size: 15px; font-weight: 600; color: #166534; background: white; box-sizing: border-box;" oninput="orderCustomerName = this.value || 'Walk-in Customer'">
+                </div>
+                <div id="customerToggleRow" style="margin-top: 10px; text-align: center;">
+                    <button id="customerInputToggle" onclick="toggleCustomerInput()" style="background: none; border: none; color: #15803d; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        Type custom name
+                    </button>
+                </div>
             </div>
-            <div class="order-search-container">
+
+            <!-- Product Search -->
+            <div class="order-search-container" style="margin-bottom: 16px;">
                 <svg class="order-search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <input type="text" id="orderSearchInput" class="order-search-input" placeholder="Search products..." oninput="searchOrderProducts(this.value)" onfocus="showSearchResults()">
                 <div id="orderSearchResults" class="order-search-results"></div>
             </div>
-            <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Order Items</div>
+
+            <!-- Order Items Section -->
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Order Items</div>
+                <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
+            </div>
             <div id="orderItemsContainer" class="order-items-container">
                 <div class="order-empty" id="orderEmpty"><div class="order-empty-icon">📦</div><div>Search and add products above</div></div>
             </div>
-            <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Notes</div>
-            <textarea id="orderNotes" class="order-notes-input" placeholder="Delivery instructions, special requests..."></textarea>
-            <div class="order-total-section">
-                <div class="order-total-label">Grand Total</div>
-                <div class="order-total-amount" id="orderGrandTotal">$0</div>
+
+            <!-- Notes Section -->
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Notes</div>
+                <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
             </div>
-            <div class="order-actions">
-                <button class="order-btn order-btn-save" onclick="saveCurrentOrder()">
+            <textarea id="orderNotes" class="order-notes-input" placeholder="Delivery instructions, special requests..." style="margin-bottom: 16px;"></textarea>
+
+            <!-- Total Section -->
+            <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 16px; padding: 16px 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.7);">Grand Total</div>
+                <div id="orderGrandTotal" style="font-size: 28px; font-weight: 800; color: #22c55e;">$0</div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+                <button onclick="saveCurrentOrder()" style="padding: 14px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                     Save Order
                 </button>
-                <button class="order-btn order-btn-share" onclick="shareCurrentOrder()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    Share Order
+                <button onclick="openTeamShareMenu()" style="padding: 14px; background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Send to Team
                 </button>
             </div>
-            <div style="display: flex; gap: 10px; margin-top: 16px;">
-                <button onclick="openOrderHistory()" style="flex: 1; padding: 12px; background: none; border: 1px solid #e2e8f0; border-radius: 10px; color: #64748b; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    Orders
+
+            <!-- Secondary Actions -->
+            <div style="display: flex; gap: 10px;">
+                <button onclick="openOrderHistory()" style="flex: 1; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; color: #64748b; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    History
                 </button>
-                <button onclick="openInvoiceManagement()" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); border: none; border-radius: 10px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                <button onclick="openInvoiceManagement()" style="flex: 1; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; color: #64748b; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     Invoices
+                </button>
+                <button onclick="openTeamSettings()" style="flex: 1; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; color: #64748b; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Team
                 </button>
             </div>
         </div>
@@ -3261,6 +3304,7 @@
         let selectedCustomer = null;
         let orders = [];
         let currentOrderItems = []; // For applying custom pricing
+        let teamMembers = []; // Team contacts for order sharing
 
         // Smart rounding logic
         function shouldRoundToWholeDollar(gradeSize) {
@@ -3689,14 +3733,11 @@
             defaultOpt.textContent = 'Walk-in Customer';
             select.appendChild(defaultOpt);
 
-            // Add pricing tiers
+            // Add pricing tiers (without showing adjustment percentages)
             customers.forEach(c => {
-                const adj = c.adjustmentType === 'percentage'
-                    ? (c.adjustmentValue > 0 ? '+' : '') + c.adjustmentValue + '%'
-                    : (c.adjustmentValue > 0 ? '+$' : '-$') + Math.abs(c.adjustmentValue);
                 const opt = document.createElement('option');
                 opt.value = 'tier_' + c.id;
-                opt.textContent = c.name + ' (' + adj + ')';
+                opt.textContent = c.name;
                 if (selectedCustomer && selectedCustomer.id === c.id) opt.selected = true;
                 select.appendChild(opt);
             });
@@ -3717,6 +3758,29 @@
                 orderCustomerName = selectedCustomer.name;
             } else {
                 orderCustomerName = 'Walk-in Customer';
+            }
+        }
+
+        function toggleCustomerInput() {
+            const select = document.getElementById('orderCustomerSelect');
+            const input = document.getElementById('orderCustomerInput');
+            const toggleBtn = document.getElementById('customerInputToggle');
+
+            if (select.style.display !== 'none') {
+                // Switch to manual input
+                select.style.display = 'none';
+                input.style.display = 'block';
+                toggleBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg> Select from list';
+                input.focus();
+                selectedCustomer = null;
+                orderCustomerName = input.value || 'Walk-in Customer';
+            } else {
+                // Switch back to dropdown
+                select.style.display = 'block';
+                input.style.display = 'none';
+                toggleBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Type custom name';
+                input.value = '';
+                selectOrderCustomer(select.value);
             }
         }
 
@@ -3800,24 +3864,18 @@
             }
             resultsEl.textContent = '';
 
-            // Show matching products
+            // Show matching products (simplified - only product name)
             if (results.length > 0) {
-                results.slice(0, 8).forEach(r => {
+                results.slice(0, 10).forEach(r => {
                     const div = document.createElement('div');
                     div.className = 'search-result-item';
+                    div.style.cssText = 'padding: 14px 18px; cursor: pointer; border-bottom: 1px solid #f1f5f9;';
                     div.onclick = () => addProductToOrder(r.category, r.index);
-                    const priceSpan = document.createElement('span');
-                    priceSpan.className = 'search-result-price';
-                    priceSpan.textContent = r.price;
                     const nameDiv = document.createElement('div');
                     nameDiv.className = 'search-result-name';
+                    nameDiv.style.cssText = 'font-weight: 600; color: #0f172a; font-size: 15px;';
                     nameDiv.textContent = r.name;
-                    const detailsDiv = document.createElement('div');
-                    detailsDiv.className = 'search-result-details';
-                    detailsDiv.textContent = r.grade + ' - ' + r.category;
-                    div.appendChild(priceSpan);
                     div.appendChild(nameDiv);
-                    div.appendChild(detailsDiv);
                     resultsEl.appendChild(div);
                 });
             }
@@ -4048,14 +4106,23 @@
                 qtyDiv.appendChild(plusBtn);
                 const priceDiv = document.createElement('div');
                 priceDiv.className = 'order-item-price';
+                priceDiv.style.cssText = 'display: flex; align-items: center; gap: 8px;';
+                const priceInfo = document.createElement('div');
                 const unitDiv = document.createElement('div');
                 unitDiv.className = 'order-item-unit';
                 unitDiv.textContent = '$' + item.unitPrice.toFixed(item.unitPrice % 1 === 0 ? 0 : 2) + ' ea';
                 const totalDiv = document.createElement('div');
                 totalDiv.className = 'order-item-total';
                 totalDiv.textContent = '$' + item.lineTotal.toFixed(item.lineTotal % 1 === 0 ? 0 : 2);
-                priceDiv.appendChild(unitDiv);
-                priceDiv.appendChild(totalDiv);
+                priceInfo.appendChild(unitDiv);
+                priceInfo.appendChild(totalDiv);
+                const editBtn = document.createElement('button');
+                editBtn.className = 'order-item-edit';
+                editBtn.style.cssText = 'width: 24px; height: 24px; border: none; border-radius: 6px; background: #f1f5f9; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s;';
+                editBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+                editBtn.onclick = (e) => { e.stopPropagation(); openPriceEditModal(idx); };
+                priceDiv.appendChild(priceInfo);
+                priceDiv.appendChild(editBtn);
                 const delBtn = document.createElement('button');
                 delBtn.className = 'order-item-delete';
                 delBtn.textContent = '×';
@@ -4067,6 +4134,49 @@
                 container.appendChild(row);
             });
             totalEl.textContent = '$' + grandTotal.toFixed(grandTotal % 1 === 0 ? 0 : 2);
+        }
+
+        function openPriceEditModal(itemIndex) {
+            const item = currentOrderItems[itemIndex];
+            if (!item) return;
+
+            const modal = document.createElement('div');
+            modal.className = 'share-menu-overlay';
+            modal.id = 'priceEditModal';
+
+            const menuDiv = document.createElement('div');
+            menuDiv.className = 'share-menu';
+            menuDiv.style.maxWidth = '320px';
+
+            menuDiv.innerHTML = '<div class="share-menu-header"><h3>Edit Price</h3><button class="share-menu-close" onclick="closePriceEditModal()"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div class="share-menu-body"><div style="margin-bottom: 16px;"><div style="font-weight: 600; color: #0f172a; margin-bottom: 4px;">' + item.name + '</div><div style="font-size: 13px; color: #64748b;">' + item.grade + '</div></div><div style="margin-bottom: 16px;"><label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px;">Unit Price ($)</label><input type="number" id="editPriceInput" value="' + item.unitPrice.toFixed(2) + '" step="0.01" min="0" style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 18px; font-weight: 600; text-align: center; box-sizing: border-box;"></div><button onclick="savePriceEdit(' + itemIndex + ')" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); border: none; border-radius: 10px; color: white; font-size: 15px; font-weight: 600; cursor: pointer;">Save Price</button></div>';
+
+            modal.appendChild(menuDiv);
+            document.body.appendChild(modal);
+            requestAnimationFrame(() => modal.classList.add('show'));
+            document.getElementById('editPriceInput').focus();
+            document.getElementById('editPriceInput').select();
+        }
+
+        function closePriceEditModal() {
+            const modal = document.getElementById('priceEditModal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.remove(), 200);
+            }
+        }
+
+        function savePriceEdit(itemIndex) {
+            const input = document.getElementById('editPriceInput');
+            const newPrice = parseFloat(input.value);
+            if (isNaN(newPrice) || newPrice < 0) {
+                showToast('Invalid price');
+                return;
+            }
+            currentOrderItems[itemIndex].unitPrice = newPrice;
+            currentOrderItems[itemIndex].lineTotal = currentOrderItems[itemIndex].qty * newPrice;
+            renderOrderItems();
+            closePriceEditModal();
+            showToast('Price updated');
         }
 
         function saveCurrentOrder() {
@@ -4161,6 +4271,388 @@
                     showToast('Order image downloaded');
                 }
             } catch (err) { console.error(err); showToast('Could not share'); }
+        }
+
+        // ========================================
+        // TEAM SHARING SYSTEM
+        // ========================================
+
+        function loadTeamMembers() {
+            const saved = localStorage.getItem('everfresh_team_members');
+            if (saved) { try { teamMembers = JSON.parse(saved); } catch(e) { teamMembers = []; } }
+        }
+
+        function saveTeamMembers() {
+            localStorage.setItem('everfresh_team_members', JSON.stringify(teamMembers));
+        }
+
+        function openTeamShareMenu() {
+            if (currentOrderItems.length === 0) { showToast('Add items first'); return; }
+
+            const modal = document.createElement('div');
+            modal.className = 'share-menu-overlay';
+            modal.id = 'teamShareMenu';
+
+            const menuDiv = document.createElement('div');
+            menuDiv.className = 'share-menu';
+            menuDiv.style.maxWidth = '360px';
+
+            menuDiv.innerHTML = `
+                <div class="share-menu-header">
+                    <h3>Send to Team</h3>
+                    <button class="share-menu-close" onclick="closeTeamShareMenu()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+                <div class="share-menu-body">
+                    <div style="margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 10px; font-size: 13px; color: #64748b;">
+                        Choose how to share this order with your team
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button onclick="shareToTeam('booking')" style="padding: 16px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border: none; border-radius: 12px; color: white; cursor: pointer; text-align: left;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 44px; height: 44px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                                </div>
+                                <div>
+                                    <div style="font-size: 16px; font-weight: 700;">Booking</div>
+                                    <div style="font-size: 12px; opacity: 0.9;">With prices - for office/booking team</div>
+                                </div>
+                            </div>
+                        </button>
+                        <button onclick="shareToTeam('pickpacker')" style="padding: 16px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; border-radius: 12px; color: white; cursor: pointer; text-align: left;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 44px; height: 44px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                                </div>
+                                <div>
+                                    <div style="font-size: 16px; font-weight: 700;">Pickpacker</div>
+                                    <div style="font-size: 12px; opacity: 0.9;">No prices - for warehouse/packing</div>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            modal.appendChild(menuDiv);
+            document.body.appendChild(modal);
+            requestAnimationFrame(() => modal.classList.add('show'));
+        }
+
+        function closeTeamShareMenu() {
+            const modal = document.getElementById('teamShareMenu');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.remove(), 200);
+            }
+        }
+
+        async function shareToTeam(mode) {
+            closeTeamShareMenu();
+            showToast('Generating order image...');
+
+            try {
+                const blob = await generateTeamOrderImage(mode);
+                const fileName = 'order-' + (mode === 'booking' ? 'booking' : 'pickpack') + '-' + Date.now() + '.png';
+
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], fileName, { type: 'image/png' })] })) {
+                    await navigator.share({
+                        files: [new File([blob], fileName, { type: 'image/png' })],
+                        title: 'Order - ' + orderCustomerName,
+                        text: mode === 'booking' ? 'Order with prices' : 'Pick/pack list'
+                    });
+                } else {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(url), 100);
+                    showToast('Order image downloaded');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Could not share');
+            }
+        }
+
+        function generateTeamOrderImage(mode) {
+            return new Promise((resolve) => {
+                const canvas = document.getElementById('downloadCanvas');
+                const ctx = canvas.getContext('2d');
+
+                // UHD 4K resolution
+                const width = 2160;
+                const height = 3840;
+                canvas.width = width;
+                canvas.height = height;
+
+                const margin = 120;
+                const showPrices = (mode === 'booking');
+
+                // Background
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, width, height);
+
+                // Header background
+                ctx.fillStyle = mode === 'booking' ? '#1e40af' : '#c2410c';
+                ctx.fillRect(0, 0, width, 400);
+
+                // Mode badge
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                roundRect(ctx, margin, 60, 320, 70, 35);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(mode === 'booking' ? 'BOOKING ORDER' : 'PICK & PACK', margin + 40, 110);
+
+                // Customer name - large
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 76px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                const customerDisplay = (orderCustomerName || 'Walk-in Customer').toUpperCase();
+                ctx.fillText(customerDisplay, margin, 260);
+
+                // Date
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+                const timeStr = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+                ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                ctx.font = '32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                ctx.fillText(dateStr + ' at ' + timeStr, margin, 340);
+
+                // Items section
+                let yPos = 480;
+                ctx.fillStyle = '#64748b';
+                ctx.font = 'bold 28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                ctx.fillText('ORDER ITEMS', margin, yPos);
+                yPos += 50;
+
+                // Line
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(margin, yPos);
+                ctx.lineTo(width - margin, yPos);
+                ctx.stroke();
+                yPos += 40;
+
+                // Column headers
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = 'bold 26px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                ctx.fillText('ITEM', margin, yPos);
+                ctx.fillText('QTY', width - margin - (showPrices ? 500 : 200), yPos);
+                if (showPrices) {
+                    ctx.fillText('PRICE', width - margin - 250, yPos);
+                    ctx.textAlign = 'right';
+                    ctx.fillText('TOTAL', width - margin, yPos);
+                    ctx.textAlign = 'left';
+                }
+                yPos += 60;
+
+                // Items
+                ctx.font = '36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                let grandTotal = 0;
+
+                currentOrderItems.forEach((item, idx) => {
+                    // Alternate row background
+                    if (idx % 2 === 0) {
+                        ctx.fillStyle = '#f8fafc';
+                        ctx.fillRect(margin - 20, yPos - 45, width - margin * 2 + 40, 90);
+                    }
+
+                    // Item name
+                    ctx.fillStyle = '#0f172a';
+                    ctx.font = 'bold 36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    ctx.fillText(item.name, margin, yPos);
+
+                    // Grade below name
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = '28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    ctx.fillText(item.grade, margin, yPos + 40);
+
+                    // Qty
+                    ctx.fillStyle = '#0f172a';
+                    ctx.font = 'bold 40px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    ctx.fillText('x' + item.qty, width - margin - (showPrices ? 500 : 200), yPos + 10);
+
+                    if (showPrices) {
+                        // Unit price
+                        ctx.font = '32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.fillStyle = '#64748b';
+                        ctx.fillText('$' + item.unitPrice.toFixed(item.unitPrice % 1 === 0 ? 0 : 2), width - margin - 250, yPos + 10);
+
+                        // Line total
+                        ctx.textAlign = 'right';
+                        ctx.font = 'bold 36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.fillStyle = '#0f172a';
+                        ctx.fillText('$' + item.lineTotal.toFixed(item.lineTotal % 1 === 0 ? 0 : 2), width - margin, yPos + 10);
+                        ctx.textAlign = 'left';
+
+                        grandTotal += item.lineTotal;
+                    }
+
+                    yPos += 100;
+                });
+
+                // Notes section (if any)
+                const notes = document.getElementById('orderNotes').value;
+                if (notes && notes.trim()) {
+                    yPos += 40;
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = 'bold 28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    ctx.fillText('NOTES', margin, yPos);
+                    yPos += 50;
+                    ctx.fillStyle = '#fef3c7';
+                    roundRect(ctx, margin - 20, yPos - 30, width - margin * 2 + 40, 120, 16);
+                    ctx.fill();
+                    ctx.fillStyle = '#92400e';
+                    ctx.font = '32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    ctx.fillText(notes, margin + 10, yPos + 30);
+                    yPos += 140;
+                }
+
+                // Total section (only for booking mode)
+                if (showPrices) {
+                    yPos += 30;
+                    ctx.fillStyle = '#0f172a';
+                    roundRect(ctx, margin - 20, yPos, width - margin * 2 + 40, 140, 24);
+                    ctx.fill();
+
+                    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                    ctx.font = '32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    ctx.fillText('TOTAL', margin + 20, yPos + 80);
+
+                    ctx.textAlign = 'right';
+                    ctx.fillStyle = '#22c55e';
+                    ctx.font = 'bold 64px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    ctx.fillText('$' + grandTotal.toFixed(grandTotal % 1 === 0 ? 0 : 2), width - margin - 20, yPos + 95);
+                    ctx.textAlign = 'left';
+                }
+
+                // Footer
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('EVERFRESH PRODUCE', width / 2, height - 80);
+                ctx.textAlign = 'left';
+
+                canvas.toBlob(resolve, 'image/png', 1.0);
+            });
+        }
+
+        function openTeamSettings() {
+            loadTeamMembers();
+
+            const modal = document.createElement('div');
+            modal.className = 'share-menu-overlay';
+            modal.id = 'teamSettingsModal';
+
+            const menuDiv = document.createElement('div');
+            menuDiv.className = 'share-menu';
+            menuDiv.style.maxWidth = '400px';
+
+            menuDiv.innerHTML = `
+                <div class="share-menu-header">
+                    <h3>Team Members</h3>
+                    <button class="share-menu-close" onclick="closeTeamSettings()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+                <div class="share-menu-body">
+                    <div style="margin-bottom: 16px;">
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="newTeamMemberName" placeholder="Name" style="flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; box-sizing: border-box;">
+                            <input type="tel" id="newTeamMemberPhone" placeholder="Phone" style="flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; box-sizing: border-box;">
+                        </div>
+                        <button onclick="addTeamMember()" style="width: 100%; margin-top: 10px; padding: 12px; background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); border: none; border-radius: 10px; color: white; font-size: 14px; font-weight: 600; cursor: pointer;">
+                            Add Team Member
+                        </button>
+                    </div>
+                    <div id="teamMembersList" style="max-height: 300px; overflow-y: auto;"></div>
+                </div>
+            `;
+
+            modal.appendChild(menuDiv);
+            document.body.appendChild(modal);
+            requestAnimationFrame(() => modal.classList.add('show'));
+            renderTeamMembersList();
+        }
+
+        function closeTeamSettings() {
+            const modal = document.getElementById('teamSettingsModal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.remove(), 200);
+            }
+        }
+
+        function renderTeamMembersList() {
+            const container = document.getElementById('teamMembersList');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            if (teamMembers.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 30px; color: #94a3b8;"><div style="font-size: 32px; margin-bottom: 8px;">👥</div><div>No team members yet</div></div>';
+                return;
+            }
+
+            teamMembers.forEach((member, idx) => {
+                const div = document.createElement('div');
+                div.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #f8fafc; border-radius: 10px; margin-bottom: 8px;';
+                div.innerHTML = `
+                    <div>
+                        <div style="font-weight: 600; color: #0f172a;">${member.name}</div>
+                        <div style="font-size: 13px; color: #64748b;">${member.phone}</div>
+                    </div>
+                    <button onclick="removeTeamMember(${idx})" style="width: 32px; height: 32px; border: none; border-radius: 8px; background: #fef2f2; color: #dc2626; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addTeamMember() {
+            const nameInput = document.getElementById('newTeamMemberName');
+            const phoneInput = document.getElementById('newTeamMemberPhone');
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
+
+            if (!name) { showToast('Enter a name'); return; }
+            if (!phone) { showToast('Enter a phone number'); return; }
+
+            teamMembers.push({ name, phone, addedAt: new Date().toISOString() });
+            saveTeamMembers();
+            nameInput.value = '';
+            phoneInput.value = '';
+            renderTeamMembersList();
+            showToast('Team member added');
+        }
+
+        function removeTeamMember(index) {
+            teamMembers.splice(index, 1);
+            saveTeamMembers();
+            renderTeamMembersList();
+            showToast('Team member removed');
+        }
+
+        // Helper function for rounded rectangles
+        function roundRect(ctx, x, y, w, h, r) {
+            if (w < 2 * r) r = w / 2;
+            if (h < 2 * r) r = h / 2;
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r);
+            ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r);
+            ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
         }
 
         // ========================================
@@ -9693,6 +10185,7 @@ Response format (JSON only, no markdown):
         // Initialize
         loadFromLocal();
         loadOrdersFromLocal();
+        loadTeamMembers();
         renderCategories();
         updateTierNameSuggestions();
         setupGlobalEventDelegation();
