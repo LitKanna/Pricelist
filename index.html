@@ -4552,9 +4552,10 @@
             if (selectedCustomer && selectedCustomer.businessName) customerDisplay = selectedCustomer.businessName;
 
             // Prepare message based on mode
+            const senderName = salesmanInfo.name || 'Team';
             const message = mode === 'booking'
-                ? `Hi, please book this order for ${customerDisplay}. Thanks!`
-                : `Hi, please prepare this order for ${customerDisplay}. Thanks!`;
+                ? `Hey! New order in for ${customerDisplay} - can you book this one? Cheers, ${senderName}`
+                : `Hey! Order ready for packing - ${customerDisplay}. Let me know when it's done! ${senderName}`;
 
             // Check if we have team members
             if (teamMembers.length === 0) {
