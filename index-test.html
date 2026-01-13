@@ -3925,6 +3925,7 @@
 
         function selectCustomerSuggestion(result, name) {
             const input = document.getElementById('customerSearchInput');
+            const previousCustomer = orderCustomerName;
 
             input.value = name;
             orderCustomerName = name;
@@ -3939,7 +3940,14 @@
             const overlay = document.getElementById('customerSuggestionsOverlay');
             if (overlay) overlay.remove();
 
-            if (currentOrderItems.length > 0) recalculateOrderPrices();
+            // Clear order items if customer changed
+            if (previousCustomer !== name && currentOrderItems.length > 0) {
+                currentOrderItems = [];
+                renderOrderItems();
+                showToast('Order cleared for new customer');
+            } else if (currentOrderItems.length > 0) {
+                recalculateOrderPrices();
+            }
         }
 
         function hideCustomerSuggestions() {
