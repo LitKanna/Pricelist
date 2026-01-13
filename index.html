@@ -4551,7 +4551,7 @@
             if (contactMatch && contactMatch.businessName) customerDisplay = contactMatch.businessName;
             if (selectedCustomer && selectedCustomer.businessName) customerDisplay = selectedCustomer.businessName;
 
-            // Prepare message based on mode (will add team member name when selected)
+            // Prepare message based on mode
             const senderName = salesmanInfo.name || '';
             window.teamShareData = { customerDisplay, senderName, mode };
 
@@ -4561,7 +4561,37 @@
                 return;
             }
 
-            // Show team member selection FIRST, generate image when they select
+            // iOS: Save image to Photos FIRST, then show team selector
+            if (isIOS()) {
+                try {
+                    const blob = await generateTeamOrderImage(mode);
+                    if (!blob) throw new Error('Failed to generate image');
+
+                    const file = new File([blob], 'team-order.png', { type: 'image/png' });
+
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({ files: [file] });
+                            // Image saved! Now show team selector
+                            showTeamMemberSelector(mode);
+                        } catch (shareError) {
+                            if (shareError.name === 'AbortError') {
+                                return; // User cancelled
+                            }
+                            // Other error, still show selector
+                            showTeamMemberSelector(mode);
+                        }
+                    } else {
+                        showTeamMemberSelector(mode);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showToast('Error generating image');
+                }
+                return;
+            }
+
+            // Non-iOS: Just show team selector
             showTeamMemberSelector(mode);
         }
 
@@ -4663,30 +4693,20 @@
                 : `Hey ${memberName} 👋 Could you please get ${customerName} order ready for delivery? Thanks! - ${data.senderName || 'Team'}`;
             const phone = member.phone.replace(/\D/g, '');
 
+            // iOS: Image already saved to Photos, just trigger shortcut
+            if (isIOS()) {
+                const shortcutInput = `${phone},${message}`;
+                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+                window.location.href = shortcutUrl;
+                return;
+            }
+
+            // Non-iOS: Generate and share
             try {
                 const blob = await generateTeamOrderImage(mode);
 
                 if (!blob) {
                     throw new Error('Failed to generate image');
-                }
-
-                // iOS: Download image then trigger shortcut directly (no share sheet)
-                if (isIOS()) {
-                    // Download the image first
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'order-' + Date.now() + '.png';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-
-                    // Trigger shortcut immediately - user tap was on team member button
-                    const shortcutInput = `${phone},${message}`;
-                    const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                    window.location.href = shortcutUrl;
-                    return;
                 }
 
                 // Non-iOS: Use Web Share with message
