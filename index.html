@@ -4549,20 +4549,21 @@
                             ctx.fillStyle = '#f8fafc';
                             ctx.fillRect(margin - 20, yPos - 45, width - margin * 2 + 40, 90);
                         }
-                        // Quantity on left
+                        const qtyColWidth = 150; // Fixed width for quantity column
+                        // Quantity (right-aligned within fixed column)
                         ctx.fillStyle = '#0f172a';
                         ctx.font = 'bold 64px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        const qtyText = item.qty.toString();
-                        ctx.fillText(qtyText, margin, yPos + 10);
-                        const qtyWidth = ctx.measureText(qtyText).width;
-                        // Item name after qty
+                        ctx.textAlign = 'right';
+                        ctx.fillText(item.qty.toString(), margin + qtyColWidth, yPos + 10);
+                        ctx.textAlign = 'left';
+                        // Item name (fixed position after qty column)
                         ctx.font = 'bold 52px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ctx.fillText(item.name, margin + qtyWidth + 50, yPos + 10);
+                        ctx.fillText(item.name, margin + qtyColWidth + 40, yPos + 10);
                         const nameWidth = ctx.measureText(item.name).width;
                         // Grade next to item name (same line)
                         ctx.fillStyle = '#64748b';
                         ctx.font = '40px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ctx.fillText(item.grade, margin + qtyWidth + 50 + nameWidth + 30, yPos + 10);
+                        ctx.fillText(item.grade, margin + qtyColWidth + 40 + nameWidth + 30, yPos + 10);
                         yPos += 95;
                     }
                 });
