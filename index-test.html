@@ -4447,40 +4447,46 @@
             menuDiv.style.maxWidth = '360px';
 
             menuDiv.innerHTML = `
-                <div class="share-menu-header">
-                    <h3>Send to Team</h3>
-                    <button class="share-menu-close" onclick="closeTeamShareMenu()">
+                <div class="share-menu-header" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-bottom: none; padding: 20px;">
+                    <h3 style="color: white;">Send to Team</h3>
+                    <button class="share-menu-close" onclick="closeTeamShareMenu()" style="background: rgba(255,255,255,0.15); color: white;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
                 </div>
-                <div class="share-menu-body">
-                    <div style="margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 10px; font-size: 13px; color: #64748b;">
-                        Choose how to share this order with your team
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <button onclick="shareToTeam('booking')" style="padding: 16px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border: none; border-radius: 12px; color: white; cursor: pointer; text-align: left;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="width: 44px; height: 44px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                <div class="share-menu-body" style="padding: 20px;">
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button onclick="shareToTeam('booking')" style="padding: 0; background: white; border: 2px solid #e2e8f0; border-radius: 14px; cursor: pointer; text-align: left; overflow: hidden;">
+                            <div style="display: flex; align-items: center;">
+                                <div style="width: 56px; height: 56px; margin: 12px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                                 </div>
-                                <div>
-                                    <div style="font-size: 16px; font-weight: 700;">Booking</div>
-                                    <div style="font-size: 12px; opacity: 0.9;">With prices - for office/booking team</div>
+                                <div style="flex: 1; padding-right: 16px;">
+                                    <div style="font-size: 16px; font-weight: 700; color: #0f172a;">Booking</div>
+                                    <div style="font-size: 13px; color: #64748b;">With prices</div>
                                 </div>
-                            </div>
-                        </button>
-                        <button onclick="shareToTeam('pickpacker')" style="padding: 16px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; border-radius: 12px; color: white; cursor: pointer; text-align: left;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="width: 44px; height: 44px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                                </div>
-                                <div>
-                                    <div style="font-size: 16px; font-weight: 700;">Pickpacker</div>
-                                    <div style="font-size: 12px; opacity: 0.9;">No prices - for warehouse/packing</div>
+                                <div style="padding-right: 16px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                                 </div>
                             </div>
                         </button>
+                        <button onclick="shareToTeam('pickpacker')" style="padding: 0; background: white; border: 2px solid #e2e8f0; border-radius: 14px; cursor: pointer; text-align: left; overflow: hidden;">
+                            <div style="display: flex; align-items: center;">
+                                <div style="width: 56px; height: 56px; margin: 12px; background: linear-gradient(135deg, #f97316 0%, #c2410c 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                                </div>
+                                <div style="flex: 1; padding-right: 16px;">
+                                    <div style="font-size: 16px; font-weight: 700; color: #0f172a;">Pickpacker</div>
+                                    <div style="font-size: 13px; color: #64748b;">No prices</div>
+                                </div>
+                                <div style="padding-right: 16px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                                </div>
+                            </div>
+                        </button>
                     </div>
+                    <button onclick="closeTeamShareMenu()" style="width: 100%; margin-top: 16px; padding: 14px; background: #f1f5f9; border: none; border-radius: 12px; color: #64748b; font-size: 15px; font-weight: 600; cursor: pointer;">
+                        Cancel
+                    </button>
                 </div>
             `;
 
