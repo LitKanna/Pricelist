@@ -3758,13 +3758,24 @@
                 leftSection.appendChild(avatar);
                 leftSection.appendChild(textDiv);
 
+                const btnGroup = document.createElement('div');
+                btnGroup.style.cssText = 'display: flex; gap: 6px; flex-shrink: 0;';
+
+                const editBtn = document.createElement('button');
+                editBtn.style.cssText = 'background: rgba(59,130,246,0.1); border: none; color: #3b82f6; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;';
+                editBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+                editBtn.onclick = (e) => { e.stopPropagation(); openCustomerEditModal(customer.id); };
+
                 const deleteBtn = document.createElement('button');
-                deleteBtn.style.cssText = 'background: rgba(239,68,68,0.1); border: none; color: #ef4444; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;';
+                deleteBtn.style.cssText = 'background: rgba(239,68,68,0.1); border: none; color: #ef4444; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px;';
                 deleteBtn.textContent = '×';
                 deleteBtn.onclick = (e) => { e.stopPropagation(); deleteCustomerTier(customer.id); };
 
+                btnGroup.appendChild(editBtn);
+                btnGroup.appendChild(deleteBtn);
+
                 row.appendChild(leftSection);
-                row.appendChild(deleteBtn);
+                row.appendChild(btnGroup);
                 container.appendChild(row);
             });
         }
@@ -4583,14 +4594,23 @@
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(0, 0, width, height);
 
-                // Header background
-                ctx.fillStyle = mode === 'booking' ? '#1e40af' : '#c2410c';
-                ctx.fillRect(0, 0, width, 400);
-
                 // Check if addon order based on notes
                 const notes = document.getElementById('orderNotes').value || '';
                 const isAddon = /add[\s-]?on/i.test(notes);
                 const orderTypeText = isAddon ? 'ADD-ON' : 'NEW ORDER';
+
+                // Get business name and delivery location from selected customer
+                const displayName = (selectedCustomer && selectedCustomer.businessName)
+                    ? selectedCustomer.businessName
+                    : (orderCustomerName || 'Walk-in Customer');
+                const deliveryLocation = selectedCustomer ? selectedCustomer.deliveryLocation : null;
+
+                // Header height - taller for packing mode with delivery location
+                const headerHeight = (!showPrices && deliveryLocation) ? 480 : 400;
+
+                // Header background
+                ctx.fillStyle = mode === 'booking' ? '#1e40af' : '#c2410c';
+                ctx.fillRect(0, 0, width, headerHeight);
 
                 // Order type badge (right side)
                 ctx.font = 'bold 36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
@@ -4603,11 +4623,19 @@
                 ctx.fillText(orderTypeText, width - margin - 30, 110);
                 ctx.textAlign = 'left';
 
-                // Customer name - large
+                // Business/Customer name - large
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 80px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                const customerDisplay = (orderCustomerName || 'Walk-in Customer').toUpperCase();
-                ctx.fillText(customerDisplay, margin, 260);
+                ctx.font = 'bold 72px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                ctx.fillText(displayName.toUpperCase(), margin, 250);
+
+                // Delivery location (packing mode only)
+                let headerTextY = 330;
+                if (!showPrices && deliveryLocation) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                    ctx.font = '42px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    ctx.fillText('📍 ' + deliveryLocation, margin, headerTextY);
+                    headerTextY += 70;
+                }
 
                 // Date
                 const now = new Date();
@@ -4615,10 +4643,10 @@
                 const timeStr = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
                 ctx.fillStyle = 'rgba(255,255,255,0.8)';
                 ctx.font = '36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                ctx.fillText(dateStr + '  •  ' + timeStr, margin, 340);
+                ctx.fillText(dateStr + '  •  ' + timeStr, margin, headerTextY);
 
                 // Items section
-                let yPos = 480;
+                let yPos = headerHeight + 80;
                 ctx.fillStyle = '#64748b';
                 ctx.font = 'bold 32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                 ctx.fillText('ORDER ITEMS (' + currentOrderItems.length + ')', margin, yPos);
@@ -4664,51 +4692,51 @@
                         // Booking mode - table layout with prices
                         if (idx % 2 === 0) {
                             ctx.fillStyle = '#f8fafc';
-                            ctx.fillRect(margin - 20, yPos - 50, width - margin * 2 + 40, 100);
+                            ctx.fillRect(margin - 20, yPos - 50, width - margin * 2 + 40, 110);
                         }
                         // Item name and grade
                         ctx.fillStyle = '#0f172a';
-                        ctx.font = 'bold 38px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.font = 'bold 44px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                         ctx.fillText(itemName, margin, yPos);
                         ctx.fillStyle = '#64748b';
-                        ctx.font = '30px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ctx.fillText(itemGrade, margin, yPos + 42);
+                        ctx.font = '32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.fillText(itemGrade, margin, yPos + 48);
                         // Qty (right-aligned)
                         ctx.fillStyle = '#0f172a';
-                        ctx.font = 'bold 42px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.font = 'bold 44px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                         ctx.textAlign = 'right';
-                        ctx.fillText(item.qty.toString(), colBookingQty + 80, yPos + 10);
+                        ctx.fillText(item.qty.toString(), colBookingQty + 80, yPos + 15);
                         // Price (right-aligned)
-                        ctx.font = '34px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.font = '36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                         ctx.fillStyle = '#64748b';
-                        ctx.fillText('$' + item.unitPrice.toFixed(item.unitPrice % 1 === 0 ? 0 : 2), colPrice + 100, yPos + 10);
+                        ctx.fillText('$' + item.unitPrice.toFixed(item.unitPrice % 1 === 0 ? 0 : 2), colPrice + 100, yPos + 15);
                         // Total (right-aligned)
-                        ctx.font = 'bold 38px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ctx.fillStyle = '#0f172a';
-                        ctx.fillText('$' + item.lineTotal.toFixed(item.lineTotal % 1 === 0 ? 0 : 2), colTotal, yPos + 10);
+                        ctx.font = 'bold 44px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.fillStyle = '#10b981';
+                        ctx.fillText('$' + item.lineTotal.toFixed(item.lineTotal % 1 === 0 ? 0 : 2), colTotal, yPos + 15);
                         ctx.textAlign = 'left';
                         grandTotal += item.lineTotal;
-                        yPos += 105;
+                        yPos += 115;
                     } else {
                         // Pick & Pack mode - clean table layout
                         if (idx % 2 === 0) {
                             ctx.fillStyle = '#f8fafc';
-                            ctx.fillRect(margin - 20, yPos - 50, width - margin * 2 + 40, 95);
+                            ctx.fillRect(margin - 20, yPos - 50, width - margin * 2 + 40, 100);
                         }
                         // Quantity (right-aligned in fixed column)
                         ctx.fillStyle = '#0f172a';
-                        ctx.font = 'bold 56px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.font = 'bold 52px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                         ctx.textAlign = 'right';
-                        ctx.fillText(item.qty.toString(), margin + colQty, yPos + 5);
+                        ctx.fillText(item.qty.toString(), margin + colQty, yPos + 8);
                         ctx.textAlign = 'left';
                         // Item name (fixed position)
-                        ctx.font = 'bold 48px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ctx.fillText(itemName, margin + colItem, yPos + 5);
+                        ctx.font = 'bold 52px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.fillText(itemName, margin + colItem, yPos + 8);
                         // Grade (fixed column)
                         ctx.fillStyle = '#64748b';
-                        ctx.font = '38px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ctx.fillText(itemGrade, margin + colGrade, yPos + 5);
-                        yPos += 100;
+                        ctx.font = '40px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.fillText(itemGrade, margin + colGrade, yPos + 8);
+                        yPos += 105;
                     }
                 });
 
@@ -5867,6 +5895,86 @@
             renderCategories();
 
             // Sync to cloud immediately
+            if (cloudSyncEnabled && currentUserPhone) {
+                syncToCloud(true);
+            }
+        }
+
+        // Edit customer modal
+        function openCustomerEditModal(customerId) {
+            const customer = customers.find(c => c.id === customerId);
+            if (!customer) return;
+
+            const modal = document.createElement('div');
+            modal.className = 'share-menu-overlay';
+            modal.id = 'customerEditModal';
+            modal.onclick = (e) => { if (e.target === modal) closeCustomerEditModal(); };
+
+            const menuDiv = document.createElement('div');
+            menuDiv.className = 'share-menu';
+            menuDiv.style.maxWidth = '360px';
+
+            menuDiv.innerHTML = `
+                <div class="share-menu-header" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-bottom: none; padding: 20px;">
+                    <h3 style="color: white;">Edit Customer</h3>
+                    <button class="share-menu-close" onclick="closeCustomerEditModal()" style="background: rgba(255,255,255,0.15); color: white;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+                <div class="share-menu-body" style="padding: 20px;">
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px;">Customer Name</label>
+                        <input type="text" id="editCustomerName" value="${customer.name}" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px;">Business Name <span style="color: #94a3b8;">(shown on orders)</span></label>
+                        <input type="text" id="editBusinessName" value="${customer.businessName || ''}" placeholder="e.g., Tony's Restaurant" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px;">Delivery Location <span style="color: #94a3b8;">(for packing)</span></label>
+                        <input type="text" id="editDeliveryLocation" value="${customer.deliveryLocation || ''}" placeholder="e.g., 123 Main St, Sydney" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
+                    </div>
+                    <button onclick="saveCustomerEdit(${customerId})" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); border: none; border-radius: 12px; color: white; font-size: 15px; font-weight: 600; cursor: pointer;">
+                        Save Changes
+                    </button>
+                </div>
+            `;
+
+            modal.appendChild(menuDiv);
+            document.body.appendChild(modal);
+            requestAnimationFrame(() => modal.classList.add('show'));
+        }
+
+        function closeCustomerEditModal() {
+            const modal = document.getElementById('customerEditModal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.remove(), 200);
+            }
+        }
+
+        function saveCustomerEdit(customerId) {
+            const customer = customers.find(c => c.id === customerId);
+            if (!customer) return;
+
+            const name = document.getElementById('editCustomerName').value.trim();
+            const businessName = document.getElementById('editBusinessName').value.trim();
+            const deliveryLocation = document.getElementById('editDeliveryLocation').value.trim();
+
+            if (!name) {
+                showToast('Name is required');
+                return;
+            }
+
+            customer.name = name;
+            customer.businessName = businessName || null;
+            customer.deliveryLocation = deliveryLocation || null;
+
+            saveCustomers();
+            renderCustomerTiersList();
+            closeCustomerEditModal();
+            showToast('Customer updated');
+
             if (cloudSyncEnabled && currentUserPhone) {
                 syncToCloud(true);
             }
