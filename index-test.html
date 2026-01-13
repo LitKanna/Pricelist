@@ -4667,10 +4667,13 @@
                     }
 
 
-                    // Trigger iOS Shortcut immediately with phone + message
-                    const shortcutInput = `${phone},${message}`;
-                    const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                    window.location.href = shortcutUrl;
+                    // Small delay to ensure share sheet fully closes
+                    setTimeout(() => {
+                        const shortcutInput = `${phone},${message}`;
+                        const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+                        window.location.href = shortcutUrl;
+                    }, 300);
+                    return;
                 } else {
                     // Non-iOS: Share with message included
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
