@@ -4636,64 +4636,69 @@
             if (!member) return;
 
             closeTeamMemberSelector();
-            showToast('Generating order image...');
 
             const data = window.teamShareData || {};
-            const memberName = member.name.split(' ')[0]; // First name only
+            const memberName = member.name.split(' ')[0];
             const customerName = (data.customerDisplay || 'customer').toUpperCase();
             const message = mode === 'booking'
                 ? `Hi ${memberName}, please book "${customerName}" order when you get a chance. Thanks, ${data.senderName || 'Me'}`
                 : `Hi ${memberName}, please prepare "${customerName}" order for delivery. Thanks, ${data.senderName || 'Me'}`;
-            const phone = member.phone.replace(/\s+/g, '').replace(/^0/, '61'); // Format phone
+            const phone = member.phone.replace(/\D/g, '');
 
             try {
-                // Generate the image
                 const blob = await generateTeamOrderImage(mode);
-                const fileName = 'order-' + mode + '-' + Date.now() + '.png';
-                const file = new File([blob], fileName, { type: 'image/png' });
 
-                // iOS: Save image then trigger shortcut (matches sendToCustomerVia)
+                if (!blob) {
+                    throw new Error('Failed to generate image');
+                }
+
+                // iOS: Save image then trigger shortcut (exact pattern from sendToCustomerVia)
                 if (isIOS()) {
                     if (navigator.share && navigator.canShare) {
+                        const file = new File([blob], 'team-order.png', { type: 'image/png' });
+
                         if (navigator.canShare({ files: [file] })) {
                             try {
-                                await navigator.share({ files: [file] });
-                            } catch (shareErr) {
-                                if (shareErr.name === 'AbortError') {
+                                await navigator.share({
+                                    files: [file]
+                                });
+                            } catch (shareError) {
+                                if (shareError.name === 'AbortError') {
                                     return;
                                 }
                             }
                         }
                     }
 
-                    // Trigger shortcut immediately - no delay
+                    // Trigger shortcut immediately
                     const shortcutInput = `${phone},${message}`;
                     const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
                     window.location.href = shortcutUrl;
                     return;
-                } else {
-                    // Non-iOS: Share with message included
-                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                }
+
+                // Non-iOS: Use Web Share with message
+                if (navigator.share && navigator.canShare) {
+                    const file = new File([blob], 'team-order.png', { type: 'image/png' });
+
+                    if (navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             files: [file],
                             text: message
                         });
-                    } else {
-                        // Fallback: Download and open WhatsApp
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = fileName;
-                        a.click();
-                        setTimeout(() => URL.revokeObjectURL(url), 100);
-                        const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-                        window.open(whatsappUrl, '_blank');
-                        showToast('Image downloaded. Attach in WhatsApp.');
+                        return;
                     }
                 }
+
+                // Fallback: Download
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'team-order.png';
+                a.click();
+                setTimeout(() => URL.revokeObjectURL(url), 100);
             } catch (err) {
-                console.error(err);
-                showToast('Could not generate image');
+                console.error('sendToTeamMember error:', err);
             }
         }
 
