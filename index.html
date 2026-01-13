@@ -4565,14 +4565,21 @@
                 ctx.fillStyle = mode === 'booking' ? '#1e40af' : '#c2410c';
                 ctx.fillRect(0, 0, width, 400);
 
-                // Mode badge
+                // Check if addon order based on notes
+                const notes = document.getElementById('orderNotes').value || '';
+                const isAddon = /add[\s-]?on/i.test(notes);
+                const orderTypeText = isAddon ? 'ADD-ON' : 'NEW ORDER';
+
+                // Order type badge (right side)
+                ctx.font = 'bold 36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                const badgeWidth = ctx.measureText(orderTypeText).width + 60;
                 ctx.fillStyle = 'rgba(255,255,255,0.2)';
-                roundRect(ctx, margin, 60, 380, 70, 35);
+                roundRect(ctx, width - margin - badgeWidth, 60, badgeWidth, 70, 35);
                 ctx.fill();
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText(orderTypeText, width - margin - 30, 110);
                 ctx.textAlign = 'left';
-                ctx.fillText(mode === 'booking' ? 'BOOKING ORDER' : 'PICK & PACK', margin + 50, 110);
 
                 // Customer name - large
                 ctx.fillStyle = '#ffffff';
@@ -4683,9 +4690,12 @@
                     }
                 });
 
-                // Notes section (if any)
-                const notes = document.getElementById('orderNotes').value;
-                if (notes && notes.trim()) {
+                // Notes section (if any) - skip addon text if already shown in badge
+                let displayNotes = notes.trim();
+                if (isAddon) {
+                    displayNotes = displayNotes.replace(/add[\s-]?on[:\s]*/gi, '').trim();
+                }
+                if (displayNotes) {
                     yPos += 40;
                     ctx.fillStyle = '#64748b';
                     ctx.font = 'bold 28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
@@ -4696,7 +4706,7 @@
                     ctx.fill();
                     ctx.fillStyle = '#92400e';
                     ctx.font = '32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                    ctx.fillText(notes, margin + 10, yPos + 30);
+                    ctx.fillText(displayNotes, margin + 10, yPos + 30);
                     yPos += 140;
                 }
 
