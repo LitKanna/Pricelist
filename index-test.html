@@ -4594,8 +4594,8 @@
             const data = window.teamShareData || {};
             const customerName = (data.customerDisplay || 'customer').toUpperCase();
             const previewMsg = mode === 'booking'
-                ? `Hi [Name], please book "${customerName}" order when you get a chance. Thanks, ${data.senderName || 'Me'}`
-                : `Hi [Name], please prepare "${customerName}" order for delivery. Thanks, ${data.senderName || 'Me'}`;
+                ? `Hi [Name] - please book ${customerName} order. Thanks ${data.senderName || ''}`
+                : `Hi [Name] - please prepare ${customerName} order for delivery. Thanks ${data.senderName || ''}`;
 
             menuDiv.innerHTML = `
                 <div class="share-menu-header" style="background: linear-gradient(135deg, ${modeColor} 0%, ${modeColor}dd 100%); border-bottom: none; padding: 20px;">
@@ -4641,8 +4641,8 @@
             const memberName = member.name.split(' ')[0];
             const customerName = (data.customerDisplay || 'customer').toUpperCase();
             const message = mode === 'booking'
-                ? `Hi ${memberName}, please book "${customerName}" order when you get a chance. Thanks, ${data.senderName || 'Me'}`
-                : `Hi ${memberName}, please prepare "${customerName}" order for delivery. Thanks, ${data.senderName || 'Me'}`;
+                ? `Hi ${memberName} - please book ${customerName} order. Thanks ${data.senderName || ''}`
+                : `Hi ${memberName} - please prepare ${customerName} order for delivery. Thanks ${data.senderName || ''}`;
             const phone = member.phone.replace(/\D/g, '');
 
             try {
@@ -4673,9 +4673,6 @@
                     // Trigger shortcut immediately
                     const shortcutInput = `${phone},${message}`;
                     const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-
-                    // DEBUG: Confirm code reaches here
-                    alert('DEBUG: Triggering shortcut to ' + phone);
 
                     window.location.href = shortcutUrl;
                     return;
