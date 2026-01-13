@@ -2860,14 +2860,14 @@
             </div>
 
             <!-- Customer Selection Card -->
-            <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid #bbf7d0;">
+            <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid #bbf7d0; overflow: visible; position: relative; z-index: 50;">
                 <label style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #15803d; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     Customer
                 </label>
                 <div id="customerSearchWrapper" style="position: relative;">
                     <input type="text" id="customerSearchInput" placeholder="Search or type customer name..." oninput="searchCustomerName(this.value)" onfocus="showCustomerSuggestions()" onblur="hideCustomerSuggestions()" style="width: 100%; padding: 12px 16px; border: 2px solid #86efac; border-radius: 12px; font-size: 15px; font-weight: 600; color: #166534; background: white; box-sizing: border-box;">
-                    <div id="customerSuggestions" style="display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); max-height: 200px; overflow-y: auto; z-index: 100;"></div>
+                    <div id="customerSuggestions" style="display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); max-height: 200px; overflow-y: auto; z-index: 9999;"></div>
                 </div>
             </div>
 
@@ -3712,7 +3712,9 @@
             document.getElementById('orderSearchInput').value = '';
             document.getElementById('orderSearchResults').classList.remove('show');
             document.getElementById('customerSearchInput').value = '';
-            document.getElementById('customerSuggestions').style.display = 'none';
+            // Remove any existing suggestions overlay
+            const existingOverlay = document.getElementById('customerSuggestionsOverlay');
+            if (existingOverlay) existingOverlay.remove();
             renderOrderItems();
             document.getElementById('orderPanel').classList.add('show');
             document.body.style.overflow = 'hidden';
@@ -3770,13 +3772,23 @@
         }
 
         function renderCustomerSuggestions(results, query) {
-            const suggestionsEl = document.getElementById('customerSuggestions');
-            suggestionsEl.innerHTML = '';
+            // Remove existing suggestions overlay
+            let suggestionsEl = document.getElementById('customerSuggestionsOverlay');
+            if (suggestionsEl) suggestionsEl.remove();
+
+            // Get input position
+            const input = document.getElementById('customerSearchInput');
+            const rect = input.getBoundingClientRect();
+
+            // Create overlay
+            suggestionsEl = document.createElement('div');
+            suggestionsEl.id = 'customerSuggestionsOverlay';
+            suggestionsEl.style.cssText = 'position: fixed; left: ' + rect.left + 'px; top: ' + (rect.bottom + 6) + 'px; width: ' + rect.width + 'px; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-height: 250px; overflow-y: auto; z-index: 99999;';
 
             // Add "Use as typed" option at top if there's input
             if (query && query.length > 0) {
                 const customDiv = document.createElement('div');
-                customDiv.style.cssText = 'padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 10px; background: #f0fdf4;';
+                customDiv.style.cssText = 'padding: 14px 16px; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 10px; background: #f0fdf4;';
                 customDiv.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><span style="color: #15803d; font-weight: 600;">Use "' + query + '"</span>';
                 customDiv.onclick = () => selectCustomerSuggestion(null, query);
                 suggestionsEl.appendChild(customDiv);
@@ -3785,7 +3797,7 @@
             // Show matching results
             results.slice(0, 6).forEach(r => {
                 const div = document.createElement('div');
-                div.style.cssText = 'padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 10px;';
+                div.style.cssText = 'padding: 14px 16px; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 10px; background: white;';
                 div.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span style="color: #0f172a; font-weight: 500;">' + r.name + '</span>';
                 div.onmouseenter = () => div.style.background = '#f8fafc';
                 div.onmouseleave = () => div.style.background = 'white';
@@ -3796,16 +3808,15 @@
             if (results.length === 0 && (!query || query.length === 0)) {
                 const emptyDiv = document.createElement('div');
                 emptyDiv.style.cssText = 'padding: 20px; text-align: center; color: #94a3b8; font-size: 13px;';
-                emptyDiv.textContent = 'No saved customers yet';
+                emptyDiv.textContent = 'No saved customers. Type any name!';
                 suggestionsEl.appendChild(emptyDiv);
             }
 
-            suggestionsEl.style.display = 'block';
+            document.body.appendChild(suggestionsEl);
         }
 
         function selectCustomerSuggestion(result, name) {
             const input = document.getElementById('customerSearchInput');
-            const suggestionsEl = document.getElementById('customerSuggestions');
 
             input.value = name;
             orderCustomerName = name;
@@ -3816,15 +3827,17 @@
                 selectedCustomer = null;
             }
 
-            suggestionsEl.style.display = 'none';
+            // Remove overlay
+            const overlay = document.getElementById('customerSuggestionsOverlay');
+            if (overlay) overlay.remove();
 
             if (currentOrderItems.length > 0) recalculateOrderPrices();
         }
 
         function hideCustomerSuggestions() {
             setTimeout(() => {
-                const suggestionsEl = document.getElementById('customerSuggestions');
-                if (suggestionsEl) suggestionsEl.style.display = 'none';
+                const overlay = document.getElementById('customerSuggestionsOverlay');
+                if (overlay) overlay.remove();
             }, 200);
         }
 
