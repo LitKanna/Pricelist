@@ -4153,9 +4153,13 @@
                 minusBtn.textContent = '−';
                 minusBtn.onclick = () => updateOrderQty(idx, -1);
 
-                const qtyDisplay = document.createElement('span');
-                qtyDisplay.style.cssText = 'min-width: 40px; text-align: center; font-weight: 700; font-size: 16px; color: #0f172a;';
-                qtyDisplay.textContent = item.qty;
+                const qtyDisplay = document.createElement('input');
+                qtyDisplay.type = 'number';
+                qtyDisplay.value = item.qty;
+                qtyDisplay.min = '1';
+                qtyDisplay.style.cssText = 'width: 50px; text-align: center; font-weight: 700; font-size: 16px; color: #0f172a; border: none; background: transparent; -moz-appearance: textfield; padding: 4px 0;';
+                qtyDisplay.onchange = (e) => { const newQty = parseInt(e.target.value) || 1; currentOrderItems[idx].qty = Math.max(1, newQty); currentOrderItems[idx].lineTotal = currentOrderItems[idx].qty * currentOrderItems[idx].unitPrice; renderOrderItems(); };
+                qtyDisplay.onfocus = (e) => e.target.select();
 
                 const plusBtn = document.createElement('button');
                 plusBtn.style.cssText = 'width: 32px; height: 32px; border: none; border-radius: 8px; background: white; color: #0f172a; font-size: 18px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);';
