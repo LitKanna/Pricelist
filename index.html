@@ -4625,8 +4625,8 @@
                     if (selectedCustomer.deliveryLocation) deliveryLocation = selectedCustomer.deliveryLocation;
                 }
 
-                // Header height - taller for packing mode with delivery location
-                const headerHeight = (!showPrices && deliveryLocation) ? 480 : 400;
+                // Header height
+                const headerHeight = 400;
 
                 // Header background
                 ctx.fillStyle = mode === 'booking' ? '#1e40af' : '#c2410c';
@@ -4648,13 +4648,24 @@
                 ctx.font = 'bold 72px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                 ctx.fillText(displayName.toUpperCase(), margin, 250);
 
-                // Delivery location (packing mode only)
-                let headerTextY = 330;
+                // Delivery location badge (packing mode only) - right side, highlighted box
                 if (!showPrices && deliveryLocation) {
-                    ctx.fillStyle = 'rgba(255,255,255,0.9)';
-                    ctx.font = '42px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                    ctx.fillText('📍 ' + deliveryLocation, margin, headerTextY);
-                    headerTextY += 70;
+                    const locationText = deliveryLocation.toUpperCase();
+                    ctx.font = 'bold 40px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    const locationWidth = ctx.measureText(locationText).width + 80;
+                    const locationBoxHeight = 70;
+                    const locationY = 180;
+
+                    // Highlighted box background
+                    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+                    roundRect(ctx, width - margin - locationWidth, locationY, locationWidth, locationBoxHeight, 35);
+                    ctx.fill();
+
+                    // Location text
+                    ctx.fillStyle = '#ffffff';
+                    ctx.textAlign = 'right';
+                    ctx.fillText(locationText, width - margin - 40, locationY + 48);
+                    ctx.textAlign = 'left';
                 }
 
                 // Date
@@ -4663,7 +4674,7 @@
                 const timeStr = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
                 ctx.fillStyle = 'rgba(255,255,255,0.8)';
                 ctx.font = '36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                ctx.fillText(dateStr + '  •  ' + timeStr, margin, headerTextY);
+                ctx.fillText(dateStr + '  •  ' + timeStr, margin, 340);
 
                 // Items section
                 let yPos = headerHeight + 80;
