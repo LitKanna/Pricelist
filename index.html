@@ -4544,25 +4544,26 @@
                         grandTotal += item.lineTotal;
                         yPos += 100;
                     } else {
-                        // Pick & Pack mode - compact layout, qty next to item
+                        // Pick & Pack mode - compact single line layout
                         if (idx % 2 === 0) {
                             ctx.fillStyle = '#f8fafc';
-                            ctx.fillRect(margin - 20, yPos - 60, width - margin * 2 + 40, 135);
+                            ctx.fillRect(margin - 20, yPos - 45, width - margin * 2 + 40, 90);
                         }
                         // Quantity on left
                         ctx.fillStyle = '#0f172a';
                         ctx.font = 'bold 64px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                         const qtyText = item.qty.toString();
-                        ctx.fillText(qtyText, margin, yPos + 5);
+                        ctx.fillText(qtyText, margin, yPos + 10);
                         const qtyWidth = ctx.measureText(qtyText).width;
                         // Item name after qty
-                        ctx.font = 'bold 56px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ctx.fillText(item.name, margin + qtyWidth + 40, yPos + 5);
-                        // Grade below
+                        ctx.font = 'bold 52px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.fillText(item.name, margin + qtyWidth + 50, yPos + 10);
+                        const nameWidth = ctx.measureText(item.name).width;
+                        // Grade next to item name (same line)
                         ctx.fillStyle = '#64748b';
-                        ctx.font = '42px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ctx.fillText(item.grade, margin + qtyWidth + 40, yPos + 50);
-                        yPos += 140;
+                        ctx.font = '40px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.fillText(item.grade, margin + qtyWidth + 50 + nameWidth + 30, yPos + 10);
+                        yPos += 95;
                     }
                 });
 
