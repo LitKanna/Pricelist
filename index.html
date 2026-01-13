@@ -43,7 +43,7 @@
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        touch-action: manipulation;
+        touch-action: pan-x pan-y;
     }
     
     body {
@@ -1028,6 +1028,7 @@
     
     /* Settings Panel */
     .settings-panel {
+        touch-action: pan-y;
         position: fixed;
         inset: 0;
         background: white;
@@ -1180,7 +1181,7 @@
             max-width: 1200px;
             margin: 0 auto;
             box-sizing: border-box;
-        touch-action: manipulation;
+        touch-action: pan-x pan-y;
         }
 
         #pricingCardsGrid {
@@ -1345,7 +1346,7 @@
         font-weight: 500;
         background: #f1f5f9;
         box-sizing: border-box;
-        touch-action: manipulation;
+        touch-action: pan-x pan-y;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -1608,7 +1609,7 @@
         resize: none;
         min-height: 70px;
         box-sizing: border-box;
-        touch-action: manipulation;
+        touch-action: pan-x pan-y;
         transition: all 0.2s;
         font-family: inherit;
     }
@@ -3083,6 +3084,11 @@
     <canvas id="downloadCanvas"></canvas>
 
     <script>
+        // Prevent pinch zoom
+        document.addEventListener("gesturestart", function(e) { e.preventDefault(); });
+        document.addEventListener("gesturechange", function(e) { e.preventDefault(); });
+        document.addEventListener("gestureend", function(e) { e.preventDefault(); });
+
         // ========================================
         // FIREBASE CONFIGURATION
         // ========================================
