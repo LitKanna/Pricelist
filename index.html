@@ -4547,22 +4547,22 @@
                         // Pick & Pack mode - compact layout, qty next to item
                         if (idx % 2 === 0) {
                             ctx.fillStyle = '#f8fafc';
-                            ctx.fillRect(margin - 20, yPos - 55, width - margin * 2 + 40, 115);
+                            ctx.fillRect(margin - 20, yPos - 60, width - margin * 2 + 40, 135);
                         }
                         // Quantity on left
                         ctx.fillStyle = '#0f172a';
-                        ctx.font = 'bold 52px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.font = 'bold 64px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                         const qtyText = item.qty.toString();
                         ctx.fillText(qtyText, margin, yPos + 5);
                         const qtyWidth = ctx.measureText(qtyText).width;
                         // Item name after qty
-                        ctx.font = 'bold 46px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.font = 'bold 56px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                         ctx.fillText(item.name, margin + qtyWidth + 40, yPos + 5);
                         // Grade below
                         ctx.fillStyle = '#64748b';
-                        ctx.font = '34px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.font = '42px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                         ctx.fillText(item.grade, margin + qtyWidth + 40, yPos + 50);
-                        yPos += 120;
+                        yPos += 140;
                     }
                 });
 
@@ -5107,7 +5107,7 @@
                     }
 
                     ctx.fillStyle = colors.darkestGreen;
-                    ctx.font = '34px Arial, Helvetica, sans-serif';
+                    ctx.font = '42px Arial, Helvetica, sans-serif';
                     ctx.textAlign = 'left';
 
                     let displayName = item.name;
