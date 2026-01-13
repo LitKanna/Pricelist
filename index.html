@@ -4544,65 +4544,26 @@
 
         async function shareToTeam(mode) {
             closeTeamShareMenu();
-            showToast('Generating order image...');
 
-            try {
-                const blob = await generateTeamOrderImage(mode);
+            // Get customer display name
+            let customerDisplay = orderCustomerName || 'Walk-in Customer';
+            const contactMatch = customerContacts.find(c => c.name === orderCustomerName || c.businessName === orderCustomerName);
+            if (contactMatch && contactMatch.businessName) customerDisplay = contactMatch.businessName;
+            if (selectedCustomer && selectedCustomer.businessName) customerDisplay = selectedCustomer.businessName;
 
-                // Get customer display name
-                let customerDisplay = orderCustomerName || 'Walk-in Customer';
-                const contactMatch = customerContacts.find(c => c.name === orderCustomerName || c.businessName === orderCustomerName);
-                if (contactMatch && contactMatch.businessName) customerDisplay = contactMatch.businessName;
-                if (selectedCustomer && selectedCustomer.businessName) customerDisplay = selectedCustomer.businessName;
+            // Prepare message based on mode
+            const message = mode === 'booking'
+                ? `Hi, please book this order for ${customerDisplay}. Thanks!`
+                : `Hi, please prepare this order for ${customerDisplay}. Thanks!`;
 
-                // Prepare message based on mode
-                const message = mode === 'booking'
-                    ? `Hi, please book this order for ${customerDisplay}. Thanks!`
-                    : `Hi, please prepare this order for ${customerDisplay}. Thanks!`;
-
-                // Check if we have team members
-                if (teamMembers.length === 0) {
-                    // No team members - use standard share sheet
-                    const fileName = 'order-' + (mode === 'booking' ? 'booking' : 'pickpack') + '-' + Date.now() + '.png';
-                    if (navigator.share && navigator.canShare) {
-                        const file = new File([blob], fileName, { type: 'image/png' });
-                        if (navigator.canShare({ files: [file] })) {
-                            await navigator.share({ files: [file], title: 'Order - ' + customerDisplay, text: message });
-                            return;
-                        }
-                    }
-                    // Fallback download
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = fileName;
-                    a.click();
-                    setTimeout(() => URL.revokeObjectURL(url), 100);
-                    showToast('Order image downloaded');
-                    return;
-                }
-
-                // Copy image to clipboard first for iOS Shortcut
-                try {
-                    await navigator.clipboard.write([
-                        new ClipboardItem({ 'image/png': blob })
-                    ]);
-                } catch (clipErr) {
-                    // Fallback: use Web Share if clipboard fails
-                    const fileName = 'order-' + mode + '-' + Date.now() + '.png';
-                    const file = new File([blob], fileName, { type: 'image/png' });
-                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({ files: [file], title: 'Order', text: message });
-                        return;
-                    }
-                }
-
-                // Show team member selection
-                showTeamMemberSelector(mode, message);
-            } catch (err) {
-                console.error(err);
-                showToast('Could not share');
+            // Check if we have team members
+            if (teamMembers.length === 0) {
+                showToast('No team members. Add in Team settings.');
+                return;
             }
+
+            // Show team member selection FIRST, generate image when they select
+            showTeamMemberSelector(mode, message, customerDisplay);
         }
 
         function showTeamMemberSelector(mode, message) {
@@ -4667,26 +4628,66 @@
             }
         }
 
-        function sendToTeamMember(memberIndex, mode) {
+        async function sendToTeamMember(memberIndex, mode) {
             const member = teamMembers[memberIndex];
             if (!member) return;
 
             closeTeamMemberSelector();
+            showToast('Generating order image...');
 
             const message = window.teamShareMessage || (mode === 'booking' ? 'Please book this order' : 'Please prepare this order');
             const phone = member.phone.replace(/\s+/g, '');
 
-            // Try iOS Shortcut first
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-            if (isIOS) {
-                const shortcutInput = `${phone},${message}`;
-                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                window.location.href = shortcutUrl;
-            } else {
-                // Non-iOS: Try WhatsApp or show instructions
-                const whatsappUrl = `https://wa.me/${phone.replace(/^0/, '61')}?text=${encodeURIComponent(message)}`;
-                window.open(whatsappUrl, '_blank');
-                showToast('Paste the image from clipboard');
+            try {
+                // Generate the image
+                const blob = await generateTeamOrderImage(mode);
+                const fileName = 'order-' + mode + '-' + Date.now() + '.png';
+                const file = new File([blob], fileName, { type: 'image/png' });
+
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+                if (isIOS) {
+                    // iOS: Share image first, then trigger shortcut
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                files: [file],
+                                title: 'Order Image'
+                            });
+                            // After sharing, trigger the shortcut
+                            setTimeout(() => {
+                                const shortcutInput = `${phone},${message}`;
+                                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+                                window.location.href = shortcutUrl;
+                            }, 500);
+                        } catch (shareErr) {
+                            if (shareErr.name !== 'AbortError') {
+                                showToast('Could not share');
+                            }
+                        }
+                    }
+                } else {
+                    // Non-iOS: Copy to clipboard and open WhatsApp
+                    try {
+                        await navigator.clipboard.write([
+                            new ClipboardItem({ 'image/png': blob })
+                        ]);
+                        showToast('Image copied! Paste in chat');
+                    } catch (e) {
+                        // Download as fallback
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = fileName;
+                        a.click();
+                        setTimeout(() => URL.revokeObjectURL(url), 100);
+                    }
+                    const whatsappUrl = `https://wa.me/${phone.replace(/^0/, '61')}?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappUrl, '_blank');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Could not generate image');
             }
         }
 
