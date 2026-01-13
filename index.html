@@ -1378,7 +1378,7 @@
         background: white;
         border-radius: 16px;
         box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-        max-height: 280px;
+        max-height: 350px;
         overflow-y: auto;
         z-index: 100;
         opacity: 0;
@@ -1386,6 +1386,7 @@
         pointer-events: none;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         border: 1px solid #e2e8f0;
+        padding: 12px;
     }
 
     .order-search-results.show {
@@ -1394,26 +1395,34 @@
         pointer-events: auto;
     }
 
-    .search-result-item {
-        padding: 14px 18px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        transition: all 0.15s;
-        border-bottom: 1px solid #f1f5f9;
+    .search-results-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
     }
 
-    .search-result-item:last-child {
-        border-bottom: none;
+    .search-result-item {
+        padding: 12px 8px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        transition: all 0.15s;
+        background: #f8fafc;
+        border-radius: 12px;
+        border: 2px solid transparent;
+        min-height: 70px;
     }
 
     .search-result-item:hover {
         background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+        border-color: #22c55e;
     }
 
     .search-result-item:active {
-        transform: scale(0.99);
+        transform: scale(0.96);
     }
 
     .search-result-info {
@@ -4020,20 +4029,30 @@
             }
             resultsEl.textContent = '';
 
-            // Show matching products (simplified - only product name)
+            // Show matching products in grid layout with grade/size
             if (results.length > 0) {
-                results.slice(0, 10).forEach(r => {
+                const grid = document.createElement('div');
+                grid.className = 'search-results-grid';
+                results.slice(0, 12).forEach(r => {
                     const div = document.createElement('div');
                     div.className = 'search-result-item';
-                    div.style.cssText = 'padding: 14px 18px; cursor: pointer; border-bottom: 1px solid #f1f5f9;';
                     div.onclick = () => addProductToOrder(r.category, r.index);
+
                     const nameDiv = document.createElement('div');
-                    nameDiv.className = 'search-result-name';
-                    nameDiv.style.cssText = 'font-weight: 600; color: #0f172a; font-size: 15px;';
+                    nameDiv.style.cssText = 'font-weight: 600; color: #0f172a; font-size: 13px; line-height: 1.2;';
                     nameDiv.textContent = r.name;
                     div.appendChild(nameDiv);
-                    resultsEl.appendChild(div);
+
+                    if (r.grade) {
+                        const gradeDiv = document.createElement('div');
+                        gradeDiv.style.cssText = 'font-size: 11px; color: #64748b; margin-top: 4px;';
+                        gradeDiv.textContent = r.grade;
+                        div.appendChild(gradeDiv);
+                    }
+
+                    grid.appendChild(div);
                 });
+                resultsEl.appendChild(grid);
             }
 
             // Always show "Add custom item" option at the bottom
