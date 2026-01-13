@@ -4630,6 +4630,23 @@
             }
         }
 
+        function showQuickSendButton(memberName, shortcutUrl) {
+            const container = document.createElement('div');
+            container.id = 'quickSendBtn';
+            container.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:10000;';
+
+            const btn = document.createElement('button');
+            btn.style.cssText = 'padding:16px 32px;background:linear-gradient(135deg,#16a34a,#22c55e);color:white;border:none;border-radius:50px;font-size:17px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.3);display:flex;align-items:center;gap:10px;cursor:pointer;';
+            btn.textContent = '📩 Send to ' + memberName;
+            btn.onclick = function() {
+                window.location.href = shortcutUrl;
+                container.remove();
+            };
+
+            container.appendChild(btn);
+            document.body.appendChild(container);
+        }
+
 
         async function sendToTeamMember(memberIndex, mode) {
             const member = teamMembers[memberIndex];
@@ -4670,15 +4687,11 @@
                         }
                     }
 
-                    // Use anchor click - works better on iOS after share sheet
+                    // Show quick send button - iOS needs user tap after share sheet
                     const shortcutInput = `${phone},${message}`;
                     const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
 
-                    const a = document.createElement('a');
-                    a.href = shortcutUrl;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
+                    showQuickSendButton(memberName, shortcutUrl);
                     return;
                 }
 
