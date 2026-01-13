@@ -4501,67 +4501,69 @@
                 ctx.stroke();
                 yPos += 40;
 
-                // Column headers
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = 'bold ' + (showPrices ? '26' : '32') + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                ctx.fillText('ITEM', margin, yPos);
+                // Column headers (only for booking mode)
                 if (showPrices) {
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = 'bold 26px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    ctx.fillText('ITEM', margin, yPos);
                     ctx.fillText('QTY', width - margin - 500, yPos);
                     ctx.fillText('PRICE', width - margin - 250, yPos);
                     ctx.textAlign = 'right';
                     ctx.fillText('TOTAL', width - margin, yPos);
                     ctx.textAlign = 'left';
-                } else {
-                    ctx.textAlign = 'right';
-                    ctx.fillText('QTY', width - margin, yPos);
-                    ctx.textAlign = 'left';
+                    yPos += 60;
                 }
-                yPos += 60;
 
                 // Items
                 let grandTotal = 0;
 
                 currentOrderItems.forEach((item, idx) => {
-                    // Alternate row background
-                    if (idx % 2 === 0) {
-                        ctx.fillStyle = '#f8fafc';
-                        ctx.fillRect(margin - 20, yPos - 50, width - margin * 2 + 40, showPrices ? 90 : 110);
-                    }
-
-                    // Item name
-                    ctx.fillStyle = '#0f172a';
-                    ctx.font = 'bold ' + (showPrices ? '36' : '48') + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                    ctx.fillText(item.name, margin, yPos);
-
-                    // Grade below name
-                    ctx.fillStyle = '#64748b';
-                    ctx.font = (showPrices ? '28' : '36') + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                    ctx.fillText(item.grade, margin, yPos + (showPrices ? 40 : 50));
-
-                    // Qty
-                    ctx.fillStyle = '#0f172a';
                     if (showPrices) {
+                        // Booking mode - spread layout with prices
+                        if (idx % 2 === 0) {
+                            ctx.fillStyle = '#f8fafc';
+                            ctx.fillRect(margin - 20, yPos - 45, width - margin * 2 + 40, 90);
+                        }
+                        ctx.fillStyle = '#0f172a';
+                        ctx.font = 'bold 36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.fillText(item.name, margin, yPos);
+                        ctx.fillStyle = '#64748b';
+                        ctx.font = '28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.fillText(item.grade, margin, yPos + 40);
+                        ctx.fillStyle = '#0f172a';
                         ctx.font = 'bold 40px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ctx.fillText('x' + item.qty, width - margin - 500, yPos + 10);
-                        // Unit price
+                        ctx.fillText(item.qty, width - margin - 500, yPos + 10);
                         ctx.font = '32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                         ctx.fillStyle = '#64748b';
                         ctx.fillText('$' + item.unitPrice.toFixed(item.unitPrice % 1 === 0 ? 0 : 2), width - margin - 250, yPos + 10);
-                        // Line total
                         ctx.textAlign = 'right';
                         ctx.font = 'bold 36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                         ctx.fillStyle = '#0f172a';
                         ctx.fillText('$' + item.lineTotal.toFixed(item.lineTotal % 1 === 0 ? 0 : 2), width - margin, yPos + 10);
                         ctx.textAlign = 'left';
                         grandTotal += item.lineTotal;
+                        yPos += 100;
                     } else {
-                        ctx.textAlign = 'right';
-                        ctx.font = 'bold 56px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ctx.fillText('x' + item.qty, width - margin, yPos + 15);
-                        ctx.textAlign = 'left';
+                        // Pick & Pack mode - compact layout, qty next to item
+                        if (idx % 2 === 0) {
+                            ctx.fillStyle = '#f8fafc';
+                            ctx.fillRect(margin - 20, yPos - 55, width - margin * 2 + 40, 115);
+                        }
+                        // Quantity on left
+                        ctx.fillStyle = '#0f172a';
+                        ctx.font = 'bold 52px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        const qtyText = item.qty.toString();
+                        ctx.fillText(qtyText, margin, yPos + 5);
+                        const qtyWidth = ctx.measureText(qtyText).width;
+                        // Item name after qty
+                        ctx.font = 'bold 46px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.fillText(item.name, margin + qtyWidth + 40, yPos + 5);
+                        // Grade below
+                        ctx.fillStyle = '#64748b';
+                        ctx.font = '34px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ctx.fillText(item.grade, margin + qtyWidth + 40, yPos + 50);
+                        yPos += 120;
                     }
-
-                    yPos += showPrices ? 100 : 120;
                 });
 
                 // Notes section (if any)
