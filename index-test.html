@@ -4629,6 +4629,66 @@
             }
         }
 
+        function showSendConfirmation(memberName, phone, message) {
+            const modal = document.createElement('div');
+            modal.className = 'share-menu-overlay';
+            modal.id = 'sendConfirmModal';
+            modal.onclick = (e) => { if (e.target === modal) closeSendConfirmation(); };
+
+            const menuDiv = document.createElement('div');
+            menuDiv.className = 'share-menu';
+            menuDiv.style.maxWidth = '360px';
+
+            const escapedMessage = message.replace(/'/g, "\'");
+            const escapedPhone = phone.replace(/'/g, "\'");
+
+            menuDiv.innerHTML = `
+                <div class="share-menu-header" style="background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); border-bottom: none; padding: 20px;">
+                    <h3 style="color: white;">Send Message?</h3>
+                    <button class="share-menu-close" onclick="closeSendConfirmation()" style="background: rgba(255,255,255,0.15); color: white;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+                <div class="share-menu-body" style="padding: 20px; text-align: center;">
+                    <div style="font-size: 16px; color: #0f172a; margin-bottom: 8px;">
+                        Send message to <strong>${memberName}</strong>?
+                    </div>
+                    <div style="font-size: 13px; color: #64748b; margin-bottom: 24px; padding: 12px; background: #f8fafc; border-radius: 10px; text-align: left;">
+                        "${message}"
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <button onclick="closeSendConfirmation()" style="flex: 1; padding: 14px; background: #f1f5f9; border: none; border-radius: 12px; color: #64748b; font-size: 15px; font-weight: 600; cursor: pointer;">
+                            Cancel
+                        </button>
+                        <button onclick="confirmSendMessage('${escapedPhone}', '${encodeURIComponent(message)}')" style="flex: 1; padding: 14px; background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); border: none; border-radius: 12px; color: white; font-size: 15px; font-weight: 600; cursor: pointer;">
+                            Send
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            modal.appendChild(menuDiv);
+            document.body.appendChild(modal);
+            requestAnimationFrame(() => modal.classList.add('show'));
+        }
+
+        function closeSendConfirmation() {
+            const modal = document.getElementById('sendConfirmModal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.remove(), 200);
+            }
+        }
+
+        function confirmSendMessage(phone, encodedMessage) {
+            closeSendConfirmation();
+            const message = decodeURIComponent(encodedMessage);
+            const shortcutInput = phone + ',' + message;
+            const shortcutUrl = 'shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=' + encodeURIComponent(shortcutInput);
+            window.location.href = shortcutUrl;
+        }
+
+
         async function sendToTeamMember(memberIndex, mode) {
             const member = teamMembers[memberIndex];
             if (!member) return;
@@ -4663,11 +4723,10 @@
                         }
                     }
 
-                    // Immediately trigger the iOS Shortcut with phone + message
-                    // The shortcut will get the last saved image and send via iMessage
-                    const shortcutInput = `${phone},${message}`;
-                    const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                    window.location.href = shortcutUrl;
+
+                    // Show confirmation before sending message via shortcut
+                    const memberFirstName = member.name.split(' ')[0];
+                    showSendConfirmation(memberFirstName, phone, message);
                 } else {
                     // Non-iOS: Share with message included
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
