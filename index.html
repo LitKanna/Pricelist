@@ -4594,8 +4594,8 @@
             const data = window.teamShareData || {};
             const customerName = (data.customerDisplay || 'customer').toUpperCase();
             const previewMsg = mode === 'booking'
-                ? `Hey [Name] 👋 New booking for ${customerName}! Please process when you get a chance. Thanks! - ${data.senderName || 'Team'}`
-                : `Hey [Name] 👋 ${customerName} order ready for packing! Please prepare for delivery. Thanks! - ${data.senderName || 'Team'}`;
+                ? `Hey [Name] 👋 Today's order for ${customerName}! Please book when you get a chance. Thanks! - ${data.senderName || 'Team'}`
+                : `Hey [Name] 👋 Could you please get ${customerName} order ready for delivery? Thanks! - ${data.senderName || 'Team'}`;
 
             menuDiv.innerHTML = `
                 <div class="share-menu-header" style="background: linear-gradient(135deg, ${modeColor} 0%, ${modeColor}dd 100%); border-bottom: none; padding: 20px;">
@@ -4641,8 +4641,8 @@
             const memberName = member.name.split(' ')[0];
             const customerName = (data.customerDisplay || 'customer').toUpperCase();
             const message = mode === 'booking'
-                ? `Hey ${memberName} 👋 New booking for ${customerName}! Please process when you get a chance. Thanks! - ${data.senderName || 'Team'}`
-                : `Hey ${memberName} 👋 ${customerName} order ready for packing! Please prepare for delivery. Thanks! - ${data.senderName || 'Team'}`;
+                ? `Hey ${memberName} 👋 Today's order for ${customerName}! Please book when you get a chance. Thanks! - ${data.senderName || 'Team'}`
+                : `Hey ${memberName} 👋 Could you please get ${customerName} order ready for delivery? Thanks! - ${data.senderName || 'Team'}`;
             const phone = member.phone.replace(/\D/g, '');
 
             try {
