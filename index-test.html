@@ -4528,10 +4528,14 @@
                 }
                 yPos += 60;
 
-                // Items
+                // Items - sorted by quantity (largest first)
+                const sortedItems = [...currentOrderItems].sort((a, b) => b.qty - a.qty);
                 let grandTotal = 0;
 
-                currentOrderItems.forEach((item, idx) => {
+                sortedItems.forEach((item, idx) => {
+                    const itemName = item.name.toUpperCase();
+                    const itemGrade = item.grade.toUpperCase();
+
                     if (showPrices) {
                         // Booking mode - table layout with prices
                         if (idx % 2 === 0) {
@@ -4541,10 +4545,10 @@
                         // Item name and grade
                         ctx.fillStyle = '#0f172a';
                         ctx.font = 'bold 38px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ctx.fillText(item.name, margin, yPos);
+                        ctx.fillText(itemName, margin, yPos);
                         ctx.fillStyle = '#64748b';
                         ctx.font = '30px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ctx.fillText(item.grade, margin, yPos + 42);
+                        ctx.fillText(itemGrade, margin, yPos + 42);
                         // Qty (right-aligned)
                         ctx.fillStyle = '#0f172a';
                         ctx.font = 'bold 42px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
@@ -4575,11 +4579,11 @@
                         ctx.textAlign = 'left';
                         // Item name (fixed position)
                         ctx.font = 'bold 48px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ctx.fillText(item.name, margin + colItem, yPos + 5);
+                        ctx.fillText(itemName, margin + colItem, yPos + 5);
                         // Grade (fixed column)
                         ctx.fillStyle = '#64748b';
                         ctx.font = '38px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ctx.fillText(item.grade, margin + colGrade, yPos + 5);
+                        ctx.fillText(itemGrade, margin + colGrade, yPos + 5);
                         yPos += 100;
                     }
                 });
