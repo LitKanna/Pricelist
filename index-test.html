@@ -4670,13 +4670,15 @@
                         }
                     }
 
-                    // Small delay after share sheet for iOS to accept URL scheme
+                    // Use anchor click - works better on iOS after share sheet
                     const shortcutInput = `${phone},${message}`;
                     const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
 
-                    setTimeout(() => {
-                        window.location.href = shortcutUrl;
-                    }, 100);
+                    const a = document.createElement('a');
+                    a.href = shortcutUrl;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
                     return;
                 }
 
