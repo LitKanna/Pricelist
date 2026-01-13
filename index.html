@@ -4670,29 +4670,22 @@
                     throw new Error('Failed to generate image');
                 }
 
-                // iOS: Save image then trigger shortcut (exact pattern from sendToCustomerVia)
+                // iOS: Download image then trigger shortcut directly (no share sheet)
                 if (isIOS()) {
-                    if (navigator.share && navigator.canShare) {
-                        const file = new File([blob], 'team-order.png', { type: 'image/png' });
+                    // Download the image first
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'order-' + Date.now() + '.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
 
-                        if (navigator.canShare({ files: [file] })) {
-                            try {
-                                await navigator.share({
-                                    files: [file]
-                                });
-                            } catch (shareError) {
-                                if (shareError.name === 'AbortError') {
-                                    return;
-                                }
-                            }
-                        }
-                    }
-
-                    // Show quick send button - iOS needs user tap after share sheet
+                    // Trigger shortcut immediately - user tap was on team member button
                     const shortcutInput = `${phone},${message}`;
                     const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-
-                    showQuickSendButton(memberName, shortcutUrl);
+                    window.location.href = shortcutUrl;
                     return;
                 }
 
