@@ -4544,6 +4544,20 @@
                                 </div>
                             </div>
                         </button>
+                        <button onclick="shareToTeam('addon')" style="padding: 0; background: white; border: 2px solid #e2e8f0; border-radius: 14px; cursor: pointer; text-align: left; overflow: hidden;">
+                            <div style="display: flex; align-items: center;">
+                                <div style="width: 56px; height: 56px; margin: 12px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                                </div>
+                                <div style="flex: 1; padding-right: 16px;">
+                                    <div style="font-size: 16px; font-weight: 700; color: #0f172a;">Add-on</div>
+                                    <div style="font-size: 13px; color: #64748b;">Add to existing order</div>
+                                </div>
+                                <div style="padding-right: 16px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                                </div>
+                            </div>
+                        </button>
                     </div>
                     <button onclick="closeTeamShareMenu()" style="width: 100%; margin-top: 16px; padding: 14px; background: #f1f5f9; border: none; border-radius: 12px; color: #64748b; font-size: 15px; font-weight: 600; cursor: pointer;">
                         Cancel
@@ -4627,8 +4641,8 @@
             menuDiv.className = 'share-menu';
             menuDiv.style.maxWidth = '360px';
 
-            const modeColor = mode === 'booking' ? '#1e40af' : '#c2410c';
-            const modeTitle = mode === 'booking' ? 'Send to Booking' : 'Send to Packer';
+            const modeColor = mode === 'booking' ? '#1e40af' : mode === 'addon' ? '#6d28d9' : '#c2410c';
+            const modeTitle = mode === 'booking' ? 'Send to Booking' : mode === 'addon' ? 'Send Add-on' : 'Send to Packer';
 
             let membersHtml = '';
             teamMembers.forEach((member, idx) => {
@@ -4645,9 +4659,14 @@
 
             const data = window.teamShareData || {};
             const customerName = (data.customerDisplay || 'customer').toUpperCase();
-            const previewMsg = mode === 'booking'
-                ? `Hey [Name] 👋 Today's order for ${customerName}! Please book when you get a chance. Thanks! - ${data.senderName || 'Team'}`
-                : `Hey [Name] 👋 Could you please get ${customerName} order ready for delivery? Thanks! - ${data.senderName || 'Team'}`;
+            let previewMsg;
+            if (mode === 'booking') {
+                previewMsg = `Hey [Name] 👋 Today's order for ${customerName}! Please book when you get a chance. Thanks! - ${data.senderName || 'Team'}`;
+            } else if (mode === 'addon') {
+                previewMsg = `Hey [Name] 👋 Add-on for ${customerName}! Please add to their current invoice. Thanks! - ${data.senderName || 'Team'}`;
+            } else {
+                previewMsg = `Hey [Name] 👋 Could you please get ${customerName} order ready for delivery? Thanks! - ${data.senderName || 'Team'}`;
+            }
 
             menuDiv.innerHTML = `
                 <div class="share-menu-header" style="background: linear-gradient(135deg, ${modeColor} 0%, ${modeColor}dd 100%); border-bottom: none; padding: 20px;">
@@ -4710,9 +4729,14 @@
             const data = window.teamShareData || {};
             const memberName = member.name.split(' ')[0];
             const customerName = (data.customerDisplay || 'customer').toUpperCase();
-            const message = mode === 'booking'
-                ? `Hey ${memberName} 👋 Today's order for ${customerName}! Please book when you get a chance. Thanks! - ${data.senderName || 'Team'}`
-                : `Hey ${memberName} 👋 Could you please get ${customerName} order ready for delivery? Thanks! - ${data.senderName || 'Team'}`;
+            let message;
+            if (mode === 'booking') {
+                message = `Hey ${memberName} 👋 Today's order for ${customerName}! Please book when you get a chance. Thanks! - ${data.senderName || 'Team'}`;
+            } else if (mode === 'addon') {
+                message = `Hey ${memberName} 👋 Add-on for ${customerName}! Please add to their current invoice. Thanks! - ${data.senderName || 'Team'}`;
+            } else {
+                message = `Hey ${memberName} 👋 Could you please get ${customerName} order ready for delivery? Thanks! - ${data.senderName || 'Team'}`;
+            }
             const phone = member.phone.replace(/\D/g, '');
 
             // iOS: Image already saved to Photos, just trigger shortcut
@@ -4768,7 +4792,7 @@
                 canvas.height = height;
 
                 const margin = 120;
-                const showPrices = (mode === 'booking');
+                const showPrices = (mode === 'booking' || mode === 'addon');
 
                 // Define column positions for consistent alignment
                 const colQty = 150;        // Qty column width (right-aligned)
@@ -4782,9 +4806,9 @@
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(0, 0, width, height);
 
-                // Check if addon order based on notes
+                // Check if addon order based on mode or notes
                 const notes = document.getElementById('orderNotes').value || '';
-                const isAddon = /add[\s-]?on/i.test(notes);
+                const isAddon = mode === 'addon' || /add[\s-]?on/i.test(notes);
                 const orderTypeText = isAddon ? 'ADD-ON' : 'NEW ORDER';
 
                 // Get business name and delivery location from customer data
@@ -4811,7 +4835,7 @@
                 const headerHeight = 400;
 
                 // Header background
-                ctx.fillStyle = mode === 'booking' ? '#1e40af' : '#c2410c';
+                ctx.fillStyle = mode === 'booking' ? '#1e40af' : mode === 'addon' ? '#6d28d9' : '#c2410c';
                 ctx.fillRect(0, 0, width, headerHeight);
 
                 // Order type badge (right side)
