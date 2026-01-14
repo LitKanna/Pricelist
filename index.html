@@ -3903,19 +3903,26 @@
 
             const lowerQuery = query.toLowerCase();
             const results = [];
+            const addedNames = new Set();
 
-            // Search in pricing tiers (customers)
-            customers.forEach(c => {
-                if (c.name.toLowerCase().includes(lowerQuery)) {
-                    results.push({ type: 'tier', id: c.id, name: c.name, customer: c });
+            // Search in contacts first (show customer names, not business names)
+            customerContacts.forEach(contact => {
+                if (contact.name.toLowerCase().includes(lowerQuery) && !addedNames.has(contact.name.toLowerCase())) {
+                    results.push({ type: 'contact', phone: contact.phone, name: contact.name });
+                    addedNames.add(contact.name.toLowerCase());
                 }
             });
 
-            // Search in contacts
-            customerContacts.forEach(contact => {
-                const hasTier = customers.some(c => c.name.toLowerCase() === contact.name.toLowerCase());
-                if (!hasTier && contact.name.toLowerCase().includes(lowerQuery)) {
-                    results.push({ type: 'contact', phone: contact.phone, name: contact.name });
+            // Search in pricing tiers (only if not already added from contacts)
+            customers.forEach(c => {
+                // Skip if this tier is linked to a contact (already shown above)
+                if (c.linkedContactIndex !== undefined) return;
+                // Skip if name already in results
+                if (addedNames.has(c.name.toLowerCase())) return;
+
+                if (c.name.toLowerCase().includes(lowerQuery)) {
+                    results.push({ type: 'tier', id: c.id, name: c.name, customer: c });
+                    addedNames.add(c.name.toLowerCase());
                 }
             });
 
