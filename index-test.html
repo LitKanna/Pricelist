@@ -2475,8 +2475,14 @@
 
         <!-- Share Menu Modal -->
         <div class="customer-share-menu" id="shareMenu" style="max-height: 85vh;">
-            <div class="share-menu-header" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 50%, #22c55e 100%); padding: 18px 20px; border-bottom: none;">
+            <div class="share-menu-header" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 50%, #22c55e 100%); padding: 16px 20px; border-bottom: none; display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="color: white; margin: 0; font-size: 18px;">Share Pricelist</h3>
+                <button onclick="closeShareMenu()" style="background: rgba(255,255,255,0.2); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
 
             <div class="share-menu-body">
@@ -2568,15 +2574,14 @@
         </div>
         
         <div class="customer-share-menu" id="customerShareMenu" style="max-height: 85vh;">
-            <div class="share-menu-header">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="margin-bottom: 8px; opacity: 0.9;">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-                <h3>Send to Customer</h3>
-                <p id="customerShareSubtitle">Select a customer to share with</p>
+            <div class="share-menu-header" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 50%, #22c55e 100%); padding: 16px 20px; border-bottom: none; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="color: white; margin: 0; font-size: 18px;">Send to Customer</h3>
+                <button onclick="closeCustomerShareMenu()" style="background: rgba(255,255,255,0.2); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
 
             <div class="share-menu-body" style="flex: 1; overflow-y: auto;">
