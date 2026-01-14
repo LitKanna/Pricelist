@@ -2732,11 +2732,8 @@
                     <div>
                         <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 6px;">Phone</label>
                         <input type="text" id="salesmanPhone" placeholder="0433 975 055"
-                               style="width: 100%; padding: 10px 12px; border: none; border-radius: 8px; font-size: 16px; background: rgba(255,255,255,0.95); color: #1e293b; box-sizing: border-box; margin-bottom: 8px;">
-                        <button onclick="startPhoneVerification()" id="verifyPhoneBtn"
-                                style="width: 100%; padding: 10px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; background: rgba(255,255,255,0.95); color: #15803d; cursor: pointer;">
-                            Verify
-                        </button>
+                               style="width: 100%; padding: 10px 12px; border: none; border-radius: 8px; font-size: 16px; background: rgba(255,255,255,0.95); color: #1e293b; box-sizing: border-box;"
+                               onchange="onPhoneNumberChanged()">
                     </div>
                 </div>
             </div>
@@ -10464,12 +10461,32 @@ Response format (JSON only, no markdown):
             });
         }
 
+        // Handle phone number change - auto trigger verification
+        function onPhoneNumberChanged() {
+            const phone = document.getElementById('salesmanPhone').value.trim();
+
+            if (!phone) return;
+
+            // Save to salesmanInfo
+            salesmanInfo.phone = phone;
+            localStorage.setItem('everfresh_salesman', JSON.stringify(salesmanInfo));
+
+            // Check if this is a different number than currently verified
+            const currentVerifiedPhone = localStorage.getItem('everfresh_sync_phone') || '';
+            const normalizedNew = phone.replace(/\D/g, '');
+            const normalizedCurrent = currentVerifiedPhone.replace(/\D/g, '');
+
+            // If number changed, trigger verification
+            if (normalizedNew !== normalizedCurrent && normalizedNew.length >= 9) {
+                startPhoneVerification();
+            }
+        }
+
         // Start phone verification
         async function startPhoneVerification() {
             const phone = document.getElementById('salesmanPhone').value.trim();
 
             if (!phone) {
-                showToast('Please enter your phone number first');
                 return;
             }
 
