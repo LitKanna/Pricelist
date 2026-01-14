@@ -4544,20 +4544,27 @@
                                 </div>
                             </div>
                         </button>
-                        <button onclick="shareToTeam('addon')" style="padding: 0; background: white; border: 2px solid #e2e8f0; border-radius: 14px; cursor: pointer; text-align: left; overflow: hidden;">
-                            <div style="display: flex; align-items: center;">
-                                <div style="width: 56px; height: 56px; margin: 12px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                        <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; overflow: hidden;">
+                            <div style="display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #e2e8f0;">
+                                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
                                 </div>
-                                <div style="flex: 1; padding-right: 16px;">
-                                    <div style="font-size: 16px; font-weight: 700; color: #0f172a;">Add-on</div>
-                                    <div style="font-size: 13px; color: #64748b;">Add to existing order</div>
-                                </div>
-                                <div style="padding-right: 16px;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                                <div style="flex: 1; padding-left: 12px;">
+                                    <div style="font-size: 15px; font-weight: 700; color: #0f172a;">Add-on</div>
+                                    <div style="font-size: 12px; color: #64748b;">Add to existing order</div>
                                 </div>
                             </div>
-                        </button>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0;">
+                                <button onclick="shareToTeam('addon-booking')" style="padding: 14px; background: white; border: none; border-right: 1px solid #e2e8f0; cursor: pointer;">
+                                    <div style="font-size: 14px; font-weight: 600; color: #1e40af;">Booking</div>
+                                    <div style="font-size: 11px; color: #64748b;">With prices</div>
+                                </button>
+                                <button onclick="shareToTeam('addon-packer')" style="padding: 14px; background: white; border: none; cursor: pointer;">
+                                    <div style="font-size: 14px; font-weight: 600; color: #c2410c;">Pickpacker</div>
+                                    <div style="font-size: 11px; color: #64748b;">No prices</div>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <button onclick="closeTeamShareMenu()" style="width: 100%; margin-top: 16px; padding: 14px; background: #f1f5f9; border: none; border-radius: 12px; color: #64748b; font-size: 15px; font-weight: 600; cursor: pointer;">
                         Cancel
@@ -4641,8 +4648,9 @@
             menuDiv.className = 'share-menu';
             menuDiv.style.maxWidth = '360px';
 
-            const modeColor = mode === 'booking' ? '#1e40af' : mode === 'addon' ? '#6d28d9' : '#c2410c';
-            const modeTitle = mode === 'booking' ? 'Send to Booking' : mode === 'addon' ? 'Send Add-on' : 'Send to Packer';
+            const isAddonMode = mode.startsWith('addon');
+            const modeColor = mode === 'booking' ? '#1e40af' : isAddonMode ? '#6d28d9' : '#c2410c';
+            const modeTitle = mode === 'booking' ? 'Send to Booking' : isAddonMode ? 'Send Add-on' : 'Send to Packer';
 
             let membersHtml = '';
             teamMembers.forEach((member, idx) => {
@@ -4662,8 +4670,10 @@
             let previewMsg;
             if (mode === 'booking') {
                 previewMsg = `Hey [Name] 👋 Today's order for ${customerName}! Please book when you get a chance. Thanks! - ${data.senderName || 'Team'}`;
-            } else if (mode === 'addon') {
+            } else if (mode === 'addon-booking') {
                 previewMsg = `Hey [Name] 👋 Add-on for ${customerName}! Please add to their current invoice. Thanks! - ${data.senderName || 'Team'}`;
+            } else if (mode === 'addon-packer') {
+                previewMsg = `Hey [Name] 👋 Add-on for ${customerName}! Please add to their current order. Thanks! - ${data.senderName || 'Team'}`;
             } else {
                 previewMsg = `Hey [Name] 👋 Could you please get ${customerName} order ready for delivery? Thanks! - ${data.senderName || 'Team'}`;
             }
@@ -4732,8 +4742,10 @@
             let message;
             if (mode === 'booking') {
                 message = `Hey ${memberName} 👋 Today's order for ${customerName}! Please book when you get a chance. Thanks! - ${data.senderName || 'Team'}`;
-            } else if (mode === 'addon') {
+            } else if (mode === 'addon-booking') {
                 message = `Hey ${memberName} 👋 Add-on for ${customerName}! Please add to their current invoice. Thanks! - ${data.senderName || 'Team'}`;
+            } else if (mode === 'addon-packer') {
+                message = `Hey ${memberName} 👋 Add-on for ${customerName}! Please add to their current order. Thanks! - ${data.senderName || 'Team'}`;
             } else {
                 message = `Hey ${memberName} 👋 Could you please get ${customerName} order ready for delivery? Thanks! - ${data.senderName || 'Team'}`;
             }
@@ -4792,7 +4804,7 @@
                 canvas.height = height;
 
                 const margin = 120;
-                const showPrices = (mode === 'booking' || mode === 'addon');
+                const showPrices = (mode === 'booking' || mode === 'addon-booking');
 
                 // Define column positions for consistent alignment
                 const colQty = 150;        // Qty column width (right-aligned)
@@ -4808,7 +4820,7 @@
 
                 // Check if addon order based on mode or notes
                 const notes = document.getElementById('orderNotes').value || '';
-                const isAddon = mode === 'addon' || /add[\s-]?on/i.test(notes);
+                const isAddon = mode.startsWith('addon') || /add[\s-]?on/i.test(notes);
                 const orderTypeText = isAddon ? 'ADD-ON' : 'NEW ORDER';
 
                 // Get business name and delivery location from customer data
@@ -4835,7 +4847,7 @@
                 const headerHeight = 400;
 
                 // Header background
-                ctx.fillStyle = mode === 'booking' ? '#1e40af' : mode === 'addon' ? '#6d28d9' : '#c2410c';
+                ctx.fillStyle = mode === 'booking' ? '#1e40af' : mode.startsWith('addon') ? '#6d28d9' : '#c2410c';
                 ctx.fillRect(0, 0, width, headerHeight);
 
                 // Order type badge (right side)
