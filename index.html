@@ -4661,13 +4661,13 @@
             const sender = data.senderName || 'Team';
             let previewMsg;
             if (mode === 'booking') {
-                previewMsg = `Hey [Name] 👋 New order from ${customerName}! Please book it when you can. Thanks! - ${sender}`;
+                previewMsg = `Hey [Name]👋 New order from ${customerName}! Please book it when you can. Thanks! - ${sender}`;
             } else if (mode === 'addon-booking') {
-                previewMsg = `Hey [Name] 👋 Add-on for ${customerName}! Please add to their invoice. Thanks! - ${sender}`;
+                previewMsg = `Hey [Name]👋 Add-on for ${customerName}! Please add to their invoice. Thanks! - ${sender}`;
             } else if (mode === 'addon-packer') {
-                previewMsg = `Hey [Name] 👋 Add-on for ${customerName}! Please add to their order. Thanks! - ${sender}`;
+                previewMsg = `Hey [Name]👋 Add-on for ${customerName}! Please add to their order. Thanks! - ${sender}`;
             } else {
-                previewMsg = `Hey [Name] 👋 Please prepare ${customerName}'s order for delivery. Thanks! - ${sender}`;
+                previewMsg = `Hey [Name]👋 Please prepare ${customerName}'s order for delivery. Thanks! - ${sender}`;
             }
 
             menuDiv.innerHTML = `
@@ -4733,30 +4733,30 @@
             const customerName = (data.customerDisplay || 'customer').toUpperCase();
             const sender = data.senderName || 'Team';
 
-            // Rotating message variations
+            // Rotating message variations with rotating emojis
             const bookingMessages = [
-                `Hey ${memberName} 👋 New order from ${customerName}! Please book it when you can. Thanks! - ${sender}`,
-                `Hey ${memberName} 👋 Got an order from ${customerName}! Can you book this one? Cheers! - ${sender}`,
-                `Hey ${memberName} 👋 Order in from ${customerName}! Please add to the books. Thanks! - ${sender}`,
-                `Hey ${memberName} 👋 ${customerName} just ordered! Please book when ready. Thanks! - ${sender}`
+                `Hey ${memberName}👋 New order from ${customerName}! Please book it when you can. Thanks! - ${sender}`,
+                `Hey ${memberName}😊 Got an order from ${customerName}! Can you book this one? Cheers! - ${sender}`,
+                `Hey ${memberName}✌️ Order in from ${customerName}! Please book this one. Thanks! - ${sender}`,
+                `Hey ${memberName}🙌 ${customerName} just ordered! Please book when ready. Thanks! - ${sender}`
             ];
             const packingMessages = [
-                `Hey ${memberName} 👋 Please prepare ${customerName}'s order for delivery. Thanks! - ${sender}`,
-                `Hey ${memberName} 👋 Got an order for ${customerName}! Can you get it ready? Cheers! - ${sender}`,
-                `Hey ${memberName} 👋 ${customerName}'s order is in - please pack for delivery. Thanks! - ${sender}`,
-                `Hey ${memberName} 👋 Order from ${customerName} ready to pack! Thanks! - ${sender}`
+                `Hey ${memberName}👋 Please prepare ${customerName}'s order for delivery. Thanks! - ${sender}`,
+                `Hey ${memberName}😊 Got an order for ${customerName}! Can you get it ready? Cheers! - ${sender}`,
+                `Hey ${memberName}✌️ ${customerName}'s order is in - please pack for delivery. Thanks! - ${sender}`,
+                `Hey ${memberName}🙌 Order from ${customerName} ready to pack! Thanks! - ${sender}`
             ];
             const addonBookingMessages = [
-                `Hey ${memberName} 👋 Add-on for ${customerName}! Please add to their invoice. Thanks! - ${sender}`,
-                `Hey ${memberName} 👋 More items from ${customerName}! Please update their invoice. Thanks! - ${sender}`,
-                `Hey ${memberName} 👋 ${customerName} added more! Please update the invoice. Cheers! - ${sender}`,
-                `Hey ${memberName} 👋 Quick add-on from ${customerName}! Add to their invoice please. Thanks! - ${sender}`
+                `Hey ${memberName}👋 Add-on for ${customerName}! Please add to their invoice. Thanks! - ${sender}`,
+                `Hey ${memberName}😊 More items from ${customerName}! Please update their invoice. Thanks! - ${sender}`,
+                `Hey ${memberName}✌️ ${customerName} added more! Please update the invoice. Cheers! - ${sender}`,
+                `Hey ${memberName}🙌 Quick add-on from ${customerName}! Add to their invoice please. Thanks! - ${sender}`
             ];
             const addonPackingMessages = [
-                `Hey ${memberName} 👋 Add-on for ${customerName}! Please add to their order. Thanks! - ${sender}`,
-                `Hey ${memberName} 👋 More items from ${customerName}! Include with their order. Thanks! - ${sender}`,
-                `Hey ${memberName} 👋 ${customerName} added more! Please include with their order. Cheers! - ${sender}`,
-                `Hey ${memberName} 👋 Quick add-on from ${customerName}! Add to their order please. Thanks! - ${sender}`
+                `Hey ${memberName}👋 Add-on for ${customerName}! Please add to their order. Thanks! - ${sender}`,
+                `Hey ${memberName}😊 More items from ${customerName}! Include with their order. Thanks! - ${sender}`,
+                `Hey ${memberName}✌️ ${customerName} added more! Please include with their order. Cheers! - ${sender}`,
+                `Hey ${memberName}🙌 Quick add-on from ${customerName}! Add to their order please. Thanks! - ${sender}`
             ];
 
             let messagePool;
@@ -9371,10 +9371,10 @@ Response format (JSON only, no markdown):
             const greeting = customerName ? `Hi ${customerName}!` : 'Hi!';
 
             const messages = [
-                `${greeting} ${yourName} from Everfresh here 👋 Here are our latest prices for ${formattedDate}. Let me know if you'd like to place an order!`,
-                `Hey${customerName ? ' ' + customerName : ''}! It's ${yourName} from Everfresh 👋 Here's our fresh price list for ${formattedDate}. Give me a call or message when you're ready!`,
-                `${greeting} ${yourName} here from Everfresh 👋 Just sharing our updated prices for ${formattedDate}. Looking forward to hearing from you!`,
-                `Hey${customerName ? ' ' + customerName : ''}! ${yourName} from Everfresh 👋 Our latest prices for ${formattedDate} are ready! Feel free to reach out when you'd like to order.`
+                `${greeting} ${yourName} from Everfresh here👋 Here are our latest prices for ${formattedDate}. Let me know if you'd like to place an order!`,
+                `Hey${customerName ? ' ' + customerName : ''}! It's ${yourName} from Everfresh😊 Here's our fresh price list for ${formattedDate}. Give me a call or message when you're ready!`,
+                `${greeting} ${yourName} here from Everfresh✌️ Just sharing our updated prices for ${formattedDate}. Looking forward to hearing from you!`,
+                `Hey${customerName ? ' ' + customerName : ''}! ${yourName} from Everfresh🙌 Our latest prices for ${formattedDate} are ready! Feel free to reach out when you'd like to order.`
             ];
 
             return messages[Math.floor(Math.random() * messages.length)];
