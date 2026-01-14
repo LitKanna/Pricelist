@@ -3381,6 +3381,8 @@
                 ["Grey/White Pumpkin", "per kg", "$0.60"],
                 ["Butternut Pumpkin", "per kg", "$0.80"],
             ],
+            "POTATOES": [
+            ],
             "ROOT VEGETABLES": [
                 ["Beetroot", "Small", "$11"],
                 ["Beetroot", "Large", "$18"],
@@ -8364,6 +8366,19 @@ Response format (JSON only, no markdown):
                 reasoning: 'Pumpkin or squash variety'
             },
             
+            // 🥔 POTATOES
+            'POTATOES': {
+                products: [
+                    'potato', 'kipfler', 'sebago', 'desiree', 'pontiac', 'coliban', 'dutch cream',
+                    'nicola', 'pink eye', 'royal blue', 'chat potato', 'new potato', 'fingerling',
+                    'sweet potato', 'gold sweet potato', 'white sweet potato', 'purple sweet potato',
+                    'red potato', 'russet', 'yukon gold', 'baby potato', 'marble potato', 'gem potato',
+                    'kestrel', 'nadine', 'spunta', 'bintje', 'kennebec', 'maris piper'
+                ],
+                keywords: ['potato', 'kipfler', 'sebago', 'desiree', 'pontiac', 'spud'],
+                reasoning: 'Potato variety'
+            },
+
             // 🥕 ROOT VEGETABLES
             'ROOT VEGETABLES': {
                 products: [
@@ -8372,12 +8387,9 @@ Response format (JSON only, no markdown):
                     'beetroot', 'beet', 'baby beetroot', 'golden beetroot', 'candy beetroot', 'chioggia',
                     'radish', 'red radish', 'french radish', 'watermelon radish', 'black radish',
                     'horseradish', 'wasabi',
-                    'sweet potato', 'gold sweet potato', 'white sweet potato', 'purple sweet potato',
-                    'potato', 'kipfler', 'sebago', 'desiree', 'pontiac', 'coliban', 'dutch cream',
-                    'nicola', 'pink eye', 'royal blue', 'chat potato', 'new potato', 'fingerling',
                     'yam', 'cassava', 'yuca', 'jicama', 'sunchoke', 'jerusalem artichoke'
                 ],
-                keywords: ['root', 'potato', 'carrot', 'beet', 'turnip', 'parsnip'],
+                keywords: ['root', 'carrot', 'beet', 'turnip', 'parsnip'],
                 reasoning: 'Root vegetable'
             },
             
