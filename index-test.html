@@ -2317,7 +2317,7 @@
         border-radius: 12px;
         font-weight: 600;
         transition: bottom 0.3s;
-        z-index: 1500;
+        z-index: 999999;
         box-shadow: 0 8px 24px rgba(0,0,0,0.2);
     }
     
@@ -4266,13 +4266,16 @@
 
             if (orderCustomerName && orderCustomerName !== 'Walk-in Customer') {
                 // Try to get price from saved sent prices (prices shown when pricelist was shared)
-                const savedPrice = getProductPriceFromSentPrices(orderCustomerName, category, name, grade);
-
-                if (savedPrice) {
-                    const parsedSavedPrice = parseFloat(savedPrice.toString().replace(/[^0-9.-]/g, '')) || 0;
-                    if (parsedSavedPrice > 0) {
-                        unitPrice = parsedSavedPrice;
+                try {
+                    const savedPrice = getProductPriceFromSentPrices(orderCustomerName, category, name, grade);
+                    if (savedPrice) {
+                        const parsedSavedPrice = parseFloat(savedPrice.toString().replace(/[^0-9.-]/g, '')) || 0;
+                        if (parsedSavedPrice > 0) {
+                            unitPrice = parsedSavedPrice;
+                        }
                     }
+                } catch (e) {
+                    console.error('Error getting saved price:', e);
                 }
             }
 
