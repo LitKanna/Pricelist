@@ -3962,18 +3962,14 @@
         }
 
         function recalculateOrderPrices() {
+            // Use base prices - customer margins only apply to pricelist sharing
             currentOrderItems.forEach(item => {
+                if (item.isManual) return; // Skip manual/custom items
                 const categoryData = priceData[item.category];
                 if (categoryData) {
                     const product = categoryData.find(p => p[0] === item.name && p[1] === item.grade);
                     if (product) {
                         let unitPrice = parseFloat(product[2].replace(/[^0-9.-]/g, '')) || 0;
-                        if (selectedCustomer) {
-                            if (selectedCustomer.adjustmentType === 'percentage') unitPrice = unitPrice * (1 + selectedCustomer.adjustmentValue / 100);
-                            else unitPrice = unitPrice + selectedCustomer.adjustmentValue;
-                            if (shouldRoundToWholeDollar(item.grade)) unitPrice = Math.round(unitPrice);
-                            else unitPrice = Math.round(unitPrice * 100) / 100;
-                        }
                         item.unitPrice = unitPrice;
                         item.lineTotal = item.qty * unitPrice;
                     }
@@ -4205,13 +4201,8 @@
         function addProductToOrder(category, index) {
             const item = priceData[category][index];
             const name = item[0], grade = item[1], basePrice = item[2];
+            // Use base price - customer margins only apply to pricelist sharing
             let unitPrice = parseFloat(basePrice.replace(/[^0-9.-]/g, '')) || 0;
-            if (selectedCustomer) {
-                if (selectedCustomer.adjustmentType === 'percentage') unitPrice = unitPrice * (1 + selectedCustomer.adjustmentValue / 100);
-                else unitPrice = unitPrice + selectedCustomer.adjustmentValue;
-                if (shouldRoundToWholeDollar(grade)) unitPrice = Math.round(unitPrice);
-                else unitPrice = Math.round(unitPrice * 100) / 100;
-            }
             const existing = currentOrderItems.find(i => i.category === category && i.name === name && i.grade === grade);
             let addedIndex;
             if (existing) {
