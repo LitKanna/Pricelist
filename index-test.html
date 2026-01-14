@@ -4516,34 +4516,27 @@
                 </div>
                 <div class="share-menu-body" style="padding: 20px;">
                     <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <button onclick="shareToTeam('booking')" style="padding: 0; background: white; border: 2px solid #e2e8f0; border-radius: 14px; cursor: pointer; text-align: left; overflow: hidden;">
-                            <div style="display: flex; align-items: center;">
-                                <div style="width: 56px; height: 56px; margin: 12px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; overflow: hidden;">
+                            <div style="display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #e2e8f0;">
+                                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
                                 </div>
-                                <div style="flex: 1; padding-right: 16px;">
-                                    <div style="font-size: 16px; font-weight: 700; color: #0f172a;">Booking</div>
-                                    <div style="font-size: 13px; color: #64748b;">With prices</div>
-                                </div>
-                                <div style="padding-right: 16px;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                                <div style="flex: 1; padding-left: 12px;">
+                                    <div style="font-size: 15px; font-weight: 700; color: #0f172a;">New Order</div>
+                                    <div style="font-size: 12px; color: #64748b;">Fresh order for customer</div>
                                 </div>
                             </div>
-                        </button>
-                        <button onclick="shareToTeam('pickpacker')" style="padding: 0; background: white; border: 2px solid #e2e8f0; border-radius: 14px; cursor: pointer; text-align: left; overflow: hidden;">
-                            <div style="display: flex; align-items: center;">
-                                <div style="width: 56px; height: 56px; margin: 12px; background: linear-gradient(135deg, #f97316 0%, #c2410c 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                                </div>
-                                <div style="flex: 1; padding-right: 16px;">
-                                    <div style="font-size: 16px; font-weight: 700; color: #0f172a;">Pickpacker</div>
-                                    <div style="font-size: 13px; color: #64748b;">No prices</div>
-                                </div>
-                                <div style="padding-right: 16px;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                                </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0;">
+                                <button onclick="shareToTeam('booking')" style="padding: 14px; background: white; border: none; border-right: 1px solid #e2e8f0; cursor: pointer;">
+                                    <div style="font-size: 14px; font-weight: 600; color: #1e40af;">Booking</div>
+                                    <div style="font-size: 11px; color: #64748b;">With prices</div>
+                                </button>
+                                <button onclick="shareToTeam('pickpacker')" style="padding: 14px; background: white; border: none; cursor: pointer;">
+                                    <div style="font-size: 14px; font-weight: 600; color: #c2410c;">Pickpacker</div>
+                                    <div style="font-size: 11px; color: #64748b;">No prices</div>
+                                </button>
                             </div>
-                        </button>
+                        </div>
                         <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; overflow: hidden;">
                             <div style="display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #e2e8f0;">
                                 <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
