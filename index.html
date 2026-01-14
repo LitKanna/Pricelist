@@ -3480,23 +3480,18 @@
         }
 
         // Save sent prices for a customer (called when pricelist is shared)
-        function saveCustomerSentPrices(customerId, customerName) {
-            if (!customerId && !customerName) return;
+        // Saves the EXACT prices shown on the image (based on current selectedCustomer)
+        function saveCustomerSentPrices(customerName) {
+            if (!customerName) return;
 
-            // Get current price data (with customer adjustments if applicable)
-            const customer = customers.find(c => c.id === customerId || c.name === customerName);
-            let pricesToSave = {};
+            // Collect fresh data from editor
+            collectData();
 
-            if (customer) {
-                // Get adjusted prices for this customer
-                const originalSelected = selectedCustomer;
-                selectedCustomer = customer;
-                pricesToSave = JSON.parse(JSON.stringify(getAdjustedPriceData()));
-                selectedCustomer = originalSelected;
-            } else {
-                // No customer pricing tier, use base prices
-                pricesToSave = JSON.parse(JSON.stringify(priceData));
-            }
+            // Save the exact same prices that generateImageBlob() uses
+            // This matches: const displayPriceData = selectedCustomer ? getAdjustedPriceData() : priceData;
+            const pricesToSave = selectedCustomer
+                ? JSON.parse(JSON.stringify(getAdjustedPriceData()))
+                : JSON.parse(JSON.stringify(priceData));
 
             // Load existing history
             const historyKey = 'everfresh_customer_sent_prices';
@@ -3507,33 +3502,31 @@
                 history = {};
             }
 
-            // Save with customer identifier (use ID if available, else name)
-            const key = customerId || customerName;
-            history[key] = {
+            // Save with customer name as key
+            history[customerName] = {
                 timestamp: new Date().toISOString(),
                 customerName: customerName,
                 prices: pricesToSave
             };
 
             localStorage.setItem(historyKey, JSON.stringify(history));
-            console.log('Saved sent prices for customer:', customerName);
+            console.log('Saved sent prices for customer:', customerName, '- using', selectedCustomer ? 'adjusted prices' : 'base prices');
         }
 
         // Get saved sent prices for a customer
-        function getCustomerSentPrices(customerId, customerName) {
+        function getCustomerSentPrices(customerName) {
             const historyKey = 'everfresh_customer_sent_prices';
             try {
                 const history = JSON.parse(localStorage.getItem(historyKey) || '{}');
-                // Try by ID first, then by name
-                return history[customerId] || history[customerName] || null;
+                return history[customerName] || null;
             } catch (e) {
                 return null;
             }
         }
 
         // Get specific product price from saved customer prices
-        function getProductPriceFromSentPrices(customerId, customerName, category, productName, grade) {
-            const sentData = getCustomerSentPrices(customerId, customerName);
+        function getProductPriceFromSentPrices(customerName, category, productName, grade) {
+            const sentData = getCustomerSentPrices(customerName);
             if (!sentData || !sentData.prices) return null;
 
             const categoryData = sentData.prices[category];
@@ -4272,10 +4265,8 @@
             let unitPrice = parseFloat(basePrice.replace(/[^0-9.-]/g, '')) || 0;
 
             if (orderCustomerName && orderCustomerName !== 'Walk-in Customer') {
-                // Try to get price from saved sent prices
-                const contact = customerContacts.find(c => c.name === orderCustomerName || c.businessName === orderCustomerName);
-                const linkedCustomer = contact ? customers.find(c => c.linkedContactIndex === customerContacts.indexOf(contact)) : null;
-                const savedPrice = getProductPriceFromSentPrices(linkedCustomer?.id, orderCustomerName, category, name, grade);
+                // Try to get price from saved sent prices (prices shown when pricelist was shared)
+                const savedPrice = getProductPriceFromSentPrices(orderCustomerName, category, name, grade);
 
                 if (savedPrice) {
                     const parsedSavedPrice = parseFloat(savedPrice.toString().replace(/[^0-9.-]/g, '')) || 0;
@@ -9867,8 +9858,7 @@ Response format (JSON only, no markdown):
                 }
 
                 // Save the sent prices for this customer
-                const linkedCustomer = customers.find(c => c.linkedContactIndex === index);
-                saveCustomerSentPrices(linkedCustomer?.id || null, customer.name);
+                saveCustomerSentPrices(customer.name);
 
                 // Create personalized message with rotating variations
                 const message = generateShareMessage(customer.name);
@@ -9938,8 +9928,7 @@ Response format (JSON only, no markdown):
                 }
 
                 // Save the sent prices for this customer
-                const linkedCustomer = customers.find(c => c.linkedContactIndex === index);
-                saveCustomerSentPrices(linkedCustomer?.id || null, customer.name);
+                saveCustomerSentPrices(customer.name);
 
                 // Create personalized message with rotating variations
                 const message = generateShareMessage(customer.name);
@@ -10230,9 +10219,7 @@ Response format (JSON only, no markdown):
                     const message = generateShareMessage(customer.name);
 
                     // Save sent prices for each customer
-                    const originalIndex = customerContacts.findIndex(c => c.name === customer.name);
-                    const linkedPricingCustomer = customers.find(c => c.linkedContactIndex === originalIndex);
-                    saveCustomerSentPrices(linkedPricingCustomer?.id || null, customer.name);
+                    saveCustomerSentPrices(customer.name);
 
                     return `${phone}~${customer.name}~${message}`;
                 }).join('\n');
