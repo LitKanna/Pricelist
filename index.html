@@ -9448,9 +9448,9 @@ Response format (JSON only, no markdown):
 
             const messages = [
                 `${greeting} ${yourName} from Everfresh here 👋 Here are our latest prices for ${formattedDate}. Let me know if you'd like to place an order!`,
-                `Hey${customerName ? ' ' + customerName : ''}! It's ${yourName} from Everfresh 😊 Here's our fresh price list for ${formattedDate}. Give me a call or message when you're ready!`,
-                `${greeting} ${yourName} here from Everfresh ✌️ Just sharing our updated prices for ${formattedDate}. Looking forward to hearing from you!`,
-                `Hey${customerName ? ' ' + customerName : ''}! ${yourName} from Everfresh 🙌 Our latest prices for ${formattedDate} are ready! Feel free to reach out when you'd like to order.`
+                `Hey${customerName ? ' ' + customerName : ''}! It's ${yourName} from Everfresh 👋 Here's our fresh price list for ${formattedDate}. Give me a call or message when you're ready!`,
+                `${greeting} ${yourName} here from Everfresh 👋 Just sharing our updated prices for ${formattedDate}. Looking forward to hearing from you!`,
+                `Hey${customerName ? ' ' + customerName : ''}! ${yourName} from Everfresh 👋 Our latest prices for ${formattedDate} are ready! Feel free to reach out when you'd like to order.`
             ];
 
             return messages[Math.floor(Math.random() * messages.length)];
