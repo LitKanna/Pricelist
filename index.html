@@ -3479,6 +3479,73 @@
             return adjustedData;
         }
 
+        // Save sent prices for a customer (called when pricelist is shared)
+        function saveCustomerSentPrices(customerId, customerName) {
+            if (!customerId && !customerName) return;
+
+            // Get current price data (with customer adjustments if applicable)
+            const customer = customers.find(c => c.id === customerId || c.name === customerName);
+            let pricesToSave = {};
+
+            if (customer) {
+                // Get adjusted prices for this customer
+                const originalSelected = selectedCustomer;
+                selectedCustomer = customer;
+                pricesToSave = JSON.parse(JSON.stringify(getAdjustedPriceData()));
+                selectedCustomer = originalSelected;
+            } else {
+                // No customer pricing tier, use base prices
+                pricesToSave = JSON.parse(JSON.stringify(priceData));
+            }
+
+            // Load existing history
+            const historyKey = 'everfresh_customer_sent_prices';
+            let history = {};
+            try {
+                history = JSON.parse(localStorage.getItem(historyKey) || '{}');
+            } catch (e) {
+                history = {};
+            }
+
+            // Save with customer identifier (use ID if available, else name)
+            const key = customerId || customerName;
+            history[key] = {
+                timestamp: new Date().toISOString(),
+                customerName: customerName,
+                prices: pricesToSave
+            };
+
+            localStorage.setItem(historyKey, JSON.stringify(history));
+            console.log('Saved sent prices for customer:', customerName);
+        }
+
+        // Get saved sent prices for a customer
+        function getCustomerSentPrices(customerId, customerName) {
+            const historyKey = 'everfresh_customer_sent_prices';
+            try {
+                const history = JSON.parse(localStorage.getItem(historyKey) || '{}');
+                // Try by ID first, then by name
+                return history[customerId] || history[customerName] || null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // Get specific product price from saved customer prices
+        function getProductPriceFromSentPrices(customerId, customerName, category, productName, grade) {
+            const sentData = getCustomerSentPrices(customerId, customerName);
+            if (!sentData || !sentData.prices) return null;
+
+            const categoryData = sentData.prices[category];
+            if (!categoryData) return null;
+
+            const product = categoryData.find(item =>
+                item[0] === productName && item[1] === grade
+            );
+
+            return product ? product[2] : null;
+        }
+
         // Save customers to localStorage
         function saveCustomers() {
             localStorage.setItem('everfresh_customers', JSON.stringify(customers));
@@ -4200,8 +4267,24 @@
         function addProductToOrder(category, index) {
             const item = priceData[category][index];
             const name = item[0], grade = item[1], basePrice = item[2];
-            // Use base price - customer margins only apply to pricelist sharing
+
+            // Check if we have saved sent prices for this customer
             let unitPrice = parseFloat(basePrice.replace(/[^0-9.-]/g, '')) || 0;
+
+            if (orderCustomerName && orderCustomerName !== 'Walk-in Customer') {
+                // Try to get price from saved sent prices
+                const contact = customerContacts.find(c => c.name === orderCustomerName || c.businessName === orderCustomerName);
+                const linkedCustomer = contact ? customers.find(c => c.linkedContactIndex === customerContacts.indexOf(contact)) : null;
+                const savedPrice = getProductPriceFromSentPrices(linkedCustomer?.id, orderCustomerName, category, name, grade);
+
+                if (savedPrice) {
+                    const parsedSavedPrice = parseFloat(savedPrice.toString().replace(/[^0-9.-]/g, '')) || 0;
+                    if (parsedSavedPrice > 0) {
+                        unitPrice = parsedSavedPrice;
+                    }
+                }
+            }
+
             const existing = currentOrderItems.find(i => i.category === category && i.name === name && i.grade === grade);
             let addedIndex;
             if (existing) {
@@ -9782,7 +9865,11 @@ Response format (JSON only, no markdown):
                 if (!blob) {
                     throw new Error('Failed to generate image');
                 }
-                
+
+                // Save the sent prices for this customer
+                const linkedCustomer = customers.find(c => c.linkedContactIndex === index);
+                saveCustomerSentPrices(linkedCustomer?.id || null, customer.name);
+
                 // Create personalized message with rotating variations
                 const message = generateShareMessage(customer.name);
                 
@@ -9849,6 +9936,10 @@ Response format (JSON only, no markdown):
                 if (!blob) {
                     throw new Error('Failed to generate image');
                 }
+
+                // Save the sent prices for this customer
+                const linkedCustomer = customers.find(c => c.linkedContactIndex === index);
+                saveCustomerSentPrices(linkedCustomer?.id || null, customer.name);
 
                 // Create personalized message with rotating variations
                 const message = generateShareMessage(customer.name);
@@ -10065,8 +10156,8 @@ Response format (JSON only, no markdown):
                 return;
             }
 
-            const customers = getCustomersForDay(day);
-            if (customers.length === 0) {
+            const dayCustomers = getCustomersForDay(day);
+            if (dayCustomers.length === 0) {
                 alert('No customers to send to for this day.');
                 return;
             }
@@ -10076,9 +10167,9 @@ Response format (JSON only, no markdown):
             // Confirm with user
             const confirmSend = confirm(
                 `📤 Send to ${dayLabel} Customers\n\n` +
-                `This will send the price list to ${customers.length} customer(s):\n\n` +
-                customers.slice(0, 5).map(c => `• ${c.name}`).join('\n') +
-                (customers.length > 5 ? `\n...and ${customers.length - 5} more` : '') +
+                `This will send the price list to ${dayCustomers.length} customer(s):\n\n` +
+                dayCustomers.slice(0, 5).map(c => `• ${c.name}`).join('\n') +
+                (dayCustomers.length > 5 ? `\n...and ${dayCustomers.length - 5} more` : '') +
                 `\n\nYou'll need to:\n` +
                 `1. Save the image to Photos (once)\n` +
                 `2. Approve each send in the Shortcut\n\n` +
@@ -10134,9 +10225,15 @@ Response format (JSON only, no markdown):
                 progressBar.style.width = '50%';
 
                 // Build list of filtered customers: phone~name~message (with rotating messages)
-                const customerList = customers.map(customer => {
+                const customerList = dayCustomers.map((customer, idx) => {
                     const phone = customer.phone.replace(/\D/g, '');
                     const message = generateShareMessage(customer.name);
+
+                    // Save sent prices for each customer
+                    const originalIndex = customerContacts.findIndex(c => c.name === customer.name);
+                    const linkedPricingCustomer = customers.find(c => c.linkedContactIndex === originalIndex);
+                    saveCustomerSentPrices(linkedPricingCustomer?.id || null, customer.name);
+
                     return `${phone}~${customer.name}~${message}`;
                 }).join('\n');
 
@@ -10150,7 +10247,7 @@ Response format (JSON only, no markdown):
                 closeCustomerShareMenu();
 
                 // Create simple phone list (just digits and commas - URL safe)
-                const phoneList = customers.map(c => c.phone.replace(/\D/g, '')).join(',');
+                const phoneList = dayCustomers.map(c => c.phone.replace(/\D/g, '')).join(',');
 
                 // Launch shortcut with phone list in URL (using input parameter directly)
                 window.location.href = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=${phoneList}`;
