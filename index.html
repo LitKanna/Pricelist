@@ -2475,107 +2475,59 @@
 
         <!-- Share Menu Modal -->
         <div class="customer-share-menu" id="shareMenu" style="max-height: 85vh;">
-            <div class="share-menu-header">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="margin-bottom: 8px; opacity: 0.9;">
-                    <circle cx="18" cy="5" r="3"/>
-                    <circle cx="6" cy="12" r="3"/>
-                    <circle cx="18" cy="19" r="3"/>
-                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                </svg>
-                <h3>Share Price List</h3>
-                <p>Choose how you'd like to share</p>
+            <div class="share-menu-header" style="padding: 20px;">
+                <h3 style="margin: 0; font-size: 20px;">Share Pricelist</h3>
             </div>
 
-            <div class="share-menu-body">
-                <div class="share-options">
-                    <!-- iMessage Option (iOS) -->
-                    <div class="share-option" onclick="shareViaIMessage()">
-                        <div class="share-option-icon" style="background: linear-gradient(135deg, #34C759 0%, #30D158 100%);">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white">
+            <div class="share-menu-body" style="padding: 8px 16px 16px;">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- iMessage -->
+                    <div class="share-option" onclick="shareViaIMessage()" style="padding: 14px 16px;">
+                        <div class="share-option-icon" style="background: linear-gradient(135deg, #34C759 0%, #30D158 100%); width: 40px; height: 40px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white">
                                 <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/>
                             </svg>
                         </div>
-                        <div class="share-option-info">
-                            <div class="share-option-title">iMessage</div>
-                            <div class="share-option-desc">Auto-send via iOS Shortcut</div>
-                        </div>
-                        <svg class="share-option-arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="9 18 15 12 9 6"/>
-                        </svg>
+                        <span style="font-weight: 600; color: #1e293b; font-size: 15px;">iMessage</span>
                     </div>
 
-                    <!-- WhatsApp Option -->
-                    <div class="share-option" onclick="shareViaWhatsAppEnhanced()">
-                        <div class="share-option-icon" style="background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white">
+                    <!-- WhatsApp -->
+                    <div class="share-option" onclick="shareViaWhatsAppEnhanced()" style="padding: 14px 16px;">
+                        <div class="share-option-icon" style="background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); width: 40px; height: 40px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white">
                                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                             </svg>
                         </div>
-                        <div class="share-option-info">
-                            <div class="share-option-title">WhatsApp</div>
-                            <div class="share-option-desc">Share image directly</div>
-                        </div>
-                        <svg class="share-option-arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="9 18 15 12 9 6"/>
-                        </svg>
+                        <span style="font-weight: 600; color: #1e293b; font-size: 15px;">WhatsApp</span>
                     </div>
 
-                    <!-- Send to Customer Option -->
-                    <div class="share-option" onclick="closeShareMenu(); showCustomerShareMenu();">
-                        <div class="share-option-icon" style="background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <!-- Send to Customer -->
+                    <div class="share-option" onclick="closeShareMenu(); showCustomerShareMenu();" style="padding: 14px 16px;">
+                        <div class="share-option-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); width: 40px; height: 40px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                                 <circle cx="9" cy="7" r="4"/>
                                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
                                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                             </svg>
                         </div>
-                        <div class="share-option-info">
-                            <div class="share-option-title">Send to Customer</div>
-                            <div class="share-option-desc">Share to saved contacts</div>
-                        </div>
-                        <svg class="share-option-arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="9 18 15 12 9 6"/>
-                        </svg>
+                        <span style="font-weight: 600; color: #1e293b; font-size: 15px;">Send to Customer</span>
                     </div>
 
-                    <!-- Download Option -->
-                    <div class="share-option" onclick="closeShareMenu(); downloadImage();">
-                        <div class="share-option-icon" style="background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <!-- Download -->
+                    <div class="share-option" onclick="closeShareMenu(); downloadImage();" style="padding: 14px 16px;">
+                        <div class="share-option-icon" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); width: 40px; height: 40px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                 <polyline points="7 10 12 15 17 10"/>
                                 <line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
                         </div>
-                        <div class="share-option-info">
-                            <div class="share-option-title">Download Image</div>
-                            <div class="share-option-desc">Save PNG to device</div>
-                        </div>
-                        <svg class="share-option-arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="9 18 15 12 9 6"/>
-                        </svg>
+                        <span style="font-weight: 600; color: #1e293b; font-size: 15px;">Download</span>
                     </div>
                 </div>
 
-                <!-- iOS Shortcut Setup Info -->
-                <div id="shortcutSetupInfo" style="display: none; margin-top: 16px; padding: 14px; background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border-radius: 14px; border: 1px solid #FCD34D;">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.5">
-                            <circle cx="12" cy="12" r="10"/>
-                            <line x1="12" y1="8" x2="12" y2="12"/>
-                            <line x1="12" y1="16" x2="12.01" y2="16"/>
-                        </svg>
-                        <strong style="color: #92400E; font-size: 14px;">iOS Shortcut Required</strong>
-                    </div>
-                    <p style="color: #78350F; font-size: 12px; margin-bottom: 10px;">Install the "Everfresh Pricelist" shortcut to enable auto-send.</p>
-                    <button onclick="window.open('https://www.icloud.com/shortcuts/', '_blank')" style="background: linear-gradient(135deg, #D97706, #B45309); color: white; border: none; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%;">
-                        Install Shortcut
-                    </button>
-                </div>
-
-                <button class="share-menu-cancel" onclick="closeShareMenu()">Cancel</button>
+                <button class="share-menu-cancel" onclick="closeShareMenu()" style="margin-top: 12px;">Cancel</button>
             </div>
         </div>
         
