@@ -2317,7 +2317,7 @@
         border-radius: 12px;
         font-weight: 600;
         transition: bottom 0.3s;
-        z-index: 1500;
+        z-index: 999999;
         box-shadow: 0 8px 24px rgba(0,0,0,0.2);
     }
     
@@ -3479,6 +3479,66 @@
             return adjustedData;
         }
 
+        // Save sent prices for a customer (called when pricelist is shared)
+        // Saves the EXACT prices shown on the image (based on current selectedCustomer)
+        function saveCustomerSentPrices(customerName) {
+            if (!customerName) return;
+
+            // Collect fresh data from editor
+            collectData();
+
+            // Save the exact same prices that generateImageBlob() uses
+            // This matches: const displayPriceData = selectedCustomer ? getAdjustedPriceData() : priceData;
+            const pricesToSave = selectedCustomer
+                ? JSON.parse(JSON.stringify(getAdjustedPriceData()))
+                : JSON.parse(JSON.stringify(priceData));
+
+            // Load existing history
+            const historyKey = 'everfresh_customer_sent_prices';
+            let history = {};
+            try {
+                history = JSON.parse(localStorage.getItem(historyKey) || '{}');
+            } catch (e) {
+                history = {};
+            }
+
+            // Save with customer name as key
+            history[customerName] = {
+                timestamp: new Date().toISOString(),
+                customerName: customerName,
+                prices: pricesToSave
+            };
+
+            localStorage.setItem(historyKey, JSON.stringify(history));
+            console.log('Saved sent prices for customer:', customerName, '- using', selectedCustomer ? 'adjusted prices' : 'base prices');
+        }
+
+        // Get saved sent prices for a customer
+        function getCustomerSentPrices(customerName) {
+            const historyKey = 'everfresh_customer_sent_prices';
+            try {
+                const history = JSON.parse(localStorage.getItem(historyKey) || '{}');
+                return history[customerName] || null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // Get specific product price from saved customer prices
+        function getProductPriceFromSentPrices(customerName, category, productName, grade) {
+            const sentData = getCustomerSentPrices(customerName);
+            if (!sentData || !sentData.prices) return null;
+
+            const categoryData = sentData.prices[category];
+            if (!categoryData) return null;
+
+            const product = categoryData.find(item =>
+                item[0] === productName && item[1] === grade
+            );
+
+            return product ? product[2] : null;
+        }
+
         // Save customers to localStorage
         function saveCustomers() {
             localStorage.setItem('everfresh_customers', JSON.stringify(customers));
@@ -3843,19 +3903,26 @@
 
             const lowerQuery = query.toLowerCase();
             const results = [];
+            const addedNames = new Set();
 
-            // Search in pricing tiers (customers)
-            customers.forEach(c => {
-                if (c.name.toLowerCase().includes(lowerQuery)) {
-                    results.push({ type: 'tier', id: c.id, name: c.name, customer: c });
+            // Search in contacts first (show customer names, not business names)
+            customerContacts.forEach(contact => {
+                if (contact.name.toLowerCase().includes(lowerQuery) && !addedNames.has(contact.name.toLowerCase())) {
+                    results.push({ type: 'contact', phone: contact.phone, name: contact.name });
+                    addedNames.add(contact.name.toLowerCase());
                 }
             });
 
-            // Search in contacts
-            customerContacts.forEach(contact => {
-                const hasTier = customers.some(c => c.name.toLowerCase() === contact.name.toLowerCase());
-                if (!hasTier && contact.name.toLowerCase().includes(lowerQuery)) {
-                    results.push({ type: 'contact', phone: contact.phone, name: contact.name });
+            // Search in pricing tiers (only if not already added from contacts)
+            customers.forEach(c => {
+                // Skip if this tier is linked to a contact (already shown above)
+                if (c.linkedContactIndex !== undefined) return;
+                // Skip if name already in results
+                if (addedNames.has(c.name.toLowerCase())) return;
+
+                if (c.name.toLowerCase().includes(lowerQuery)) {
+                    results.push({ type: 'tier', id: c.id, name: c.name, customer: c });
+                    addedNames.add(c.name.toLowerCase());
                 }
             });
 
@@ -4200,8 +4267,25 @@
         function addProductToOrder(category, index) {
             const item = priceData[category][index];
             const name = item[0], grade = item[1], basePrice = item[2];
-            // Use base price - customer margins only apply to pricelist sharing
+
+            // Check if we have saved sent prices for this customer
             let unitPrice = parseFloat(basePrice.replace(/[^0-9.-]/g, '')) || 0;
+
+            if (orderCustomerName && orderCustomerName !== 'Walk-in Customer') {
+                // Try to get price from saved sent prices (prices shown when pricelist was shared)
+                try {
+                    const savedPrice = getProductPriceFromSentPrices(orderCustomerName, category, name, grade);
+                    if (savedPrice) {
+                        const parsedSavedPrice = parseFloat(savedPrice.toString().replace(/[^0-9.-]/g, '')) || 0;
+                        if (parsedSavedPrice > 0) {
+                            unitPrice = parsedSavedPrice;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error getting saved price:', e);
+                }
+            }
+
             const existing = currentOrderItems.find(i => i.category === category && i.name === name && i.grade === grade);
             let addedIndex;
             if (existing) {
@@ -4216,7 +4300,6 @@
             document.getElementById('orderSearchInput').value = '';
             document.getElementById('orderSearchResults').classList.remove('show');
             renderOrderItems(addedIndex);
-            showToast(name + ' added');
         }
 
         function updateOrderQty(index, delta) {
@@ -9372,9 +9455,9 @@ Response format (JSON only, no markdown):
 
             const messages = [
                 `${greeting} ${yourName} from Everfresh here 👋 Here are our latest prices for ${formattedDate}. Let me know if you'd like to place an order!`,
-                `Hey${customerName ? ' ' + customerName : ''}! It's ${yourName} from Everfresh 😊 Here's our fresh price list for ${formattedDate}. Give me a call or message when you're ready!`,
-                `${greeting} ${yourName} here from Everfresh ✌️ Just sharing our updated prices for ${formattedDate}. Looking forward to hearing from you!`,
-                `Hey${customerName ? ' ' + customerName : ''}! ${yourName} from Everfresh 🙌 Our latest prices for ${formattedDate} are ready! Feel free to reach out when you'd like to order.`
+                `Hey${customerName ? ' ' + customerName : ''}! It's ${yourName} from Everfresh 👋 Here's our fresh price list for ${formattedDate}. Give me a call or message when you're ready!`,
+                `${greeting} ${yourName} here from Everfresh 👋 Just sharing our updated prices for ${formattedDate}. Looking forward to hearing from you!`,
+                `Hey${customerName ? ' ' + customerName : ''}! ${yourName} from Everfresh 👋 Our latest prices for ${formattedDate} are ready! Feel free to reach out when you'd like to order.`
             ];
 
             return messages[Math.floor(Math.random() * messages.length)];
@@ -9782,7 +9865,10 @@ Response format (JSON only, no markdown):
                 if (!blob) {
                     throw new Error('Failed to generate image');
                 }
-                
+
+                // Save the sent prices for this customer
+                saveCustomerSentPrices(customer.name);
+
                 // Create personalized message with rotating variations
                 const message = generateShareMessage(customer.name);
                 
@@ -9849,6 +9935,9 @@ Response format (JSON only, no markdown):
                 if (!blob) {
                     throw new Error('Failed to generate image');
                 }
+
+                // Save the sent prices for this customer
+                saveCustomerSentPrices(customer.name);
 
                 // Create personalized message with rotating variations
                 const message = generateShareMessage(customer.name);
@@ -10065,8 +10154,8 @@ Response format (JSON only, no markdown):
                 return;
             }
 
-            const customers = getCustomersForDay(day);
-            if (customers.length === 0) {
+            const dayCustomers = getCustomersForDay(day);
+            if (dayCustomers.length === 0) {
                 alert('No customers to send to for this day.');
                 return;
             }
@@ -10076,9 +10165,9 @@ Response format (JSON only, no markdown):
             // Confirm with user
             const confirmSend = confirm(
                 `📤 Send to ${dayLabel} Customers\n\n` +
-                `This will send the price list to ${customers.length} customer(s):\n\n` +
-                customers.slice(0, 5).map(c => `• ${c.name}`).join('\n') +
-                (customers.length > 5 ? `\n...and ${customers.length - 5} more` : '') +
+                `This will send the price list to ${dayCustomers.length} customer(s):\n\n` +
+                dayCustomers.slice(0, 5).map(c => `• ${c.name}`).join('\n') +
+                (dayCustomers.length > 5 ? `\n...and ${dayCustomers.length - 5} more` : '') +
                 `\n\nYou'll need to:\n` +
                 `1. Save the image to Photos (once)\n` +
                 `2. Approve each send in the Shortcut\n\n` +
@@ -10134,9 +10223,13 @@ Response format (JSON only, no markdown):
                 progressBar.style.width = '50%';
 
                 // Build list of filtered customers: phone~name~message (with rotating messages)
-                const customerList = customers.map(customer => {
+                const customerList = dayCustomers.map((customer, idx) => {
                     const phone = customer.phone.replace(/\D/g, '');
                     const message = generateShareMessage(customer.name);
+
+                    // Save sent prices for each customer
+                    saveCustomerSentPrices(customer.name);
+
                     return `${phone}~${customer.name}~${message}`;
                 }).join('\n');
 
@@ -10150,7 +10243,7 @@ Response format (JSON only, no markdown):
                 closeCustomerShareMenu();
 
                 // Create simple phone list (just digits and commas - URL safe)
-                const phoneList = customers.map(c => c.phone.replace(/\D/g, '')).join(',');
+                const phoneList = dayCustomers.map(c => c.phone.replace(/\D/g, '')).join(',');
 
                 // Launch shortcut with phone list in URL (using input parameter directly)
                 window.location.href = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=${phoneList}`;
