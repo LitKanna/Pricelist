@@ -10477,15 +10477,18 @@ Response format (JSON only, no markdown):
             document.getElementById('verifyingPhone').textContent = formattedPhone;
 
             try {
-                // Show OTP modal
-                document.getElementById('otpModal').classList.add('show');
-                document.body.classList.add('modal-open');
+                showToast('Sending verification code...');
 
                 // Initialize reCAPTCHA fresh
                 await initRecaptcha();
 
-                // Send OTP
+                // Send OTP first
                 confirmationResult = await auth.signInWithPhoneNumber(formattedPhone, recaptchaVerifier);
+
+                // Only show OTP modal AFTER SMS is sent successfully
+                document.getElementById('otpModal').classList.add('show');
+                document.body.classList.add('modal-open');
+                showToast('Code sent! Check your SMS');
 
             } catch (error) {
                 console.error('Phone auth error:', error);
@@ -10532,7 +10535,14 @@ Response format (JSON only, no markdown):
 
             } catch (error) {
                 console.error('OTP verification error:', error);
-                showToast('Invalid code. Please try again.');
+                if (error.code === 'auth/invalid-verification-code') {
+                    showToast('Invalid code. Check and try again.');
+                } else if (error.code === 'auth/code-expired') {
+                    showToast('Code expired. Request a new one.');
+                    cancelVerification();
+                } else {
+                    showToast('Verification failed: ' + error.message);
+                }
             }
         }
 
