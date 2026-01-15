@@ -2084,6 +2084,13 @@
         width: 200%;
         height: 200%;
         background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    /* Ensure header buttons are clickable above pseudo-element */
+    .share-menu-header button {
+        position: relative;
+        z-index: 1;
     }
 
     .share-menu-header h3 {
