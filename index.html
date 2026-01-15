@@ -3018,8 +3018,8 @@
             <!-- Secondary Actions -->
             <div style="display: flex; gap: 10px;">
                 <button onclick="openOrderHistory()" style="flex: 1; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; color: #64748b; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    History
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                    Sales
                 </button>
                 <button onclick="openInvoiceManagement()" style="flex: 1; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; color: #64748b; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -3033,7 +3033,7 @@
         </div>
         <div class="settings-panel" id="orderHistoryPanel">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;">
-                <h2 style="font-size: 22px; font-weight: 700; color: #0f172a; margin: 0;">Order History</h2>
+                <h2 style="font-size: 22px; font-weight: 700; color: #0f172a; margin: 0;">Daily Sales</h2>
                 <button onclick="closeOrderHistory()" style="background: none; border: none; padding: 8px; cursor: pointer; color: #64748b;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
@@ -4541,7 +4541,7 @@
                 const itemCount = order.items.reduce((sum, i) => sum + i.qty, 0);
                 const div = document.createElement('div');
                 div.className = 'order-history-item';
-                div.onclick = () => viewOrder(order.id);
+                div.onclick = () => reshareOrderToTeam(order.id);
                 div.innerHTML = '<div class="order-history-header"><span class="order-history-customer">' + order.customerName + '</span><span class="order-history-total">$' + order.grandTotal.toFixed(0) + '</span></div><div class="order-history-meta">' + dateStr + ' at ' + timeStr + ' - ' + itemCount + ' items</div>';
                 container.appendChild(div);
             });
@@ -4672,8 +4672,118 @@
             }
         }
 
+        // Reshare saved order to team
+        let reshareOrderId = null;
+
+        function reshareOrderToTeam(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) { showToast('Order not found'); return; }
+
+            reshareOrderId = orderId;
+
+            const modal = document.createElement('div');
+            modal.className = 'share-menu-overlay';
+            modal.id = 'reshareTeamMenu';
+            modal.onclick = (e) => { if (e.target === modal) closeReshareTeamMenu(); };
+
+            const menuDiv = document.createElement('div');
+            menuDiv.className = 'share-menu';
+            menuDiv.style.maxWidth = '360px';
+
+            const customerName = order.businessName || order.customerName || 'Customer';
+            const total = '$' + order.grandTotal.toFixed(0);
+
+            menuDiv.innerHTML = '<div class="share-menu-header" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-bottom: none; padding: 20px;"><h3 style="color: white;">Send to Team</h3><button class="share-menu-close" onclick="closeReshareTeamMenu()" style="background: rgba(255,255,255,0.15); color: white;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="pointer-events: none;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div class="share-menu-body" style="padding: 20px;"><div style="background: #f1f5f9; border-radius: 12px; padding: 14px; margin-bottom: 16px; text-align: center;"><div style="font-size: 16px; font-weight: 700; color: #0f172a;">' + customerName + '</div><div style="font-size: 14px; color: #64748b; margin-top: 4px;">' + total + ' - ' + order.items.length + ' items</div></div><div style="display: flex; flex-direction: column; gap: 12px;"><div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; overflow: hidden;"><div style="display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #e2e8f0;"><div style="width: 40px; height: 40px; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></div><div style="flex: 1; padding-left: 12px;"><div style="font-size: 15px; font-weight: 700; color: #0f172a;">Re-send Order</div></div></div><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0;"><button onclick="reshareToTeamAs(\'booking\')" style="padding: 14px; background: white; border: none; border-right: 1px solid #e2e8f0; cursor: pointer;"><div style="font-size: 14px; font-weight: 600; color: #1e40af;">Booking</div><div style="font-size: 11px; color: #64748b;">With prices</div></button><button onclick="reshareToTeamAs(\'pickpacker\')" style="padding: 14px; background: white; border: none; cursor: pointer;"><div style="font-size: 14px; font-weight: 600; color: #c2410c;">Packing</div><div style="font-size: 11px; color: #64748b;">No prices</div></button></div></div><div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; overflow: hidden;"><div style="display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #e2e8f0;"><div style="width: 40px; height: 40px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div><div style="flex: 1; padding-left: 12px;"><div style="font-size: 15px; font-weight: 700; color: #0f172a;">Add-on</div></div></div><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0;"><button onclick="reshareToTeamAs(\'addon-booking\')" style="padding: 14px; background: white; border: none; border-right: 1px solid #e2e8f0; cursor: pointer;"><div style="font-size: 14px; font-weight: 600; color: #1e40af;">Booking</div><div style="font-size: 11px; color: #64748b;">With prices</div></button><button onclick="reshareToTeamAs(\'addon-packer\')" style="padding: 14px; background: white; border: none; cursor: pointer;"><div style="font-size: 14px; font-weight: 600; color: #c2410c;">Packing</div><div style="font-size: 11px; color: #64748b;">No prices</div></button></div></div></div><button onclick="viewOrderFromReshare()" style="width: 100%; margin-top: 16px; padding: 14px; background: #e0e7ff; border: none; border-radius: 12px; color: #3730a3; font-size: 15px; font-weight: 600; cursor: pointer;">View Order Details</button><button onclick="closeReshareTeamMenu()" style="width: 100%; margin-top: 8px; padding: 14px; background: #f1f5f9; border: none; border-radius: 12px; color: #64748b; font-size: 15px; font-weight: 600; cursor: pointer;">Cancel</button></div>';
+
+            modal.appendChild(menuDiv);
+            document.body.appendChild(modal);
+            requestAnimationFrame(() => modal.classList.add('show'));
+        }
+
+        function closeReshareTeamMenu() {
+            const modal = document.getElementById('reshareTeamMenu');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.remove(), 200);
+            }
+        }
+
+        function viewOrderFromReshare() {
+            const orderId = reshareOrderId;
+            closeReshareTeamMenu();
+            if (orderId) viewOrder(orderId);
+        }
+
+        async function reshareToTeamAs(mode) {
+            closeReshareTeamMenu();
+
+            const order = orders.find(o => o.id === reshareOrderId);
+            if (!order) { showToast('Order not found'); return; }
+
+            // Load order into current order items
+            currentOrderItems = order.items.map(i => ({...i}));
+            orderCustomerName = order.customerName;
+            selectedCustomer = customerContacts.find(c => c.id === order.customerId) || null;
+
+            // Get customer display name
+            let customerDisplay = order.businessName || order.customerName || 'Customer';
+
+            // Prepare message based on mode
+            const senderName = salesmanInfo.name || '';
+            window.teamShareData = { customerDisplay, senderName, mode };
+
+            // Check if we have team members
+            if (teamMembers.length === 0) {
+                showToast('No team members added');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            loading.classList.add('show');
+
+            try {
+                const blob = await generateTeamOrderBlob(mode);
+                const isAddOn = mode.startsWith('addon');
+                const isPacking = mode === 'pickpacker' || mode === 'addon-packer';
+                const typeLabel = isAddOn ? 'ADD-ON' : 'ORDER';
+                const priceLabel = isPacking ? 'packing' : 'booking';
+
+                const file = new File([blob], 'order-' + customerDisplay.replace(/[^a-zA-Z0-9]/g, '-') + '.png', { type: 'image/png' });
+
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: typeLabel + ' - ' + customerDisplay,
+                        text: customerDisplay + ' ' + typeLabel.toLowerCase() + ' (' + priceLabel + ')' + (senderName ? ' from ' + senderName : '')
+                    });
+                    loading.classList.remove('show');
+                    showToast('Sent to team!');
+                } else {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'order-' + customerDisplay.replace(/[^a-zA-Z0-9]/g, '-') + '.png';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    loading.classList.remove('show');
+                    showToast('Order downloaded');
+                }
+            } catch (err) {
+                loading.classList.remove('show');
+                if (err.name !== 'AbortError') {
+                    console.error(err);
+                    showToast('Could not share');
+                }
+            }
+        }
+
         async function shareToTeam(mode) {
             closeTeamShareMenu();
+
+            // Auto-save order first if not already saved
+            if (currentOrderItems.length > 0) {
+                saveCurrentOrder();
+            }
 
             // Get customer display name
             let customerDisplay = orderCustomerName || 'Walk-in Customer';
