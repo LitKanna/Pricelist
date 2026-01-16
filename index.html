@@ -10027,15 +10027,15 @@ Response format (JSON only, no markdown):
             const orderLink = includeOrderLink ? getOrderLinkURL(customerObj) : '';
 
             const messages = includeOrderLink ? [
-                `${greeting} ${yourName} from Everfresh here. Here are our prices for ${formattedDate}. Feel free to reach out when you'd like to order!\n\n👉 Order here:\n${orderLink}`,
-                `Hey${heyName}! It's ${yourName} from Everfresh. Fresh prices for ${formattedDate}. Give me a call or message when you're ready!\n\nTap to order 👇\n${orderLink}`,
-                `${greeting} ${yourName} here from Everfresh. Updated prices for ${formattedDate}. Let me know if you have any questions!\n\n📦 Place your order:\n${orderLink}`,
-                `${greeting} It's ${yourName} from Everfresh. Here are our latest prices for ${formattedDate}. Happy to help with anything you need!\n\n🛒 Order now:\n${orderLink}`
+                `${greeting} 👋 ${yourName} from Everfresh here. Here are our prices for ${formattedDate}. Feel free to reach out when you'd like to order!\n\n👉 Order here:\n${orderLink}`,
+                `Hey${heyName}! 👋 It's ${yourName} from Everfresh. Fresh prices for ${formattedDate}. Give me a call or message when you're ready!\n\nTap to order 👇\n${orderLink}`,
+                `${greeting} 👋 ${yourName} here from Everfresh. Updated prices for ${formattedDate}. Give me a call or text for your order! Thank you.\n\n📦 Place your order:\n${orderLink}`,
+                `${greeting} 👋 It's ${yourName} from Everfresh. Here are our latest prices for ${formattedDate}. Happy to help with anything you need!\n\n🛒 Order now:\n${orderLink}`
             ] : [
-                `${greeting} ${yourName} from Everfresh here. Here are our latest prices for ${formattedDate}. Feel free to reach out when you'd like to order!`,
-                `Hey${heyName}! It's ${yourName} from Everfresh. Here's our fresh price list for ${formattedDate}. Give me a call or message when you're ready!`,
-                `${greeting} ${yourName} here from Everfresh with updated prices for ${formattedDate}. Let me know if you have any questions!`,
-                `${greeting} It's ${yourName} from Everfresh. Here are our latest prices for ${formattedDate}. Happy to help with anything you need!`
+                `${greeting} 👋 ${yourName} from Everfresh here. Here are our latest prices for ${formattedDate}. Feel free to reach out when you'd like to order!`,
+                `Hey${heyName}! 👋 It's ${yourName} from Everfresh. Here's our fresh price list for ${formattedDate}. Give me a call or message when you're ready!`,
+                `${greeting} 👋 ${yourName} here from Everfresh with updated prices for ${formattedDate}. Give me a call or text for your order! Thank you.`,
+                `${greeting} 👋 It's ${yourName} from Everfresh. Here are our latest prices for ${formattedDate}. Happy to help with anything you need!`
             ];
 
             return messages[Math.floor(Math.random() * messages.length)];
