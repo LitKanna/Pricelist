@@ -10027,15 +10027,15 @@ Response format (JSON only, no markdown):
             const orderLink = includeOrderLink ? getOrderLinkURL(customerObj) : '';
 
             const messages = includeOrderLink ? [
-                `${greeting} ${yourName} from Everfresh here. Fresh prices for ${formattedDate}.\n\n👉 Order here:\n${orderLink}`,
-                `Hey${heyName}! It's ${yourName} from Everfresh. Here's our price list for ${formattedDate}.\n\nTap to order 👇\n${orderLink}`,
+                `${greeting} ${yourName} from Everfresh here. Here are our prices for ${formattedDate}.\n\n👉 Order here:\n${orderLink}`,
+                `Hey${heyName}! It's ${yourName} from Everfresh. Fresh prices for ${formattedDate}.\n\nTap to order 👇\n${orderLink}`,
                 `${greeting} ${yourName} here from Everfresh. Updated prices for ${formattedDate}.\n\n📦 Place your order:\n${orderLink}`,
-                `${greeting} Fresh prices from ${yourName} at Everfresh for ${formattedDate}!\n\n🛒 Order now:\n${orderLink}`
+                `${greeting} It's ${yourName} from Everfresh. Here are our latest prices for ${formattedDate}.\n\n🛒 Order now:\n${orderLink}`
             ] : [
                 `${greeting} ${yourName} from Everfresh here. Here are our latest prices for ${formattedDate}. Let me know if you'd like to place an order!`,
                 `Hey${heyName}! It's ${yourName} from Everfresh. Here's our fresh price list for ${formattedDate}.`,
                 `${greeting} ${yourName} here from Everfresh with updated prices for ${formattedDate}. Reply to order!`,
-                `${greeting} Fresh prices from ${yourName} at Everfresh for ${formattedDate}! Let me know what you need.`
+                `${greeting} It's ${yourName} from Everfresh. Here are our latest prices for ${formattedDate}. Let me know what you need.`
             ];
 
             return messages[Math.floor(Math.random() * messages.length)];
