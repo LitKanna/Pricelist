@@ -10008,7 +10008,7 @@ Response format (JSON only, no markdown):
         }
 
         // Generate share message with rotating variations
-        function generateShareMessage(customerName = null) {
+        function generateShareMessage(customerName = null, includeOrderLink = true) {
             const effectiveDate = getEffectiveDate();
             const formattedDate = effectiveDate.toLocaleDateString('en-AU', {
                 weekday: 'long',
@@ -10017,12 +10017,15 @@ Response format (JSON only, no markdown):
             });
             const yourName = salesmanInfo.name || 'Everfresh Team';
             const greeting = customerName ? `Hi ${customerName}!` : 'Hi!';
+            const orderLink = includeOrderLink ? getOrderLinkURL() : '';
 
-            const messages = [
-                `${greeting} ${yourName} from Everfresh here 👋 Here are our latest prices for ${formattedDate}. Let me know if you'd like to place an order!`,
-                `Hey${customerName ? ' ' + customerName : ''}! It's ${yourName} from Everfresh 👋 Here's our fresh price list for ${formattedDate}. Give me a call or message when you're ready!`,
-                `${greeting} ${yourName} here from Everfresh 👋 Just sharing our updated prices for ${formattedDate}. Looking forward to hearing from you!`,
-                `Hey${customerName ? ' ' + customerName : ''}! ${yourName} from Everfresh 👋 Our latest prices for ${formattedDate} are ready! Feel free to reach out when you'd like to order.`
+            const messages = includeOrderLink ? [
+                `${greeting} ${yourName} from Everfresh here. Here are our prices for ${formattedDate}.\n\nOrder here: ${orderLink}`,
+                `Hey${customerName ? ' ' + customerName : ''}! It's ${yourName} from Everfresh. Fresh prices for ${formattedDate}.\n\nTap to order: ${orderLink}`,
+                `${greeting} ${yourName} here from Everfresh. Updated prices for ${formattedDate}.\n\nPlace your order: ${orderLink}`
+            ] : [
+                `${greeting} ${yourName} from Everfresh here. Here are our latest prices for ${formattedDate}. Let me know if you'd like to place an order!`,
+                `Hey${customerName ? ' ' + customerName : ''}! It's ${yourName} from Everfresh. Here's our fresh price list for ${formattedDate}.`
             ];
 
             return messages[Math.floor(Math.random() * messages.length)];
@@ -10036,6 +10039,9 @@ Response format (JSON only, no markdown):
             loading.classList.add('show');
 
             try {
+                // Publish price list for order link
+                await publishPriceList();
+
                 // Generate image blob
                 const blob = await generateImageBlob();
 
@@ -10043,7 +10049,7 @@ Response format (JSON only, no markdown):
                     throw new Error('Failed to generate image');
                 }
 
-                // Generate message
+                // Generate message with order link
                 const message = generateShareMessage();
 
                 // On iOS, save to Photos then trigger shortcut for automation
@@ -10149,6 +10155,9 @@ Response format (JSON only, no markdown):
             loading.classList.add('show');
 
             try {
+                // Publish price list for order link
+                await publishPriceList();
+
                 // Generate image blob
                 const blob = await generateImageBlob();
 
@@ -10411,13 +10420,16 @@ Response format (JSON only, no markdown):
         async function sendToCustomer(index) {
             const customer = customerContacts[index];
             const phone = customer.phone.replace(/\D/g, ''); // Remove non-digits
-            
+
             closeCustomerShareMenu();
-            
+
             const loading = document.getElementById('loading');
             loading.classList.add('show');
-            
+
             try {
+                // Publish price list for order link
+                await publishPriceList();
+
                 // Generate image blob
                 const blob = await generateImageBlob();
                 
@@ -10488,6 +10500,9 @@ Response format (JSON only, no markdown):
             loading.classList.add('show');
 
             try {
+                // Publish price list for order link
+                await publishPriceList();
+
                 // Generate image blob
                 const blob = await generateImageBlob();
 
@@ -10745,6 +10760,11 @@ Response format (JSON only, no markdown):
             sendFilteredBtn.style.display = 'none';
 
             try {
+                // Step 0: Publish price list for order link
+                statusText.textContent = 'Publishing price list...';
+                progressBar.style.width = '5%';
+                await publishPriceList();
+
                 // Step 1: Generate image once
                 statusText.textContent = 'Generating price list image...';
                 progressBar.style.width = '10%';
