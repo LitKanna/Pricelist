@@ -590,16 +590,34 @@
 
             const registration = await navigator.serviceWorker.ready;
 
-            registration.showNotification('🥬 Everfresh - New Prices!', {
+            const options = {
                 body: 'Fresh prices for today. Tap to order!',
                 icon: 'logo.png',
                 badge: 'logo.png',
-                vibrate: [200, 100, 200],
-                actions: [
+                tag: 'everfresh-order',
+                renotify: true,
+                requireInteraction: true,
+                data: {
+                    url: 'https://litkanna.github.io/Pricelist/order.html'
+                }
+            };
+
+            // Action buttons only work on Android, not iOS
+            if (!isIOS()) {
+                options.actions = [
                     { action: 'order', title: '📦 Order Now' },
                     { action: 'call', title: '📞 Call' }
-                ]
-            });
+                ];
+            }
+
+            registration.showNotification('🥬 Everfresh - New Prices!', options);
+
+            // Show hint for iOS users
+            if (isIOS()) {
+                setTimeout(() => {
+                    alert('Notification sent! Tap it to open the order page.');
+                }, 500);
+            }
         };
 
         // Register service worker

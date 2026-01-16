@@ -44,11 +44,19 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  if (event.action === 'order') {
-    event.waitUntil(clients.openWindow(event.notification.data.url));
-  } else if (event.action === 'call') {
-    event.waitUntil(clients.openWindow('tel:+61412345678'));
-  } else {
-    event.waitUntil(clients.openWindow(event.notification.data.url));
-  }
+  const urlToOpen = event.notification.data?.url || '/Pricelist/order.html';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // Check if app is already open
+      for (let client of windowClients) {
+        if (client.url.includes('Pricelist') && 'focus' in client) {
+          client.navigate(urlToOpen);
+          return client.focus();
+        }
+      }
+      // Open new window
+      return clients.openWindow(urlToOpen);
+    })
+  );
 });
