@@ -10008,7 +10008,8 @@ Response format (JSON only, no markdown):
         }
 
         // Generate share message with rotating variations
-        function generateShareMessage(customerName = null, includeOrderLink = true) {
+        // customer can be a string (name only) or object {name, phone, business}
+        function generateShareMessage(customer = null, includeOrderLink = true) {
             const effectiveDate = getEffectiveDate();
             const formattedDate = effectiveDate.toLocaleDateString('en-AU', {
                 weekday: 'long',
@@ -10016,8 +10017,13 @@ Response format (JSON only, no markdown):
                 month: 'long'
             });
             const yourName = salesmanInfo.name || 'Everfresh Team';
+
+            // Handle both string (name) and object (full customer)
+            const customerName = typeof customer === 'string' ? customer : (customer?.name || null);
+            const customerObj = typeof customer === 'object' ? customer : null;
+
             const greeting = customerName ? `Hi ${customerName}!` : 'Hi!';
-            const orderLink = includeOrderLink ? getOrderLinkURL() : '';
+            const orderLink = includeOrderLink ? getOrderLinkURL(customerObj) : '';
 
             const messages = includeOrderLink ? [
                 `${greeting} ${yourName} from Everfresh here. Here are our prices for ${formattedDate}.\n\nOrder here: ${orderLink}`,
@@ -10440,9 +10446,9 @@ Response format (JSON only, no markdown):
                 // Save the sent prices for this customer
                 saveCustomerSentPrices(customer.name);
 
-                // Create personalized message with rotating variations
-                const message = generateShareMessage(customer.name);
-                
+                // Create personalized message with rotating variations (pass full customer for order link)
+                const message = generateShareMessage(customer);
+
                 // Check if Web Share API is available (iOS/modern browsers)
                 if (navigator.share && navigator.canShare) {
                     const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
@@ -10513,8 +10519,8 @@ Response format (JSON only, no markdown):
                 // Save the sent prices for this customer
                 saveCustomerSentPrices(customer.name);
 
-                // Create personalized message with rotating variations
-                const message = generateShareMessage(customer.name);
+                // Create personalized message with rotating variations (pass full customer for order link)
+                const message = generateShareMessage(customer);
 
                 loading.classList.remove('show');
 
@@ -10694,7 +10700,7 @@ Response format (JSON only, no markdown):
                 // Build list of customers: phone|name|message (with rotating messages)
                 const customerList = customerContacts.map(customer => {
                     const phone = customer.phone.replace(/\D/g, '');
-                    const message = generateShareMessage(customer.name);
+                    const message = generateShareMessage(customer);
                     return `${phone}|${customer.name}|${message}`;
                 }).join(';;;');
 
@@ -10804,7 +10810,7 @@ Response format (JSON only, no markdown):
                 // Build list of filtered customers: phone~name~message (with rotating messages)
                 const customerList = dayCustomers.map((customer, idx) => {
                     const phone = customer.phone.replace(/\D/g, '');
-                    const message = generateShareMessage(customer.name);
+                    const message = generateShareMessage(customer);
 
                     // Save sent prices for each customer
                     saveCustomerSentPrices(customer.name);
@@ -11645,10 +11651,22 @@ Response format (JSON only, no markdown):
             }
         }
 
-        // Get order link URL
-        function getOrderLinkURL() {
+        // Get order link URL (optionally with customer info pre-filled)
+        function getOrderLinkURL(customer = null) {
             const baseURL = window.location.href.replace(/\/[^\/]*$/, '');
-            return baseURL + '/order.html';
+            let url = baseURL + '/order.html';
+
+            // If customer info provided, add as URL parameters
+            if (customer) {
+                const params = new URLSearchParams();
+                if (customer.name) params.set('name', customer.name);
+                if (customer.phone) params.set('phone', customer.phone);
+                if (customer.business) params.set('business', customer.business);
+                const paramString = params.toString();
+                if (paramString) url += '?' + paramString;
+            }
+
+            return url;
         }
 
         // Share order link

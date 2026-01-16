@@ -688,7 +688,27 @@
             }
         };
 
+        // Pre-fill customer info from URL parameters
+        function prefillCustomerInfo() {
+            const params = new URLSearchParams(window.location.search);
+
+            const name = params.get('name');
+            const phone = params.get('phone');
+            const business = params.get('business');
+
+            if (name) {
+                document.getElementById('customerName').value = name;
+            }
+            if (phone) {
+                document.getElementById('customerPhone').value = phone;
+            }
+            if (business) {
+                document.getElementById('customerBusiness').value = business;
+            }
+        }
+
         loadPriceList();
+        prefillCustomerInfo();
     </script>
 </body>
 </html>
