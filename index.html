@@ -10008,7 +10008,7 @@ Response format (JSON only, no markdown):
         }
 
         // Generate share message with rotating variations
-        // customer can be a string (name only) or object {name, phone, business}
+        // customer can be a string (name only) or object {name, phone, businessName}
         function generateShareMessage(customer = null, includeOrderLink = true) {
             const effectiveDate = getEffectiveDate();
             const formattedDate = effectiveDate.toLocaleDateString('en-AU', {
@@ -10023,15 +10023,19 @@ Response format (JSON only, no markdown):
             const customerObj = typeof customer === 'object' ? customer : null;
 
             const greeting = customerName ? `Hi ${customerName}!` : 'Hi!';
+            const heyName = customerName ? ` ${customerName}` : '';
             const orderLink = includeOrderLink ? getOrderLinkURL(customerObj) : '';
 
             const messages = includeOrderLink ? [
-                `${greeting} ${yourName} from Everfresh here. Here are our prices for ${formattedDate}.\n\nOrder here: ${orderLink}`,
-                `Hey${customerName ? ' ' + customerName : ''}! It's ${yourName} from Everfresh. Fresh prices for ${formattedDate}.\n\nTap to order: ${orderLink}`,
-                `${greeting} ${yourName} here from Everfresh. Updated prices for ${formattedDate}.\n\nPlace your order: ${orderLink}`
+                `${greeting} ${yourName} from Everfresh here. Fresh prices for ${formattedDate}.\n\n👉 Order here:\n${orderLink}`,
+                `Hey${heyName}! It's ${yourName} from Everfresh. Here's our price list for ${formattedDate}.\n\nTap to order 👇\n${orderLink}`,
+                `${greeting} ${yourName} here from Everfresh. Updated prices for ${formattedDate}.\n\n📦 Place your order:\n${orderLink}`,
+                `${greeting} Fresh prices from ${yourName} at Everfresh for ${formattedDate}!\n\n🛒 Order now:\n${orderLink}`
             ] : [
                 `${greeting} ${yourName} from Everfresh here. Here are our latest prices for ${formattedDate}. Let me know if you'd like to place an order!`,
-                `Hey${customerName ? ' ' + customerName : ''}! It's ${yourName} from Everfresh. Here's our fresh price list for ${formattedDate}.`
+                `Hey${heyName}! It's ${yourName} from Everfresh. Here's our fresh price list for ${formattedDate}.`,
+                `${greeting} ${yourName} here from Everfresh with updated prices for ${formattedDate}. Reply to order!`,
+                `${greeting} Fresh prices from ${yourName} at Everfresh for ${formattedDate}! Let me know what you need.`
             ];
 
             return messages[Math.floor(Math.random() * messages.length)];
@@ -11661,7 +11665,7 @@ Response format (JSON only, no markdown):
                 const params = new URLSearchParams();
                 if (customer.name) params.set('name', customer.name);
                 if (customer.phone) params.set('phone', customer.phone);
-                if (customer.business) params.set('business', customer.business);
+                if (customer.businessName) params.set('business', customer.businessName);
                 const paramString = params.toString();
                 if (paramString) url += '?' + paramString;
             }
