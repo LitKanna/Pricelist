@@ -2779,18 +2779,18 @@
             </div>
 
             <!-- Preferences Card -->
-            <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+            <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 16px; padding: 20px; margin-bottom: 20px; color: white;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m-9-9h6m6 0h6"/></svg>
+                    <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
                     </div>
-                    <div style="font-weight: 600; color: #1e293b; font-size: 15px;">Preferences</div>
+                    <div style="font-weight: 600; font-size: 15px;">Preferences</div>
                 </div>
 
-                <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f1f5f9;">
+                <div style="background: rgba(255,255,255,0.15); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
                     <div>
-                        <div style="font-weight: 500; color: #1e293b; font-size: 14px;">Send for Next Day</div>
-                        <div style="font-size: 12px; color: #64748b;">Shows tomorrow's date on price list</div>
+                        <div style="font-weight: 500; font-size: 14px;">Next Day Dates</div>
+                        <div style="font-size: 12px; opacity: 0.8;">Tomorrow's date on exports</div>
                     </div>
                     <label class="toggle-switch">
                         <input type="checkbox" id="nextDayToggle" checked onchange="saveSettings()">
@@ -2798,10 +2798,10 @@
                     </label>
                 </div>
 
-                <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 0;">
+                <div style="background: rgba(255,255,255,0.15); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;">
                     <div>
-                        <div style="font-weight: 500; color: #1e293b; font-size: 14px;">Auto-Sort A-Z</div>
-                        <div style="font-size: 12px; color: #64748b;">Sort categories & products alphabetically</div>
+                        <div style="font-weight: 500; font-size: 14px;">Auto-Sort A-Z</div>
+                        <div style="font-size: 12px; opacity: 0.8;">Alphabetical sorting</div>
                     </div>
                     <label class="toggle-switch">
                         <input type="checkbox" id="autoSortToggle" onchange="toggleAutoSort()">
@@ -2811,60 +2811,58 @@
             </div>
 
             <!-- Customers Card -->
-            <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+            <div style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border-radius: 16px; padding: 20px; margin-bottom: 20px; color: white;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                    <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     </div>
-                    <div style="font-weight: 600; color: #1e293b; font-size: 15px;">Customers</div>
+                    <div style="font-weight: 600; font-size: 15px;">Customers</div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 6px;">Contact Name</label>
+                        <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 6px;">Name</label>
                         <input type="text" id="customerName" placeholder=""
-                               style="width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 16px; box-sizing: border-box;">
+                               style="width: 100%; padding: 10px 12px; border: none; border-radius: 8px; font-size: 16px; background: rgba(255,255,255,0.95); color: #1e293b; box-sizing: border-box;">
                     </div>
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 6px;">Phone</label>
+                        <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 6px;">Phone</label>
                         <input type="tel" id="customerPhone" placeholder=""
-                               style="width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 16px; box-sizing: border-box;">
+                               style="width: 100%; padding: 10px 12px; border: none; border-radius: 8px; font-size: 16px; background: rgba(255,255,255,0.95); color: #1e293b; box-sizing: border-box;">
                     </div>
                 </div>
 
                 <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 6px;">Business Name <span style="color: #94a3b8; font-weight: 400;">(shown on orders)</span></label>
+                    <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 6px;">Business</label>
                     <input type="text" id="customerBusinessName" placeholder=""
-                           style="width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 16px; box-sizing: border-box;">
+                           style="width: 100%; padding: 10px 12px; border: none; border-radius: 8px; font-size: 16px; background: rgba(255,255,255,0.95); color: #1e293b; box-sizing: border-box;">
                 </div>
 
                 <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 6px;">Delivery Location <span style="color: #94a3b8; font-weight: 400;">(for packing)</span></label>
-                    <input type="text" id="customerDeliveryLocation" placeholder="123 Main St, Sydney"
-                           style="width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 16px; box-sizing: border-box;">
+                    <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 6px;">Address</label>
+                    <input type="text" id="customerDeliveryLocation" placeholder=""
+                           style="width: 100%; padding: 10px 12px; border: none; border-radius: 8px; font-size: 16px; background: rgba(255,255,255,0.95); color: #1e293b; box-sizing: border-box;">
                 </div>
 
-                <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 8px;">Delivery Days</label>
+                <div style="margin-bottom: 14px;">
+                    <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 8px;">Delivery Days</label>
                     <div id="customerDaysSelector" style="display: flex; flex-wrap: wrap; gap: 6px;">
-                        <label class="day-checkbox"><input type="checkbox" value="mon"> Mon</label>
-                        <label class="day-checkbox"><input type="checkbox" value="tue"> Tue</label>
-                        <label class="day-checkbox"><input type="checkbox" value="wed"> Wed</label>
-                        <label class="day-checkbox"><input type="checkbox" value="thu"> Thu</label>
-                        <label class="day-checkbox"><input type="checkbox" value="fri"> Fri</label>
-                        <label class="day-checkbox"><input type="checkbox" value="sat"> Sat</label>
+                        <label class="day-checkbox" style="background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); color: white;"><input type="checkbox" value="mon"> Mon</label>
+                        <label class="day-checkbox" style="background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); color: white;"><input type="checkbox" value="tue"> Tue</label>
+                        <label class="day-checkbox" style="background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); color: white;"><input type="checkbox" value="wed"> Wed</label>
+                        <label class="day-checkbox" style="background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); color: white;"><input type="checkbox" value="thu"> Thu</label>
+                        <label class="day-checkbox" style="background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); color: white;"><input type="checkbox" value="fri"> Fri</label>
+                        <label class="day-checkbox" style="background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); color: white;"><input type="checkbox" value="sat"> Sat</label>
                     </div>
                 </div>
 
-                <button class="btn btn-primary" onclick="addCustomerContact()" style="width: 100%; padding: 12px; border-radius: 10px;">+ Add Customer</button>
-
-                <div id="customersList" style="margin-top: 16px;"></div>
+                <button onclick="addCustomerContact()" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.95); border: none; border-radius: 10px; font-size: 15px; font-weight: 600; color: #6d28d9; cursor: pointer;">
+                    Add Customer
+                </button>
             </div>
 
-            <!-- Save Button -->
-            <button class="btn btn-success" onclick="saveSettings()" style="width: 100%; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600;">
-                Save All Settings
-            </button>
+            <!-- Customers List -->
+            <div id="customersList"></div>
         </div>
 
         <!-- Customer Pricing Panel -->
@@ -7332,42 +7330,44 @@
         function renderCustomersList() {
             const container = document.getElementById('customersList');
             if (customerContacts.length === 0) {
-                container.innerHTML = '<p style="color: #6b7280; font-size: 14px; margin-top: 10px;">No customers added yet</p>';
+                container.innerHTML = '';
                 return;
             }
 
-            const dayNames = { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat' };
+            const dayNames = { mon: 'M', tue: 'T', wed: 'W', thu: 'T', fri: 'F', sat: 'S' };
 
-            let html = '<div style="margin-top: 15px;">';
+            let html = '';
             customerContacts.forEach((customer, index) => {
                 const days = customer.days || [];
                 let daysHtml = '';
                 if (days.length === 0) {
-                    daysHtml = '<span class="customer-day-tag all-days">Every Day</span>';
+                    daysHtml = '<span style="font-size: 11px; color: #22c55e; font-weight: 500;">Every day</span>';
                 } else {
-                    daysHtml = days.map(d => `<span class="customer-day-tag">${dayNames[d] || d}</span>`).join('');
+                    daysHtml = days.map(d => `<span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: rgba(139,92,246,0.1); color: #8b5cf6; border-radius: 50%; font-size: 10px; font-weight: 600;">${dayNames[d] || d}</span>`).join('');
                 }
 
-                const businessDisplay = customer.businessName ? `<div style="font-size: 12px; color: #8b5cf6; font-weight: 500;">${customer.businessName}</div>` : '';
-                const locationDisplay = customer.deliveryLocation ? `<div style="font-size: 11px; color: #64748b;">📍 ${customer.deliveryLocation}</div>` : '';
+                const businessName = customer.businessName || customer.name;
                 html += `
-                    <div class="customer-item" style="flex-wrap: wrap;">
-                        <div class="customer-info" style="flex: 1; min-width: 150px;">
-                            <div class="customer-name">${customer.name}</div>
-                            ${businessDisplay}
-                            ${locationDisplay}
-                            <div class="customer-phone">${customer.phone}</div>
-                            <div class="customer-days">${daysHtml}</div>
-                        </div>
-                        <div class="customer-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button class="btn btn-secondary btn-small" onclick="openCustomerContactEditModal(${index})" style="background: rgba(59,130,246,0.1); color: #3b82f6; border: none;">Edit</button>
-                            <button class="btn btn-secondary btn-small" onclick="editCustomerDays(${index})">Days</button>
-                            <button class="btn btn-danger btn-small" onclick="deleteCustomerContact(${index})">Delete</button>
+                    <div style="background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid #e2e8f0;">
+                        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-weight: 600; font-size: 15px; color: #0f172a; margin-bottom: 2px;">${businessName}</div>
+                                ${customer.businessName && customer.businessName !== customer.name ? `<div style="font-size: 13px; color: #64748b;">${customer.name}</div>` : ''}
+                                ${customer.deliveryLocation ? `<div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">${customer.deliveryLocation}</div>` : ''}
+                                <div style="display: flex; align-items: center; gap: 6px; margin-top: 8px;">${daysHtml}</div>
+                            </div>
+                            <div style="display: flex; gap: 6px;">
+                                <button onclick="openCustomerContactEditModal(${index})" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: rgba(139,92,246,0.1); color: #8b5cf6; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                                </button>
+                                <button onclick="deleteCustomerContact(${index})" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: rgba(239,68,68,0.1); color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
             });
-            html += '</div>';
             container.innerHTML = html;
         }
 
@@ -7387,27 +7387,29 @@
 
             menuDiv.innerHTML = `
                 <div class="share-menu-header" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border-bottom: none; padding: 20px;">
-                    <h3 style="color: white;">Edit Customer</h3>
+                    <h3 style="color: white;">${customer.businessName || customer.name}</h3>
                     <button class="share-menu-close" onclick="closeCustomerContactEditModal()" style="background: rgba(255,255,255,0.15); color: white;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="pointer-events: none;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
                 </div>
                 <div class="share-menu-body" style="padding: 20px;">
-                    <div style="margin-bottom: 16px;">
-                        <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px;">Contact Name</label>
-                        <input type="text" id="editContactName" value="${customer.name || ''}" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                        <div>
+                            <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 6px;">Name</label>
+                            <input type="text" id="editContactName" value="${customer.name || ''}" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 6px;">Phone</label>
+                            <input type="text" id="editContactPhone" value="${customer.phone || ''}" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
+                        </div>
                     </div>
                     <div style="margin-bottom: 16px;">
-                        <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px;">Phone</label>
-                        <input type="text" id="editContactPhone" value="${customer.phone || ''}" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
-                    </div>
-                    <div style="margin-bottom: 16px;">
-                        <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px;">Business Name <span style="color: #94a3b8;">(shown on orders)</span></label>
-                        <input type="text" id="editContactBusinessName" value="${customer.businessName || ''}" placeholder="" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
+                        <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 6px;">Business</label>
+                        <input type="text" id="editContactBusinessName" value="${customer.businessName || ''}" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
                     </div>
                     <div style="margin-bottom: 20px;">
-                        <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px;">Delivery Location <span style="color: #94a3b8;">(for packing)</span></label>
-                        <input type="text" id="editContactDeliveryLocation" value="${customer.deliveryLocation || ''}" placeholder="" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
+                        <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 6px;">Address</label>
+                        <input type="text" id="editContactDeliveryLocation" value="${customer.deliveryLocation || ''}" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
                     </div>
                     <button onclick="saveCustomerContactEdit(${index})" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border: none; border-radius: 12px; color: white; font-size: 15px; font-weight: 600; cursor: pointer;">
                         Save Changes
