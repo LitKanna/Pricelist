@@ -2460,6 +2460,15 @@
                             </svg>
                             Pricing
                         </button>
+                        <button class="dropdown-item" onclick="openIncomingOrders(); closeAllDropdowns()" style="position: relative;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            Incoming Orders
+                            <span id="menuIncomingBadge" style="display: none; background: #ef4444; color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; margin-left: 8px;"></span>
+                        </button>
                         <button class="dropdown-item" onclick="autoOrganizeProducts(); closeAllDropdowns()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <line x1="21" y1="10" x2="3" y2="10"/>
@@ -2555,6 +2564,23 @@
                         </div>
                         <div class="share-option-info">
                             <div class="share-option-title">Send to Customer</div>
+                        </div>
+                        <svg class="share-option-arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </div>
+
+                    <!-- Order Link Option -->
+                    <div class="share-option" onclick="shareOrderLink()">
+                        <div class="share-option-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                            </svg>
+                        </div>
+                        <div class="share-option-info">
+                            <div class="share-option-title">Order Link</div>
+                            <div class="share-option-desc" style="font-size: 12px; color: #64748b;">Customers can order directly</div>
                         </div>
                         <svg class="share-option-arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <polyline points="9 18 15 12 9 6"/>
@@ -11569,6 +11595,272 @@ Response format (JSON only, no markdown):
                 }
             }
         });
+
+        // ========================================
+        // CUSTOMER ORDER LINK SYSTEM
+        // ========================================
+
+        let incomingOrdersListener = null;
+        let incomingOrders = [];
+
+        // Publish price list for customer ordering
+        async function publishPriceList() {
+            collectData();
+
+            const effectiveDate = getEffectiveDate();
+
+            const publishData = {
+                products: priceData,
+                effectiveDate: effectiveDate,
+                publishedAt: Date.now(),
+                publishedBy: salesmanInfo.name || 'Everfresh'
+            };
+
+            try {
+                await database.ref('publicPriceList').set(publishData);
+                return true;
+            } catch (error) {
+                console.error('Error publishing price list:', error);
+                return false;
+            }
+        }
+
+        // Get order link URL
+        function getOrderLinkURL() {
+            const baseURL = window.location.href.replace(/\/[^\/]*$/, '');
+            return baseURL + '/order.html';
+        }
+
+        // Share order link
+        async function shareOrderLink() {
+            closeShareMenu();
+
+            // Publish price list first
+            const published = await publishPriceList();
+            if (!published) {
+                showToast('Failed to publish price list');
+                return;
+            }
+
+            const orderURL = getOrderLinkURL();
+            const effectiveDate = getEffectiveDate();
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Everfresh - Place Your Order',
+                        text: 'Order fresh produce for ' + effectiveDate,
+                        url: orderURL
+                    });
+                } catch (e) {
+                    if (e.name !== 'AbortError') {
+                        copyOrderLink();
+                    }
+                }
+            } else {
+                copyOrderLink();
+            }
+        }
+
+        // Copy order link to clipboard
+        async function copyOrderLink() {
+            const orderURL = getOrderLinkURL();
+            try {
+                await navigator.clipboard.writeText(orderURL);
+                showToast('Order link copied!');
+            } catch (e) {
+                showToast('Link: ' + orderURL);
+            }
+        }
+
+        // Listen for incoming orders
+        function startIncomingOrdersListener() {
+            if (incomingOrdersListener) return;
+
+            incomingOrdersListener = database.ref('incomingOrders').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    incomingOrders = Object.entries(data).map(([id, order]) => ({
+                        id,
+                        ...order
+                    })).sort((a, b) => b.createdAt - a.createdAt);
+                } else {
+                    incomingOrders = [];
+                }
+                updateIncomingOrdersBadge();
+            });
+        }
+
+        // Update badge showing pending orders count
+        function updateIncomingOrdersBadge() {
+            const pending = incomingOrders.filter(o => o.status === 'pending').length;
+            let badge = document.getElementById('incomingOrdersBadge');
+            const menuBadge = document.getElementById('menuIncomingBadge');
+
+            if (pending > 0) {
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.id = 'incomingOrdersBadge';
+                    badge.style.cssText = 'position: absolute; top: -4px; right: -4px; background: #ef4444; color: white; font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 5px;';
+                    const orderBtn = document.querySelector('.new-order-btn');
+                    if (orderBtn) {
+                        orderBtn.style.position = 'relative';
+                        orderBtn.appendChild(badge);
+                    }
+                }
+                badge.textContent = pending;
+                if (menuBadge) {
+                    menuBadge.textContent = pending;
+                    menuBadge.style.display = 'inline';
+                }
+            } else {
+                if (badge) badge.remove();
+                if (menuBadge) menuBadge.style.display = 'none';
+            }
+        }
+
+        // Open incoming orders panel
+        function openIncomingOrders() {
+            const modal = document.createElement('div');
+            modal.className = 'share-menu-overlay';
+            modal.id = 'incomingOrdersModal';
+            modal.onclick = (e) => { if (e.target === modal) closeIncomingOrders(); };
+
+            const menuDiv = document.createElement('div');
+            menuDiv.className = 'share-menu';
+            menuDiv.style.maxWidth = '450px';
+            menuDiv.style.maxHeight = '85vh';
+
+            const pending = incomingOrders.filter(o => o.status === 'pending');
+
+            let ordersHtml = '';
+            if (pending.length === 0) {
+                ordersHtml = '<div style="text-align: center; padding: 40px; color: #94a3b8;"><p>No pending orders</p></div>';
+            } else {
+                pending.forEach(order => {
+                    const date = new Date(order.createdAt).toLocaleString();
+                    const itemCount = order.items ? order.items.length : 0;
+                    ordersHtml += '<div style="background: #f8fafc; border-radius: 12px; padding: 16px; margin-bottom: 12px;">' +
+                        '<div style="display: flex; justify-content: space-between; margin-bottom: 8px;">' +
+                        '<div style="font-weight: 600; color: #0f172a;">' + (order.customerBusiness || order.customerName) + '</div>' +
+                        '<div style="font-weight: 700; color: #15803d;">$' + (order.totalAmount || 0).toFixed(0) + '</div>' +
+                        '</div>' +
+                        '<div style="font-size: 13px; color: #64748b; margin-bottom: 8px;">' + order.customerPhone + '</div>' +
+                        '<div style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">' + itemCount + ' items - ' + date + '</div>' +
+                        (order.specialRequests ? '<div style="font-size: 12px; color: #8b5cf6; margin-bottom: 12px; padding: 8px; background: rgba(139,92,246,0.1); border-radius: 8px;">' + order.specialRequests + '</div>' : '') +
+                        '<div style="display: flex; gap: 8px;">' +
+                        '<button onclick="viewIncomingOrder(\'' + order.id + '\')" style="flex: 1; padding: 10px; background: #f1f5f9; border: none; border-radius: 8px; font-weight: 600; color: #64748b; cursor: pointer;">View</button>' +
+                        '<button onclick="acceptIncomingOrder(\'' + order.id + '\')" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); border: none; border-radius: 8px; font-weight: 600; color: white; cursor: pointer;">Accept</button>' +
+                        '</div>' +
+                        '</div>';
+                });
+            }
+
+            menuDiv.innerHTML = '<div class="share-menu-header" style="background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); border-bottom: none; padding: 20px;">' +
+                '<h3 style="color: white; margin: 0;">Incoming Orders</h3>' +
+                '<button class="share-menu-close" onclick="closeIncomingOrders()" style="background: rgba(255,255,255,0.2); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">' +
+                '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="pointer-events: none;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+                '</button></div>' +
+                '<div class="share-menu-body" style="padding: 16px; overflow-y: auto; -webkit-overflow-scrolling: touch;">' + ordersHtml + '</div>';
+
+            modal.appendChild(menuDiv);
+            document.body.appendChild(modal);
+            requestAnimationFrame(() => modal.classList.add('show'));
+        }
+
+        function closeIncomingOrders() {
+            const modal = document.getElementById('incomingOrdersModal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+
+        // View incoming order details
+        function viewIncomingOrder(orderId) {
+            const order = incomingOrders.find(o => o.id === orderId);
+            if (!order) return;
+
+            let itemsHtml = '';
+            if (order.items) {
+                order.items.forEach(item => {
+                    itemsHtml += '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9;">' +
+                        '<div><span style="font-weight: 500;">' + item.name + '</span> <span style="color: #64748b;">x' + item.quantity + '</span></div>' +
+                        '<div style="font-weight: 600; color: #15803d;">' + item.price + '</div>' +
+                        '</div>';
+                });
+            }
+
+            const detailModal = document.createElement('div');
+            detailModal.className = 'share-menu-overlay';
+            detailModal.id = 'orderDetailModal';
+            detailModal.style.zIndex = '10001';
+            detailModal.onclick = (e) => { if (e.target === detailModal) detailModal.remove(); };
+
+            const menuDiv = document.createElement('div');
+            menuDiv.className = 'share-menu';
+            menuDiv.style.maxWidth = '400px';
+
+            menuDiv.innerHTML = '<div class="share-menu-header" style="background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); padding: 20px;">' +
+                '<h3 style="color: white; margin: 0;">' + (order.customerBusiness || order.customerName) + '</h3>' +
+                '<button onclick="this.closest(\'.share-menu-overlay\').remove()" style="background: rgba(255,255,255,0.2); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;">' +
+                '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="pointer-events: none;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+                '</button></div>' +
+                '<div class="share-menu-body" style="padding: 20px;">' +
+                '<div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;">' +
+                '<div style="font-size: 13px; color: #64748b;">Customer: ' + order.customerName + '</div>' +
+                '<div style="font-size: 13px; color: #64748b;">Phone: ' + order.customerPhone + '</div>' +
+                '</div>' +
+                '<div style="margin-bottom: 16px;">' + itemsHtml + '</div>' +
+                '<div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; padding: 12px 0; border-top: 2px solid #e2e8f0;">' +
+                '<span>Total</span><span style="color: #15803d;">$' + (order.totalAmount || 0).toFixed(0) + '</span></div>' +
+                (order.specialRequests ? '<div style="margin-top: 16px; padding: 12px; background: rgba(139,92,246,0.1); border-radius: 10px; color: #6d28d9; font-size: 14px;">' + order.specialRequests + '</div>' : '') +
+                '</div>';
+
+            detailModal.appendChild(menuDiv);
+            document.body.appendChild(detailModal);
+            requestAnimationFrame(() => detailModal.classList.add('show'));
+        }
+
+        // Accept incoming order - convert to regular order
+        async function acceptIncomingOrder(orderId) {
+            const order = incomingOrders.find(o => o.id === orderId);
+            if (!order) return;
+
+            // Create order in local orders
+            const newOrder = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString('en-AU'),
+                timestamp: Date.now(),
+                customerName: order.customerName,
+                businessName: order.customerBusiness || order.customerName,
+                phone: order.customerPhone,
+                items: order.items.map(item => ({
+                    name: item.name,
+                    description: item.description,
+                    quantity: item.quantity,
+                    price: parseFloat(item.price.replace('$', '')) || 0
+                })),
+                grandTotal: order.totalAmount,
+                status: 'pending',
+                notes: order.specialRequests || ''
+            };
+
+            orders.push(newOrder);
+            saveOrdersToLocal();
+
+            // Update status in Firebase
+            await database.ref('incomingOrders/' + orderId + '/status').set('accepted');
+
+            showToast('Order accepted!');
+            closeIncomingOrders();
+
+            // Refresh incoming orders view
+            setTimeout(openIncomingOrders, 300);
+        }
+
+        // Start listener when Firebase is ready
+        setTimeout(startIncomingOrdersListener, 1000);
 
         // Initialize
         loadFromLocal();

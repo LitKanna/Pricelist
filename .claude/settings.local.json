@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python invoice_final_fix.py:*)"
+      "Bash(python invoice_final_fix.py:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }

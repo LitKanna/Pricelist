@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Order - Everfresh</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+            line-height: 1.5;
+            min-height: 100vh;
+            padding-bottom: 100px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
+            padding: 24px 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+        }
+
+        .effective-date {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: white;
+            margin-top: 8px;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #22c55e;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .content {
+            padding: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .customer-info {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group.full {
+            grid-column: span 2;
+        }
+
+        .input-group label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .input-group input, .input-group textarea {
+            padding: 12px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: #22c55e;
+        }
+
+        .category {
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 14px 20px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .category-products {
+            padding: 8px;
+        }
+
+        .product {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 10px;
+            transition: background 0.15s;
+        }
+
+        .product.has-qty {
+            background: #f0fdf4;
+        }
+
+        .product-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .product-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+
+        .product-desc {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .product-price {
+            font-weight: 700;
+            font-size: 16px;
+            color: #15803d;
+            margin-right: 12px;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .product-qty {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .qty-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: none;
+            background: #f1f5f9;
+            color: #64748b;
+            font-size: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+
+        .qty-input {
+            width: 50px;
+            height: 36px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+        }
+
+        .qty-input:focus {
+            outline: none;
+            border-color: #22c55e;
+        }
+
+        .product.has-qty .qty-input {
+            border-color: #22c55e;
+        }
+
+        .special-section {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .special-section h2 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .special-section textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: none;
+            height: 80px;
+            background: rgba(255,255,255,0.95);
+            color: #0f172a;
+        }
+
+        .special-section textarea:focus {
+            outline: none;
+        }
+
+        .submit-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 16px 20px;
+            padding-bottom: max(16px, env(safe-area-inset-bottom));
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 100;
+        }
+
+        .order-summary {
+            flex: 1;
+        }
+
+        .order-items {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .order-total {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .submit-btn {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.15s;
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+        }
+
+        .success-state {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 40px;
+            z-index: 200;
+        }
+
+        .success-state.show {
+            display: flex;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 24px;
+        }
+
+        .success-state h1 {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .success-state p {
+            font-size: 16px;
+            opacity: 0.9;
+            max-width: 300px;
+        }
+
+        .submit-bar.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Everfresh</h1>
+        <p>Place Your Order</p>
+        <div class="effective-date" id="effectiveDate">Loading...</div>
+    </div>
+
+    <div id="loadingState" class="loading">
+        <div class="loading-spinner"></div>
+        <p>Loading price list...</p>
+    </div>
+
+    <div id="errorState" class="error-state" style="display: none;">
+        <h2 style="margin-bottom: 8px; color: #0f172a;">Price List Not Available</h2>
+        <p>The price list hasn't been published yet. Please contact your salesperson.</p>
+    </div>
+
+    <div id="mainContent" class="content" style="display: none;">
+        <div class="customer-info">
+            <h2 class="section-title">Your Details</h2>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Name</label>
+                    <input type="text" id="customerName" placeholder="Your name">
+                </div>
+                <div class="input-group">
+                    <label>Phone</label>
+                    <input type="tel" id="customerPhone" placeholder="Phone number">
+                </div>
+            </div>
+            <div class="input-group full">
+                <label>Business Name</label>
+                <input type="text" id="customerBusiness" placeholder="Your business (optional)">
+            </div>
+        </div>
+
+        <div id="productsContainer"></div>
+
+        <div class="special-section">
+            <h2>Special Requests</h2>
+            <textarea id="specialRequests" placeholder="Any special requirements, pricing requests, or items you need..."></textarea>
+        </div>
+    </div>
+
+    <div id="submitBar" class="submit-bar hidden">
+        <div class="order-summary">
+            <div class="order-items"><span id="itemCount">0</span> items</div>
+            <div class="order-total">$<span id="orderTotal">0</span></div>
+        </div>
+        <button class="submit-btn" id="submitBtn">Send Order</button>
+    </div>
+
+    <div id="successState" class="success-state">
+        <svg class="success-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <h1>Order Sent!</h1>
+        <p>We've received your order and will get back to you shortly.</p>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA75uCHV4s526kc4JhnVfhvWGL8Wmd_FHc",
+            authDomain: "pricelist-everfresh.firebaseapp.com",
+            databaseURL: "https://pricelist-everfresh-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "pricelist-everfresh",
+            storageBucket: "pricelist-everfresh.firebasestorage.app",
+            messagingSenderId: "705652613132",
+            appId: "1:705652613132:web:0b74173f8a78146f494e29"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let priceData = {};
+        let quantities = {};
+
+        async function loadPriceList() {
+            try {
+                const snapshot = await database.ref('publicPriceList').once('value');
+                const data = snapshot.val();
+
+                if (!data || !data.products) {
+                    showError();
+                    return;
+                }
+
+                priceData = data.products;
+                document.getElementById('effectiveDate').textContent = 'Prices for ' + (data.effectiveDate || new Date().toLocaleDateString());
+
+                renderProducts();
+
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+
+            } catch (error) {
+                console.error('Error loading price list:', error);
+                showError();
+            }
+        }
+
+        function showError() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('productsContainer');
+            container.replaceChildren();
+
+            for (const [category, products] of Object.entries(priceData)) {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+
+                const header = document.createElement('div');
+                header.className = 'category-header';
+                header.textContent = category;
+                categoryDiv.appendChild(header);
+
+                const productsDiv = document.createElement('div');
+                productsDiv.className = 'category-products';
+
+                products.forEach((product, index) => {
+                    const [name, desc, price] = product;
+                    const productId = category + '_' + index;
+
+                    const productDiv = document.createElement('div');
+                    productDiv.className = 'product';
+                    productDiv.id = 'product_' + productId;
+
+                    const infoDiv = document.createElement('div');
+                    infoDiv.className = 'product-info';
+
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'product-name';
+                    nameDiv.textContent = name;
+                    infoDiv.appendChild(nameDiv);
+
+                    const descDiv = document.createElement('div');
+                    descDiv.className = 'product-desc';
+                    descDiv.textContent = desc;
+                    infoDiv.appendChild(descDiv);
+
+                    productDiv.appendChild(infoDiv);
+
+                    const priceDiv = document.createElement('div');
+                    priceDiv.className = 'product-price';
+                    priceDiv.textContent = price;
+                    productDiv.appendChild(priceDiv);
+
+                    const qtyDiv = document.createElement('div');
+                    qtyDiv.className = 'product-qty';
+
+                    const minusBtn = document.createElement('button');
+                    minusBtn.className = 'qty-btn minus';
+                    minusBtn.textContent = '-';
+                    minusBtn.onclick = function() { changeQty(productId, -1); };
+                    qtyDiv.appendChild(minusBtn);
+
+                    const qtyInput = document.createElement('input');
+                    qtyInput.type = 'number';
+                    qtyInput.className = 'qty-input';
+                    qtyInput.id = 'qty_' + productId;
+                    qtyInput.value = '0';
+                    qtyInput.min = '0';
+                    qtyInput.inputMode = 'numeric';
+                    qtyInput.onchange = function() { setQty(productId, this.value); };
+                    qtyDiv.appendChild(qtyInput);
+
+                    const plusBtn = document.createElement('button');
+                    plusBtn.className = 'qty-btn plus';
+                    plusBtn.textContent = '+';
+                    plusBtn.onclick = function() { changeQty(productId, 1); };
+                    qtyDiv.appendChild(plusBtn);
+
+                    productDiv.appendChild(qtyDiv);
+                    productsDiv.appendChild(productDiv);
+                });
+
+                categoryDiv.appendChild(productsDiv);
+                container.appendChild(categoryDiv);
+            }
+        }
+
+        function changeQty(productId, delta) {
+            const current = quantities[productId] || 0;
+            setQty(productId, Math.max(0, current + delta));
+        }
+
+        function setQty(productId, value) {
+            const qty = Math.max(0, parseInt(value) || 0);
+            quantities[productId] = qty;
+
+            const input = document.getElementById('qty_' + productId);
+            if (input) input.value = qty;
+
+            const productRow = document.getElementById('product_' + productId);
+            if (productRow) {
+                if (qty > 0) {
+                    productRow.classList.add('has-qty');
+                } else {
+                    productRow.classList.remove('has-qty');
+                }
+            }
+
+            updateSummary();
+        }
+
+        function updateSummary() {
+            let totalItems = 0;
+            let totalAmount = 0;
+
+            for (const [productId, qty] of Object.entries(quantities)) {
+                if (qty > 0) {
+                    totalItems += qty;
+                    const parts = productId.split('_');
+                    const category = parts.slice(0, -1).join('_');
+                    const index = parseInt(parts[parts.length - 1]);
+                    const product = priceData[category]?.[index];
+                    if (product) {
+                        const price = parseFloat(product[2].replace('$', '')) || 0;
+                        totalAmount += price * qty;
+                    }
+                }
+            }
+
+            document.getElementById('itemCount').textContent = totalItems;
+            document.getElementById('orderTotal').textContent = totalAmount.toFixed(0);
+
+            const submitBar = document.getElementById('submitBar');
+            if (totalItems > 0) {
+                submitBar.classList.remove('hidden');
+            } else {
+                submitBar.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('submitBtn').onclick = async function() {
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const business = document.getElementById('customerBusiness').value.trim();
+            const specialRequests = document.getElementById('specialRequests').value.trim();
+
+            if (!name || !phone) {
+                alert('Please enter your name and phone number');
+                return;
+            }
+
+            const items = [];
+            for (const [productId, qty] of Object.entries(quantities)) {
+                if (qty > 0) {
+                    const parts = productId.split('_');
+                    const category = parts.slice(0, -1).join('_');
+                    const index = parseInt(parts[parts.length - 1]);
+                    const product = priceData[category]?.[index];
+                    if (product) {
+                        items.push({
+                            category: category,
+                            name: product[0],
+                            description: product[1],
+                            price: product[2],
+                            quantity: qty
+                        });
+                    }
+                }
+            }
+
+            if (items.length === 0) {
+                alert('Please add at least one item');
+                return;
+            }
+
+            let total = 0;
+            items.forEach(function(item) {
+                const price = parseFloat(item.price.replace('$', '')) || 0;
+                total += price * item.quantity;
+            });
+
+            const order = {
+                customerName: name,
+                customerPhone: phone,
+                customerBusiness: business || null,
+                items: items,
+                totalAmount: total,
+                specialRequests: specialRequests || null,
+                status: 'pending',
+                createdAt: Date.now()
+            };
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+
+            try {
+                await database.ref('incomingOrders').push(order);
+
+                document.getElementById('mainContent').style.display = 'none';
+                document.getElementById('submitBar').style.display = 'none';
+                document.getElementById('successState').classList.add('show');
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to send order. Please try again.');
+                btn.disabled = false;
+                btn.textContent = 'Send Order';
+            }
+        };
+
+        loadPriceList();
+    </script>
+</body>
+</html>
