@@ -308,6 +308,69 @@
         height: 22px;
     }
 
+    .preorders-btn {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        cursor: pointer;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+    }
+
+    .preorders-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(124, 58, 237, 0.35);
+    }
+
+    .preorders-btn:active {
+        transform: translateY(0) scale(0.98);
+    }
+
+    .preorder-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        background: #ef4444;
+        color: white;
+        font-size: 11px;
+        font-weight: 700;
+        min-width: 20px;
+        height: 20px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 6px;
+        box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+        animation: badgePulse 2s ease-in-out infinite;
+    }
+
+    @keyframes badgePulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     .btn-secondary {
         background: white;
         color: #475569;
@@ -2495,6 +2558,17 @@
                     </svg>
                 </span>
                 <span>Order</span>
+            </button>
+            <button onclick="openIncomingOrders()" class="preorders-btn" id="preordersBtn">
+                <span class="order-icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                </span>
+                <span>Pre-orders</span>
+                <span class="preorder-badge" id="preorderBadge" style="display: none;"></span>
             </button>
             <button class="btn btn-share" onclick="showShareMenu()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -11736,32 +11810,26 @@ Response format (JSON only, no markdown):
         // Update badge showing pending orders count
         function updateIncomingOrdersBadge() {
             const pending = incomingOrders.filter(o => o.status === 'pending').length;
-            let badge = document.getElementById('incomingOrdersBadge');
             const menuBadge = document.getElementById('menuIncomingBadge');
+            const preorderBadge = document.getElementById('preorderBadge');
 
             if (pending > 0) {
-                if (!badge) {
-                    badge = document.createElement('span');
-                    badge.id = 'incomingOrdersBadge';
-                    badge.style.cssText = 'position: absolute; top: -4px; right: -4px; background: #ef4444; color: white; font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 5px;';
-                    const orderBtn = document.querySelector('.new-order-btn');
-                    if (orderBtn) {
-                        orderBtn.style.position = 'relative';
-                        orderBtn.appendChild(badge);
-                    }
+                // Update preorder button badge
+                if (preorderBadge) {
+                    preorderBadge.textContent = pending;
+                    preorderBadge.style.display = 'flex';
                 }
-                badge.textContent = pending;
                 if (menuBadge) {
                     menuBadge.textContent = pending;
                     menuBadge.style.display = 'inline';
                 }
             } else {
-                if (badge) badge.remove();
+                if (preorderBadge) preorderBadge.style.display = 'none';
                 if (menuBadge) menuBadge.style.display = 'none';
             }
         }
 
-        // Open incoming orders panel
+        // Open incoming orders panel - Beautiful redesign
         function openIncomingOrders() {
             const modal = document.createElement('div');
             modal.className = 'share-menu-overlay';
@@ -11770,44 +11838,108 @@ Response format (JSON only, no markdown):
 
             const menuDiv = document.createElement('div');
             menuDiv.className = 'share-menu';
-            menuDiv.style.maxWidth = '450px';
-            menuDiv.style.maxHeight = '85vh';
+            menuDiv.style.cssText = 'max-width: 480px; max-height: 90vh; border-radius: 24px; overflow: hidden;';
 
             const pending = incomingOrders.filter(o => o.status === 'pending');
 
             let ordersHtml = '';
             if (pending.length === 0) {
-                ordersHtml = '<div style="text-align: center; padding: 40px; color: #94a3b8;"><p>No pending orders</p></div>';
+                ordersHtml = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                        </div>
+                        <h3 style="color: #0f172a; font-size: 18px; margin: 0 0 8px;">All caught up!</h3>
+                        <p style="color: #64748b; font-size: 14px; margin: 0;">No pending pre-orders at the moment</p>
+                    </div>`;
             } else {
-                pending.forEach(order => {
-                    const date = new Date(order.createdAt).toLocaleString();
+                pending.forEach((order, index) => {
+                    const date = new Date(order.createdAt);
+                    const timeAgo = getTimeAgo(date);
                     const itemCount = order.items ? order.items.length : 0;
-                    ordersHtml += '<div style="background: #f8fafc; border-radius: 12px; padding: 16px; margin-bottom: 12px;">' +
-                        '<div style="display: flex; justify-content: space-between; margin-bottom: 8px;">' +
-                        '<div style="font-weight: 600; color: #0f172a;">' + (order.customerBusiness || order.customerName) + '</div>' +
-                        '<div style="font-weight: 700; color: #15803d;">$' + (order.totalAmount || 0).toFixed(0) + '</div>' +
-                        '</div>' +
-                        '<div style="font-size: 13px; color: #64748b; margin-bottom: 8px;">' + order.customerPhone + '</div>' +
-                        '<div style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">' + itemCount + ' items - ' + date + '</div>' +
-                        (order.specialRequests ? '<div style="font-size: 12px; color: #8b5cf6; margin-bottom: 12px; padding: 8px; background: rgba(139,92,246,0.1); border-radius: 8px;">' + order.specialRequests + '</div>' : '') +
-                        '<div style="display: flex; gap: 8px;">' +
-                        '<button onclick="viewIncomingOrder(\'' + order.id + '\')" style="flex: 1; padding: 10px; background: #f1f5f9; border: none; border-radius: 8px; font-weight: 600; color: #64748b; cursor: pointer;">View</button>' +
-                        '<button onclick="acceptIncomingOrder(\'' + order.id + '\')" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); border: none; border-radius: 8px; font-weight: 600; color: white; cursor: pointer;">Accept</button>' +
-                        '</div>' +
-                        '</div>';
+                    const itemText = itemCount === 1 ? '1 item' : itemCount + ' items';
+
+                    ordersHtml += `
+                        <div style="background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; animation: slideUp 0.3s ease ${index * 0.05}s both;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 700; color: #0f172a; font-size: 16px; margin-bottom: 4px;">${order.customerBusiness || order.customerName}</div>
+                                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                        <span style="font-size: 13px; color: #64748b;">${order.customerPhone}</span>
+                                        <span style="width: 4px; height: 4px; background: #cbd5e1; border-radius: 50%;"></span>
+                                        <span style="font-size: 12px; color: #94a3b8;">${timeAgo}</span>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-weight: 700; color: #15803d; font-size: 18px;">$${(order.totalAmount || 0).toFixed(0)}</div>
+                                    <div style="font-size: 12px; color: #94a3b8;">${itemText}</div>
+                                </div>
+                            </div>
+                            ${order.specialRequests ? `
+                                <div style="display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; background: linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(168,85,247,0.08) 100%); border-radius: 10px; margin-bottom: 12px;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                    <span style="font-size: 13px; color: #6d28d9; line-height: 1.4;">${order.specialRequests}</span>
+                                </div>` : ''}
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="viewIncomingOrder('${order.id}')" style="flex: 1; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 600; font-size: 14px; color: #475569; cursor: pointer; transition: all 0.2s;">
+                                    View Details
+                                </button>
+                                <button onclick="sendPreorderToTeam('${order.id}')" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); border: none; border-radius: 12px; font-weight: 600; font-size: 14px; color: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 2L11 13"/>
+                                        <path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+                                    </svg>
+                                    Send to Team
+                                </button>
+                            </div>
+                        </div>`;
                 });
             }
 
-            menuDiv.innerHTML = '<div class="share-menu-header" style="background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); border-bottom: none; padding: 20px;">' +
-                '<h3 style="color: white; margin: 0;">Incoming Orders</h3>' +
-                '<button class="share-menu-close" onclick="closeIncomingOrders()" style="background: rgba(255,255,255,0.2); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">' +
-                '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="pointer-events: none;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
-                '</button></div>' +
-                '<div class="share-menu-body" style="padding: 16px; overflow-y: auto; -webkit-overflow-scrolling: touch;">' + ordersHtml + '</div>';
+            menuDiv.innerHTML = `
+                <div style="background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #c084fc 100%); padding: 24px 20px; position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                    <div style="position: absolute; bottom: -30px; left: 20px; width: 60px; height: 60px; background: rgba(255,255,255,0.08); border-radius: 50%;"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+                        <div>
+                            <h3 style="color: white; margin: 0 0 4px; font-size: 20px; font-weight: 700;">Pre-orders</h3>
+                            <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 13px;">${pending.length} pending order${pending.length !== 1 ? 's' : ''}</p>
+                        </div>
+                        <button onclick="closeIncomingOrders()" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="pointer-events: none;">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div style="padding: 16px; overflow-y: auto; -webkit-overflow-scrolling: touch; max-height: calc(90vh - 100px); background: #f8fafc;">
+                    ${ordersHtml}
+                </div>`;
 
             modal.appendChild(menuDiv);
             document.body.appendChild(modal);
             requestAnimationFrame(() => modal.classList.add('show'));
+        }
+
+        // Helper function for time ago
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+
+            if (minutes < 1) return 'Just now';
+            if (minutes < 60) return minutes + 'm ago';
+            if (hours < 24) return hours + 'h ago';
+            if (days === 1) return 'Yesterday';
+            return days + 'd ago';
         }
 
         function closeIncomingOrders() {
@@ -11818,7 +11950,7 @@ Response format (JSON only, no markdown):
             }
         }
 
-        // View incoming order details
+        // View incoming order details - Beautiful redesign
         function viewIncomingOrder(orderId) {
             const order = incomingOrders.find(o => o.id === orderId);
             if (!order) return;
@@ -11826,12 +11958,23 @@ Response format (JSON only, no markdown):
             let itemsHtml = '';
             if (order.items) {
                 order.items.forEach(item => {
-                    itemsHtml += '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9;">' +
-                        '<div><span style="font-weight: 500;">' + item.name + '</span> <span style="color: #64748b;">x' + item.quantity + '</span></div>' +
-                        '<div style="font-weight: 600; color: #15803d;">' + item.price + '</div>' +
-                        '</div>';
+                    itemsHtml += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: #0f172a; font-size: 14px;">${item.name}</div>
+                                ${item.description ? `<div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">${item.description}</div>` : ''}
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <span style="background: #f1f5f9; padding: 4px 10px; border-radius: 20px; font-size: 13px; color: #64748b; font-weight: 500;">×${item.quantity}</span>
+                                <span style="font-weight: 700; color: #15803d; font-size: 14px; min-width: 50px; text-align: right;">${item.price}</span>
+                            </div>
+                        </div>`;
                 });
             }
+
+            const date = new Date(order.createdAt);
+            const formattedDate = date.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+            const formattedTime = date.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit', hour12: true });
 
             const detailModal = document.createElement('div');
             detailModal.className = 'share-menu-overlay';
@@ -11841,27 +11984,228 @@ Response format (JSON only, no markdown):
 
             const menuDiv = document.createElement('div');
             menuDiv.className = 'share-menu';
-            menuDiv.style.maxWidth = '400px';
+            menuDiv.style.cssText = 'max-width: 440px; border-radius: 24px; overflow: hidden;';
 
-            menuDiv.innerHTML = '<div class="share-menu-header" style="background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); padding: 20px;">' +
-                '<h3 style="color: white; margin: 0;">' + (order.customerBusiness || order.customerName) + '</h3>' +
-                '<button onclick="this.closest(\'.share-menu-overlay\').remove()" style="background: rgba(255,255,255,0.2); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;">' +
-                '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="pointer-events: none;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
-                '</button></div>' +
-                '<div class="share-menu-body" style="padding: 20px;">' +
-                '<div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;">' +
-                '<div style="font-size: 13px; color: #64748b;">Customer: ' + order.customerName + '</div>' +
-                '<div style="font-size: 13px; color: #64748b;">Phone: ' + order.customerPhone + '</div>' +
-                '</div>' +
-                '<div style="margin-bottom: 16px;">' + itemsHtml + '</div>' +
-                '<div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; padding: 12px 0; border-top: 2px solid #e2e8f0;">' +
-                '<span>Total</span><span style="color: #15803d;">$' + (order.totalAmount || 0).toFixed(0) + '</span></div>' +
-                (order.specialRequests ? '<div style="margin-top: 16px; padding: 12px; background: rgba(139,92,246,0.1); border-radius: 10px; color: #6d28d9; font-size: 14px;">' + order.specialRequests + '</div>' : '') +
-                '</div>';
+            menuDiv.innerHTML = `
+                <div style="background: linear-gradient(135deg, #15803d 0%, #22c55e 50%, #4ade80 100%); padding: 24px 20px; position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1;">
+                        <div>
+                            <h3 style="color: white; margin: 0 0 8px; font-size: 20px; font-weight: 700;">${order.customerBusiness || order.customerName}</h3>
+                            <div style="display: flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.9); font-size: 13px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                                </svg>
+                                ${order.customerPhone}
+                            </div>
+                        </div>
+                        <button onclick="this.closest('.share-menu-overlay').remove()" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="pointer-events: none;">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div style="margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; font-size: 12px; color: white;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        ${formattedDate} at ${formattedTime}
+                    </div>
+                </div>
+                <div style="padding: 20px; background: white;">
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-weight: 600; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Order Items</div>
+                        ${itemsHtml}
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 12px; margin-bottom: 16px;">
+                        <span style="font-weight: 600; color: #166534; font-size: 16px;">Total Amount</span>
+                        <span style="font-weight: 800; color: #15803d; font-size: 24px;">$${(order.totalAmount || 0).toFixed(0)}</span>
+                    </div>
+
+                    ${order.specialRequests ? `
+                        <div style="padding: 14px; background: linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(168,85,247,0.08) 100%); border-radius: 12px; margin-bottom: 16px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                </svg>
+                                <span style="font-weight: 600; color: #6d28d9; font-size: 13px;">Special Requests</span>
+                            </div>
+                            <p style="margin: 0; color: #7c3aed; font-size: 14px; line-height: 1.5;">${order.specialRequests}</p>
+                        </div>` : ''}
+
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="sendPreorderToTeam('${order.id}'); this.closest('.share-menu-overlay').remove();" style="flex: 1; padding: 14px; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); border: none; border-radius: 12px; font-weight: 600; font-size: 14px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 2L11 13"/>
+                                <path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+                            </svg>
+                            Send to Team
+                        </button>
+                        <button onclick="acceptIncomingOrder('${order.id}'); this.closest('.share-menu-overlay').remove();" style="flex: 1; padding: 14px; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); border: none; border-radius: 12px; font-weight: 600; font-size: 14px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            Accept Order
+                        </button>
+                    </div>
+                </div>`;
 
             detailModal.appendChild(menuDiv);
             document.body.appendChild(detailModal);
             requestAnimationFrame(() => detailModal.classList.add('show'));
+        }
+
+        // Send pre-order to team for booking and packing
+        function sendPreorderToTeam(orderId) {
+            const order = incomingOrders.find(o => o.id === orderId);
+            if (!order) return;
+
+            // Build order message for team
+            let itemsList = '';
+            if (order.items) {
+                order.items.forEach(item => {
+                    itemsList += `• ${item.name} × ${item.quantity} - ${item.price}\n`;
+                });
+            }
+
+            const message = `📦 PRE-ORDER\n\n` +
+                `👤 ${order.customerBusiness || order.customerName}\n` +
+                `📱 ${order.customerPhone}\n\n` +
+                `📋 Items:\n${itemsList}\n` +
+                `💰 Total: $${(order.totalAmount || 0).toFixed(0)}` +
+                (order.specialRequests ? `\n\n💬 Notes: ${order.specialRequests}` : '');
+
+            // Show send options modal
+            const modal = document.createElement('div');
+            modal.className = 'share-menu-overlay';
+            modal.id = 'sendToTeamModal';
+            modal.style.zIndex = '10002';
+            modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+            const menuDiv = document.createElement('div');
+            menuDiv.className = 'share-menu';
+            menuDiv.style.cssText = 'max-width: 380px; border-radius: 24px; overflow: hidden;';
+
+            // Get team members
+            const teamList = teamMembers.length > 0 ? teamMembers : [{name: 'Booking Team', phone: ''}, {name: 'Packing Team', phone: ''}];
+
+            let teamHtml = '';
+            teamList.forEach(member => {
+                teamHtml += `
+                    <button onclick="shareOrderToMember('${encodeURIComponent(message)}', '${member.phone || ''}')" style="width: 100%; padding: 14px 16px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.2s;">
+                        <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                        <div style="text-align: left; flex: 1;">
+                            <div style="font-weight: 600; color: #0f172a; font-size: 15px;">${member.name}</div>
+                            ${member.phone ? `<div style="font-size: 13px; color: #64748b;">${member.phone}</div>` : ''}
+                        </div>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </button>`;
+            });
+
+            menuDiv.innerHTML = `
+                <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 24px 20px; position: relative;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3 style="color: white; margin: 0 0 4px; font-size: 18px; font-weight: 700;">Send to Team</h3>
+                            <p style="color: rgba(255,255,255,0.6); margin: 0; font-size: 13px;">For booking & packing</p>
+                        </div>
+                        <button onclick="this.closest('.share-menu-overlay').remove()" style="background: rgba(255,255,255,0.1); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="pointer-events: none;">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div style="padding: 16px; background: #f8fafc;">
+                    <div style="background: white; border-radius: 12px; padding: 12px; margin-bottom: 16px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 12px; color: #64748b; margin-bottom: 8px; font-weight: 500;">Order Preview</div>
+                        <div style="font-size: 14px; color: #0f172a; font-weight: 600;">${order.customerBusiness || order.customerName}</div>
+                        <div style="font-size: 13px; color: #15803d; font-weight: 700;">$${(order.totalAmount || 0).toFixed(0)} • ${order.items ? order.items.length : 0} items</div>
+                    </div>
+
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Send via</div>
+
+                    <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+                        <button onclick="shareOrderViaWhatsApp('${encodeURIComponent(message)}')" style="flex: 1; padding: 14px; background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); border: none; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                            </svg>
+                            <span style="color: white; font-size: 12px; font-weight: 600;">WhatsApp</span>
+                        </button>
+                        <button onclick="shareOrderViaSMS('${encodeURIComponent(message)}')" style="flex: 1; padding: 14px; background: linear-gradient(135deg, #34C759 0%, #30D158 100%); border: none; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/>
+                            </svg>
+                            <span style="color: white; font-size: 12px; font-weight: 600;">iMessage</span>
+                        </button>
+                        <button onclick="copyOrderToClipboard('${encodeURIComponent(message)}')" style="flex: 1; padding: 14px; background: linear-gradient(135deg, #64748b 0%, #475569 100%); border: none; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            <span style="color: white; font-size: 12px; font-weight: 600;">Copy</span>
+                        </button>
+                    </div>
+                </div>`;
+
+            modal.appendChild(menuDiv);
+            document.body.appendChild(modal);
+            requestAnimationFrame(() => modal.classList.add('show'));
+        }
+
+        // Share order via WhatsApp
+        function shareOrderViaWhatsApp(encodedMessage) {
+            const message = decodeURIComponent(encodedMessage);
+            const url = 'https://wa.me/?text=' + encodeURIComponent(message);
+            window.open(url, '_blank');
+            closeSendToTeamModal();
+        }
+
+        // Share order via SMS/iMessage
+        function shareOrderViaSMS(encodedMessage) {
+            const message = decodeURIComponent(encodedMessage);
+            window.location.href = 'sms:?body=' + encodeURIComponent(message);
+            closeSendToTeamModal();
+        }
+
+        // Copy order to clipboard
+        function copyOrderToClipboard(encodedMessage) {
+            const message = decodeURIComponent(encodedMessage);
+            navigator.clipboard.writeText(message).then(() => {
+                showToast('Order copied to clipboard!');
+                closeSendToTeamModal();
+            });
+        }
+
+        // Share to specific team member
+        function shareOrderToMember(encodedMessage, phone) {
+            const message = decodeURIComponent(encodedMessage);
+            if (phone) {
+                const url = 'https://wa.me/' + phone.replace(/[^0-9]/g, '') + '?text=' + encodeURIComponent(message);
+                window.open(url, '_blank');
+            } else {
+                window.location.href = 'sms:?body=' + encodeURIComponent(message);
+            }
+            closeSendToTeamModal();
+        }
+
+        function closeSendToTeamModal() {
+            const modal = document.getElementById('sendToTeamModal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.remove(), 300);
+            }
         }
 
         // Accept incoming order - convert to regular order

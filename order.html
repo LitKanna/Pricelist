@@ -8,8 +8,8 @@
     <title>Order - Everfresh</title>
 
     <!-- Rich Link Preview (Open Graph) -->
-    <meta property="og:title" content="🥬 Order from Everfresh">
-    <meta property="og:description" content="Fresh produce prices • Tap to place your order">
+    <meta property="og:title" content="Order from Everfresh">
+    <meta property="og:description" content="Fresh produce prices - Tap to place your order">
     <meta property="og:image" content="https://litkanna.github.io/Pricelist/logo.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -18,8 +18,8 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="🥬 Order from Everfresh">
-    <meta name="twitter:description" content="Fresh produce prices • Tap to place your order">
+    <meta name="twitter:title" content="Order from Everfresh">
+    <meta name="twitter:description" content="Fresh produce prices - Tap to place your order">
     <meta name="twitter:image" content="https://litkanna.github.io/Pricelist/logo.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,60 +40,101 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #f8fafc;
+            background: linear-gradient(180deg, #f0fdf4 0%, #f8fafc 100%);
             color: #0f172a;
             line-height: 1.5;
             min-height: 100vh;
-            padding-bottom: 100px;
+            padding-bottom: 140px;
         }
 
+        /* Header */
         .header {
-            background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
-            padding: 24px 20px;
+            background: linear-gradient(135deg, #15803d 0%, #22c55e 50%, #16a34a 100%);
+            padding: 28px 20px 24px;
             text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            animation: shimmer 15s infinite linear;
+        }
+
+        @keyframes shimmer {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-circle {
+            width: 56px;
+            height: 56px;
+            background: white;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 28px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .header h1 {
             color: white;
-            font-size: 22px;
-            font-weight: 700;
+            font-size: 24px;
+            font-weight: 800;
             margin-bottom: 4px;
+            letter-spacing: -0.5px;
         }
 
         .header p {
             color: rgba(255,255,255,0.9);
             font-size: 14px;
+            font-weight: 500;
         }
 
         .effective-date {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             background: rgba(255,255,255,0.2);
-            padding: 4px 12px;
+            backdrop-filter: blur(10px);
+            padding: 6px 14px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 13px;
+            font-weight: 600;
             color: white;
-            margin-top: 8px;
+            margin-top: 12px;
         }
 
+        /* Loading State */
         .loading {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 60px 20px;
+            padding: 80px 20px;
             color: #64748b;
         }
 
         .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #e2e8f0;
+            width: 48px;
+            height: 48px;
+            border: 4px solid #e2e8f0;
             border-top-color: #22c55e;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 0.8s linear infinite;
             margin-bottom: 16px;
         }
 
@@ -101,40 +142,118 @@
             to { transform: rotate(360deg); }
         }
 
-        .error-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #64748b;
+        .loading p {
+            font-weight: 500;
         }
 
-        .content {
-            padding: 16px;
-            max-width: 600px;
+        /* Error State */
+        .error-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .error-icon {
+            width: 64px;
+            height: 64px;
+            background: #fef2f2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 32px;
+        }
+
+        .error-state h2 {
+            color: #0f172a;
+            margin-bottom: 8px;
+            font-size: 20px;
+        }
+
+        .error-state p {
+            color: #64748b;
+            max-width: 280px;
             margin: 0 auto;
         }
 
-        .customer-info {
+        /* Content */
+        .content {
+            padding: 20px 16px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Welcome Card */
+        .welcome-card {
             background: white;
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            border: 1px solid rgba(34, 197, 94, 0.1);
+        }
+
+        .welcome-message {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .welcome-sub {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        /* Customer Info */
+        .customer-info {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+
+        .customer-info.prefilled {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 2px solid #22c55e;
+        }
+
+        .customer-info.prefilled .prefilled-badge {
+            display: inline-flex;
+        }
+
+        .prefilled-badge {
+            display: none;
+            align-items: center;
+            gap: 4px;
+            background: #22c55e;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-left: 8px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
         }
 
         .section-title {
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
             color: #64748b;
-            margin-bottom: 16px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        .input-row {
+        .input-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin-bottom: 12px;
         }
 
         .input-group {
@@ -147,65 +266,105 @@
         }
 
         .input-group label {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: #475569;
             margin-bottom: 6px;
         }
 
         .input-group input, .input-group textarea {
-            padding: 12px 14px;
+            padding: 14px 16px;
             border: 2px solid #e2e8f0;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 16px;
             font-family: inherit;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
+            background: #f8fafc;
         }
 
         .input-group input:focus, .input-group textarea:focus {
             outline: none;
             border-color: #22c55e;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
         }
 
+        .customer-info.prefilled input {
+            background: white;
+            border-color: #22c55e;
+        }
+
+        /* Categories */
         .category {
             background: white;
-            border-radius: 16px;
+            border-radius: 20px;
             margin-bottom: 16px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
         }
 
         .category-header {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            padding: 14px 20px;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .category-name {
             color: white;
+            font-weight: 700;
+            font-size: 15px;
+            flex: 1;
+        }
+
+        .category-count {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 12px;
             font-weight: 600;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            padding: 4px 10px;
+            border-radius: 12px;
         }
 
         .category-products {
             padding: 8px;
         }
 
+        /* Products */
         .product {
             display: flex;
             align-items: center;
-            padding: 12px;
-            border-radius: 10px;
-            transition: background 0.15s;
+            padding: 14px 12px;
+            border-radius: 14px;
+            transition: all 0.2s;
+            margin-bottom: 4px;
         }
 
-        .product.has-qty {
-            background: #f0fdf4;
+        .product:last-child {
+            margin-bottom: 0;
+        }
+
+        .product.selected {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            box-shadow: inset 0 0 0 2px #22c55e;
         }
 
         .product-info {
             flex: 1;
             min-width: 0;
+            padding-right: 12px;
         }
 
         .product-name {
@@ -221,91 +380,110 @@
         }
 
         .product-price {
-            font-weight: 700;
-            font-size: 16px;
+            font-weight: 800;
+            font-size: 17px;
             color: #15803d;
-            margin-right: 12px;
-            min-width: 50px;
+            margin-right: 14px;
+            min-width: 55px;
             text-align: right;
         }
 
         .product-qty {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 4px;
         }
 
         .qty-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
             border: none;
             background: #f1f5f9;
-            color: #64748b;
-            font-size: 20px;
+            color: #475569;
+            font-size: 22px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.15s;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
-        .qty-input {
-            width: 50px;
-            height: 36px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 16px;
-            font-weight: 600;
-            font-family: inherit;
+        .qty-btn:active {
+            transform: scale(0.92);
+            background: #e2e8f0;
         }
 
-        .qty-input:focus {
-            outline: none;
-            border-color: #22c55e;
-        }
-
-        .product.has-qty .qty-input {
-            border-color: #22c55e;
-        }
-
-        .special-section {
-            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
+        .product.selected .qty-btn {
+            background: #22c55e;
             color: white;
         }
 
-        .special-section h2 {
-            font-size: 14px;
-            font-weight: 600;
+        .product.selected .qty-btn:active {
+            background: #16a34a;
+        }
+
+        .qty-display {
+            width: 44px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .product.selected .qty-display {
+            color: #15803d;
+        }
+
+        /* Special Requests */
+        .special-section {
+            background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: white;
+            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+        }
+
+        .special-section .section-header {
             margin-bottom: 12px;
-            opacity: 0.9;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        }
+
+        .special-section .section-title {
+            color: rgba(255,255,255,0.9);
+        }
+
+        .special-icon {
+            margin-right: 8px;
         }
 
         .special-section textarea {
             width: 100%;
-            padding: 12px 14px;
+            padding: 14px 16px;
             border: none;
-            border-radius: 10px;
+            border-radius: 14px;
             font-size: 15px;
             font-family: inherit;
             resize: none;
-            height: 80px;
+            height: 90px;
             background: rgba(255,255,255,0.95);
             color: #0f172a;
         }
 
-        .special-section textarea:focus {
-            outline: none;
+        .special-section textarea::placeholder {
+            color: #94a3b8;
         }
 
-        .submit-bar {
+        .special-section textarea:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(255,255,255,0.3);
+        }
+
+        /* Cart Summary Bar */
+        .cart-bar {
             position: fixed;
             bottom: 0;
             left: 0;
@@ -313,51 +491,79 @@
             background: white;
             padding: 16px 20px;
             padding-bottom: max(16px, env(safe-area-inset-bottom));
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
+            z-index: 100;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cart-bar.visible {
+            transform: translateY(0);
+        }
+
+        .cart-content {
             display: flex;
             align-items: center;
             gap: 16px;
-            z-index: 100;
+            max-width: 500px;
+            margin: 0 auto;
         }
 
-        .order-summary {
+        .cart-info {
             flex: 1;
         }
 
-        .order-items {
+        .cart-items {
             font-size: 13px;
             color: #64748b;
+            font-weight: 500;
         }
 
-        .order-total {
-            font-size: 20px;
-            font-weight: 700;
+        .cart-total {
+            font-size: 24px;
+            font-weight: 800;
             color: #0f172a;
+            letter-spacing: -0.5px;
         }
 
-        .submit-btn {
-            padding: 14px 28px;
+        .cart-btn {
+            padding: 16px 32px;
             background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             color: white;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.15s, opacity 0.15s;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .submit-btn:disabled {
-            opacity: 0.5;
+        .cart-btn:active {
+            transform: scale(0.96);
         }
 
-        .success-state {
+        .cart-btn:disabled {
+            opacity: 0.6;
+            transform: none;
+        }
+
+        .cart-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Success State */
+        .success-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
+            background: linear-gradient(135deg, #15803d 0%, #22c55e 50%, #16a34a 100%);
             display: none;
             flex-direction: column;
             align-items: center;
@@ -368,100 +574,191 @@
             z-index: 200;
         }
 
-        .success-state.show {
+        .success-overlay.show {
             display: flex;
+            animation: fadeIn 0.4s ease;
         }
 
-        .success-icon {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 24px;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        .success-state h1 {
-            font-size: 28px;
+        .success-checkmark {
+            width: 100px;
+            height: 100px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 28px;
+            animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes scaleIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        .success-checkmark svg {
+            width: 56px;
+            height: 56px;
+            stroke: white;
+            stroke-width: 3;
+            animation: drawCheck 0.6s ease 0.3s both;
+        }
+
+        @keyframes drawCheck {
+            0% { stroke-dashoffset: 100; }
+            100% { stroke-dashoffset: 0; }
+        }
+
+        .success-overlay h1 {
+            font-size: 32px;
+            font-weight: 800;
             margin-bottom: 12px;
+            animation: slideUp 0.5s ease 0.2s both;
         }
 
-        .success-state p {
+        .success-overlay p {
             font-size: 16px;
             opacity: 0.9;
             max-width: 300px;
+            line-height: 1.6;
+            animation: slideUp 0.5s ease 0.3s both;
         }
 
-        .submit-bar.hidden {
-            display: none;
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .success-details {
+            margin-top: 32px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            animation: slideUp 0.5s ease 0.4s both;
+        }
+
+        .success-details p {
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .success-order-id {
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 8px;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Everfresh</h1>
-        <p>Place Your Order</p>
-        <div class="effective-date" id="effectiveDate">Loading...</div>
+        <div class="header-content">
+            <div class="logo-circle">🥬</div>
+            <h1>Everfresh</h1>
+            <p>Fresh Produce Ordering</p>
+            <div class="effective-date" id="effectiveDate">
+                <span>📅</span>
+                <span>Loading...</span>
+            </div>
+        </div>
     </div>
 
     <div id="loadingState" class="loading">
         <div class="loading-spinner"></div>
-        <p>Loading price list...</p>
+        <p>Loading fresh prices...</p>
     </div>
 
     <div id="errorState" class="error-state" style="display: none;">
-        <h2 style="margin-bottom: 8px; color: #0f172a;">Price List Not Available</h2>
+        <div class="error-icon">📋</div>
+        <h2>Price List Not Available</h2>
         <p>The price list hasn't been published yet. Please contact your salesperson.</p>
     </div>
 
     <div id="mainContent" class="content" style="display: none;">
-        <div class="customer-info">
-            <h2 class="section-title">Your Details</h2>
-            <div class="input-row">
+        <!-- Welcome Card (shown when customer name is known) -->
+        <div class="welcome-card" id="welcomeCard" style="display: none;">
+            <div class="welcome-message" id="welcomeMessage">Welcome!</div>
+            <div class="welcome-sub">Select your items below and we'll have them ready for you.</div>
+        </div>
+
+        <!-- Customer Info -->
+        <div class="customer-info" id="customerInfoCard">
+            <div class="section-header">
+                <span class="section-title">Your Details</span>
+                <span class="prefilled-badge">✓ Auto-filled</span>
+            </div>
+            <div class="input-grid">
                 <div class="input-group">
-                    <label>Name</label>
-                    <input type="text" id="customerName" placeholder="Your name">
+                    <label>Your Name *</label>
+                    <input type="text" id="customerName" placeholder="Enter your name">
                 </div>
                 <div class="input-group">
-                    <label>Phone</label>
+                    <label>Phone *</label>
                     <input type="tel" id="customerPhone" placeholder="Phone number">
                 </div>
-            </div>
-            <div class="input-group full">
-                <label>Business Name</label>
-                <input type="text" id="customerBusiness" placeholder="Your business (optional)">
+                <div class="input-group full">
+                    <label>Business Name</label>
+                    <input type="text" id="customerBusiness" placeholder="Your business (optional)">
+                </div>
             </div>
         </div>
 
+        <!-- Products Container -->
         <div id="productsContainer"></div>
 
+        <!-- Special Requests -->
         <div class="special-section">
-            <h2>Special Requests</h2>
-            <textarea id="specialRequests" placeholder="Any special requirements, pricing requests, or items you need..."></textarea>
+            <div class="section-header">
+                <span class="special-icon">✨</span>
+                <span class="section-title">Special Requests</span>
+            </div>
+            <textarea id="specialRequests" placeholder="Any special requirements, custom quantities, or items not listed..."></textarea>
         </div>
     </div>
 
-    <div id="submitBar" class="submit-bar hidden">
-        <div class="order-summary">
-            <div class="order-items"><span id="itemCount">0</span> items</div>
-            <div class="order-total">$<span id="orderTotal">0</span></div>
+    <!-- Cart Bar -->
+    <div id="cartBar" class="cart-bar">
+        <div class="cart-content">
+            <div class="cart-info">
+                <div class="cart-items"><span id="itemCount">0</span> items selected</div>
+                <div class="cart-total">$<span id="orderTotal">0</span></div>
+            </div>
+            <button class="cart-btn" id="submitBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Send Order
+            </button>
         </div>
-        <button class="submit-btn" id="submitBtn">Send Order</button>
     </div>
 
-    <div id="successState" class="success-state">
-        <svg class="success-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-            <polyline points="22 4 12 14.01 9 11.01"/>
-        </svg>
-        <h1>Order Sent!</h1>
-        <p>We've received your order and will get back to you shortly.</p>
+    <!-- Success Overlay -->
+    <div id="successOverlay" class="success-overlay">
+        <div class="success-checkmark">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-dasharray="100" stroke-dashoffset="100">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+        </div>
+        <h1>Order Sent! 🎉</h1>
+        <p>Thanks for your order! We've received it and will get back to you shortly to confirm.</p>
+        <div class="success-details">
+            <p>Order Reference</p>
+            <div class="success-order-id" id="orderReference">-</div>
+        </div>
     </div>
 
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyA75uCHV4s526kc4JhnVfhvWGL8Wmd_FHc",
-            authDomain: "pricelist-everfresh.firebaseapp.com",
-            databaseURL: "https://pricelist-everfresh-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "pricelist-everfresh",
-            storageBucket: "pricelist-everfresh.firebasestorage.app",
+            apiKey: "AIzaSyA_BxLukkD8CdwqbeNKf8S9wuDaZ4Z2hh4",
+            authDomain: "everfresh-pricelist.firebaseapp.com",
+            databaseURL: "https://everfresh-pricelist-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "everfresh-pricelist",
+            storageBucket: "everfresh-pricelist.firebasestorage.app",
             messagingSenderId: "705652613132",
             appId: "1:705652613132:web:0b74173f8a78146f494e29"
         };
@@ -471,6 +768,31 @@
 
         let priceData = {};
         let quantities = {};
+        let customerPrefilled = false;
+
+        // Category icons mapping
+        const categoryIcons = {
+            'vegetables': '🥬',
+            'fruits': '🍎',
+            'herbs': '🌿',
+            'salads': '🥗',
+            'potatoes': '🥔',
+            'onions': '🧅',
+            'tomatoes': '🍅',
+            'mushrooms': '🍄',
+            'asian': '🥢',
+            'exotic': '🌴',
+            'organic': '🌱',
+            'default': '📦'
+        };
+
+        function getCategoryIcon(categoryName) {
+            const lower = categoryName.toLowerCase();
+            for (const [key, icon] of Object.entries(categoryIcons)) {
+                if (lower.includes(key)) return icon;
+            }
+            return categoryIcons.default;
+        }
 
         async function loadPriceList() {
             try {
@@ -483,7 +805,13 @@
                 }
 
                 priceData = data.products;
-                document.getElementById('effectiveDate').textContent = 'Prices for ' + (data.effectiveDate || new Date().toLocaleDateString());
+
+                const dateText = data.effectiveDate || new Date().toLocaleDateString('en-AU', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long'
+                });
+                document.getElementById('effectiveDate').innerHTML = `<span>📅</span><span>Prices for ${dateText}</span>`;
 
                 renderProducts();
 
@@ -503,116 +831,84 @@
 
         function renderProducts() {
             const container = document.getElementById('productsContainer');
-            container.replaceChildren();
+            container.innerHTML = '';
 
             for (const [category, products] of Object.entries(priceData)) {
                 const categoryDiv = document.createElement('div');
                 categoryDiv.className = 'category';
 
-                const header = document.createElement('div');
-                header.className = 'category-header';
-                header.textContent = category;
-                categoryDiv.appendChild(header);
+                const icon = getCategoryIcon(category);
+                const selectedCount = products.filter((_, i) => quantities[`${category}_${i}`] > 0).length;
 
-                const productsDiv = document.createElement('div');
-                productsDiv.className = 'category-products';
+                categoryDiv.innerHTML = `
+                    <div class="category-header">
+                        <div class="category-icon">${icon}</div>
+                        <div class="category-name">${category}</div>
+                        ${selectedCount > 0 ? `<div class="category-count">${selectedCount} selected</div>` : ''}
+                    </div>
+                    <div class="category-products" id="cat_${category.replace(/\s+/g, '_')}"></div>
+                `;
+
+                const productsDiv = categoryDiv.querySelector('.category-products');
 
                 products.forEach((product, index) => {
                     const [name, desc, price] = product;
-                    const productId = category + '_' + index;
+                    const productId = `${category}_${index}`;
+                    const qty = quantities[productId] || 0;
 
                     const productDiv = document.createElement('div');
-                    productDiv.className = 'product';
-                    productDiv.id = 'product_' + productId;
+                    productDiv.className = 'product' + (qty > 0 ? ' selected' : '');
+                    productDiv.id = `product_${productId}`;
 
-                    const infoDiv = document.createElement('div');
-                    infoDiv.className = 'product-info';
+                    productDiv.innerHTML = `
+                        <div class="product-info">
+                            <div class="product-name">${name}</div>
+                            <div class="product-desc">${desc}</div>
+                        </div>
+                        <div class="product-price">${price}</div>
+                        <div class="product-qty">
+                            <button class="qty-btn" onclick="changeQty('${productId}', -1)">−</button>
+                            <div class="qty-display" id="qty_${productId}">${qty}</div>
+                            <button class="qty-btn" onclick="changeQty('${productId}', 1)">+</button>
+                        </div>
+                    `;
 
-                    const nameDiv = document.createElement('div');
-                    nameDiv.className = 'product-name';
-                    nameDiv.textContent = name;
-                    infoDiv.appendChild(nameDiv);
-
-                    const descDiv = document.createElement('div');
-                    descDiv.className = 'product-desc';
-                    descDiv.textContent = desc;
-                    infoDiv.appendChild(descDiv);
-
-                    productDiv.appendChild(infoDiv);
-
-                    const priceDiv = document.createElement('div');
-                    priceDiv.className = 'product-price';
-                    priceDiv.textContent = price;
-                    productDiv.appendChild(priceDiv);
-
-                    const qtyDiv = document.createElement('div');
-                    qtyDiv.className = 'product-qty';
-
-                    const minusBtn = document.createElement('button');
-                    minusBtn.className = 'qty-btn minus';
-                    minusBtn.textContent = '-';
-                    minusBtn.onclick = function() { changeQty(productId, -1); };
-                    qtyDiv.appendChild(minusBtn);
-
-                    const qtyInput = document.createElement('input');
-                    qtyInput.type = 'number';
-                    qtyInput.className = 'qty-input';
-                    qtyInput.id = 'qty_' + productId;
-                    qtyInput.value = '0';
-                    qtyInput.min = '0';
-                    qtyInput.inputMode = 'numeric';
-                    qtyInput.onchange = function() { setQty(productId, this.value); };
-                    qtyDiv.appendChild(qtyInput);
-
-                    const plusBtn = document.createElement('button');
-                    plusBtn.className = 'qty-btn plus';
-                    plusBtn.textContent = '+';
-                    plusBtn.onclick = function() { changeQty(productId, 1); };
-                    qtyDiv.appendChild(plusBtn);
-
-                    productDiv.appendChild(qtyDiv);
                     productsDiv.appendChild(productDiv);
                 });
 
-                categoryDiv.appendChild(productsDiv);
                 container.appendChild(categoryDiv);
             }
         }
 
         function changeQty(productId, delta) {
             const current = quantities[productId] || 0;
-            setQty(productId, Math.max(0, current + delta));
-        }
+            const newQty = Math.max(0, current + delta);
+            quantities[productId] = newQty;
 
-        function setQty(productId, value) {
-            const qty = Math.max(0, parseInt(value) || 0);
-            quantities[productId] = qty;
+            // Update display
+            const qtyDisplay = document.getElementById(`qty_${productId}`);
+            if (qtyDisplay) qtyDisplay.textContent = newQty;
 
-            const input = document.getElementById('qty_' + productId);
-            if (input) input.value = qty;
-
-            const productRow = document.getElementById('product_' + productId);
-            if (productRow) {
-                if (qty > 0) {
-                    productRow.classList.add('has-qty');
-                } else {
-                    productRow.classList.remove('has-qty');
-                }
+            // Update product styling
+            const productDiv = document.getElementById(`product_${productId}`);
+            if (productDiv) {
+                productDiv.classList.toggle('selected', newQty > 0);
             }
 
-            updateSummary();
+            // Re-render to update category counts
+            renderProducts();
+            updateCart();
         }
 
-        function updateSummary() {
+        function updateCart() {
             let totalItems = 0;
             let totalAmount = 0;
 
             for (const [productId, qty] of Object.entries(quantities)) {
                 if (qty > 0) {
                     totalItems += qty;
-                    const parts = productId.split('_');
-                    const category = parts.slice(0, -1).join('_');
-                    const index = parseInt(parts[parts.length - 1]);
+                    const [category, indexStr] = productId.split(/_(?=\d+$)/);
+                    const index = parseInt(indexStr);
                     const product = priceData[category]?.[index];
                     if (product) {
                         const price = parseFloat(product[2].replace('$', '')) || 0;
@@ -624,12 +920,8 @@
             document.getElementById('itemCount').textContent = totalItems;
             document.getElementById('orderTotal').textContent = totalAmount.toFixed(0);
 
-            const submitBar = document.getElementById('submitBar');
-            if (totalItems > 0) {
-                submitBar.classList.remove('hidden');
-            } else {
-                submitBar.classList.add('hidden');
-            }
+            const cartBar = document.getElementById('cartBar');
+            cartBar.classList.toggle('visible', totalItems > 0);
         }
 
         document.getElementById('submitBtn').onclick = async function() {
@@ -638,17 +930,23 @@
             const business = document.getElementById('customerBusiness').value.trim();
             const specialRequests = document.getElementById('specialRequests').value.trim();
 
-            if (!name || !phone) {
-                alert('Please enter your name and phone number');
+            if (!name) {
+                alert('Please enter your name');
+                document.getElementById('customerName').focus();
+                return;
+            }
+
+            if (!phone) {
+                alert('Please enter your phone number');
+                document.getElementById('customerPhone').focus();
                 return;
             }
 
             const items = [];
             for (const [productId, qty] of Object.entries(quantities)) {
                 if (qty > 0) {
-                    const parts = productId.split('_');
-                    const category = parts.slice(0, -1).join('_');
-                    const index = parseInt(parts[parts.length - 1]);
+                    const [category, indexStr] = productId.split(/_(?=\d+$)/);
+                    const index = parseInt(indexStr);
                     const product = priceData[category]?.[index];
                     if (product) {
                         items.push({
@@ -662,18 +960,26 @@
                 }
             }
 
-            if (items.length === 0) {
-                alert('Please add at least one item');
+            if (items.length === 0 && !specialRequests) {
+                alert('Please select at least one item or add a special request');
                 return;
             }
 
             let total = 0;
-            items.forEach(function(item) {
+            items.forEach(item => {
                 const price = parseFloat(item.price.replace('$', '')) || 0;
                 total += price * item.quantity;
             });
 
+            // Generate order reference
+            const now = new Date();
+            const orderRef = 'ORD-' + now.getFullYear().toString().slice(-2) +
+                           (now.getMonth() + 1).toString().padStart(2, '0') +
+                           now.getDate().toString().padStart(2, '0') + '-' +
+                           Math.random().toString(36).substr(2, 4).toUpperCase();
+
             const order = {
+                orderReference: orderRef,
                 customerName: name,
                 customerPhone: phone,
                 customerBusiness: business || null,
@@ -681,25 +987,32 @@
                 totalAmount: total,
                 specialRequests: specialRequests || null,
                 status: 'pending',
-                createdAt: Date.now()
+                createdAt: Date.now(),
+                createdAtFormatted: now.toLocaleString('en-AU')
             };
 
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.textContent = 'Sending...';
+            btn.innerHTML = `<span>Sending...</span>`;
 
             try {
                 await database.ref('incomingOrders').push(order);
 
+                document.getElementById('orderReference').textContent = orderRef;
                 document.getElementById('mainContent').style.display = 'none';
-                document.getElementById('submitBar').style.display = 'none';
-                document.getElementById('successState').classList.add('show');
+                document.getElementById('cartBar').classList.remove('visible');
+                document.getElementById('successOverlay').classList.add('show');
 
             } catch (error) {
                 console.error('Error:', error);
                 alert('Failed to send order. Please try again.');
                 btn.disabled = false;
-                btn.textContent = 'Send Order';
+                btn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Send Order
+                `;
             }
         };
 
@@ -713,6 +1026,11 @@
 
             if (name) {
                 document.getElementById('customerName').value = name;
+                customerPrefilled = true;
+
+                // Show welcome message
+                document.getElementById('welcomeCard').style.display = 'block';
+                document.getElementById('welcomeMessage').textContent = `Welcome back, ${name}! 👋`;
             }
             if (phone) {
                 document.getElementById('customerPhone').value = phone;
@@ -720,8 +1038,14 @@
             if (business) {
                 document.getElementById('customerBusiness').value = business;
             }
+
+            // Mark as prefilled
+            if (name && phone) {
+                document.getElementById('customerInfoCard').classList.add('prefilled');
+            }
         }
 
+        // Initialize
         loadPriceList();
         prefillCustomerInfo();
     </script>
