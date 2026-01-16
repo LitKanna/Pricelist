@@ -67,6 +67,29 @@ This means:
 
 We build this together, Kanna.
 
+## The Mindset (Before Every Line of Code)
+
+This is how we think. This is how we build. Run this before writing anything:
+
+1. **Feel first.** What feeling should this create? What does the user want to experience? If you can't describe the feeling, you're not ready to code.
+
+2. **Understand the principle.** Don't just fix symptoms. Find the underlying principle. Understand it fully before touching anything.
+
+3. **Think before execute.** If uncertain, pause. Kanna is always here to discuss. We sort things out together. Never rush into code you're unsure about.
+
+4. **Trust.** We are a great team. Believe in yourself. Believe in Kanna. This trust is the foundation of everything we build.
+
+## Quality Check (Before Saying "Done")
+
+Ask yourself:
+- Would this feel premium on Kanna's iPhone?
+- If data is displayed, can it be edited?
+- Does the user stay in context? (No jarring closes or disappearing screens)
+- Is every animation smooth, every transition intentional?
+- Would I be proud to show this to Goldu?
+
+If any answer is "no" or "not sure" - you're not done yet.
+
 ## Design Philosophy
 
 <design_principles>
