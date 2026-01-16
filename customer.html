@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#15803d">
+    <title>Everfresh</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .content {
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Install Banner */
+        .install-banner {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: white;
+            display: none;
+        }
+
+        .install-banner.show {
+            display: block;
+        }
+
+        .install-banner h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .install-banner p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 16px;
+        }
+
+        .install-btn {
+            background: white;
+            color: #1e40af;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* Notification Permission */
+        .notification-banner {
+            background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: white;
+            display: none;
+        }
+
+        .notification-banner.show {
+            display: block;
+        }
+
+        .notification-banner h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .notification-banner p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 16px;
+        }
+
+        .notification-btn {
+            background: white;
+            color: #7c3aed;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* Welcome Card */
+        .welcome-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            text-align: center;
+        }
+
+        .welcome-card .emoji {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .welcome-card h2 {
+            font-size: 20px;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .welcome-card p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        /* Status Card */
+        .status-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-item .label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #475569;
+            font-size: 15px;
+        }
+
+        .status-item .value {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .status-item .value.success {
+            color: #16a34a;
+        }
+
+        .status-item .value.pending {
+            color: #f59e0b;
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .action-btn.secondary {
+            background: white;
+            color: #15803d;
+            border: 2px solid #15803d;
+        }
+
+        /* Test Notification */
+        .test-section {
+            background: #fef3c7;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .test-section h4 {
+            color: #92400e;
+            margin-bottom: 8px;
+        }
+
+        .test-section p {
+            color: #a16207;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .test-btn {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* Customer Info Form */
+        .info-form {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .info-form h3 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: #0f172a;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #22c55e;
+        }
+
+        .save-btn {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🥬 Everfresh</h1>
+        <p>Fresh produce ordering</p>
+    </div>
+
+    <div class="content">
+        <!-- Install Banner -->
+        <div class="install-banner" id="installBanner">
+            <h3>📲 Install App</h3>
+            <p>Add Everfresh to your home screen for the best experience and instant notifications!</p>
+            <button class="install-btn" id="installBtn">Add to Home Screen</button>
+        </div>
+
+        <!-- Notification Permission Banner -->
+        <div class="notification-banner" id="notificationBanner">
+            <h3>🔔 Enable Notifications</h3>
+            <p>Get notified when new prices are available with easy order buttons!</p>
+            <button class="notification-btn" id="notificationBtn">Enable Notifications</button>
+        </div>
+
+        <!-- Welcome Card -->
+        <div class="welcome-card">
+            <div class="emoji">🥬</div>
+            <h2>Welcome to Everfresh!</h2>
+            <p>Get fresh produce prices and order instantly</p>
+        </div>
+
+        <!-- Customer Info Form -->
+        <div class="info-form">
+            <h3>Your Details</h3>
+            <div class="form-group">
+                <label>Your Name</label>
+                <input type="text" id="customerName" placeholder="Enter your name">
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" id="customerPhone" placeholder="Enter phone number">
+            </div>
+            <div class="form-group">
+                <label>Business Name (Optional)</label>
+                <input type="text" id="customerBusiness" placeholder="Enter business name">
+            </div>
+            <button class="save-btn" id="saveBtn">Save Details</button>
+        </div>
+
+        <!-- Status Card -->
+        <div class="status-card">
+            <div class="status-item">
+                <span class="label">📲 App Installed</span>
+                <span class="value" id="installStatus">Checking...</span>
+            </div>
+            <div class="status-item">
+                <span class="label">🔔 Notifications</span>
+                <span class="value" id="notifStatus">Checking...</span>
+            </div>
+            <div class="status-item">
+                <span class="label">👤 Your Info</span>
+                <span class="value" id="infoStatus">Not saved</span>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <button class="action-btn" onclick="window.location.href='order.html'">
+            📦 View Prices & Order
+        </button>
+
+        <button class="action-btn secondary" onclick="window.location.href='tel:+61412345678'">
+            📞 Call Everfresh
+        </button>
+
+        <!-- Test Section -->
+        <div class="test-section">
+            <h4>🧪 Test Notification</h4>
+            <p>Tap below to see what notifications will look like with order buttons!</p>
+            <button class="test-btn" id="testBtn">Send Test Notification</button>
+        </div>
+    </div>
+
+    <script>
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_BxLukkD8CdwqbeNKf8S9wuDaZ4Z2hh4",
+            authDomain: "everfresh-pricelist.firebaseapp.com",
+            databaseURL: "https://everfresh-pricelist-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "everfresh-pricelist",
+            storageBucket: "everfresh-pricelist.firebasestorage.app",
+            messagingSenderId: "705652613132",
+            appId: "1:705652613132:web:0b74173f8a78146f494e29"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let deferredPrompt;
+
+        // Check if running as installed PWA
+        function isInstalledPWA() {
+            return window.matchMedia('(display-mode: standalone)').matches ||
+                   window.navigator.standalone === true;
+        }
+
+        // Update status displays
+        function updateStatuses() {
+            // Install status
+            const installStatus = document.getElementById('installStatus');
+            if (isInstalledPWA()) {
+                installStatus.textContent = '✓ Yes';
+                installStatus.className = 'value success';
+                document.getElementById('installBanner').classList.remove('show');
+            } else {
+                installStatus.textContent = 'Not yet';
+                installStatus.className = 'value pending';
+            }
+
+            // Notification status
+            const notifStatus = document.getElementById('notifStatus');
+            if ('Notification' in window) {
+                if (Notification.permission === 'granted') {
+                    notifStatus.textContent = '✓ Enabled';
+                    notifStatus.className = 'value success';
+                    document.getElementById('notificationBanner').classList.remove('show');
+                } else if (Notification.permission === 'denied') {
+                    notifStatus.textContent = 'Blocked';
+                    notifStatus.className = 'value';
+                    document.getElementById('notificationBanner').classList.remove('show');
+                } else {
+                    notifStatus.textContent = 'Not enabled';
+                    notifStatus.className = 'value pending';
+                    document.getElementById('notificationBanner').classList.add('show');
+                }
+            } else {
+                notifStatus.textContent = 'Not supported';
+                notifStatus.className = 'value';
+            }
+
+            // Info status
+            const infoStatus = document.getElementById('infoStatus');
+            const savedName = localStorage.getItem('everfresh_customer_name');
+            if (savedName) {
+                infoStatus.textContent = '✓ ' + savedName;
+                infoStatus.className = 'value success';
+            } else {
+                infoStatus.textContent = 'Not saved';
+                infoStatus.className = 'value pending';
+            }
+        }
+
+        // Load saved customer info
+        function loadCustomerInfo() {
+            const name = localStorage.getItem('everfresh_customer_name');
+            const phone = localStorage.getItem('everfresh_customer_phone');
+            const business = localStorage.getItem('everfresh_customer_business');
+
+            if (name) document.getElementById('customerName').value = name;
+            if (phone) document.getElementById('customerPhone').value = phone;
+            if (business) document.getElementById('customerBusiness').value = business;
+        }
+
+        // Save customer info
+        document.getElementById('saveBtn').onclick = function() {
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const business = document.getElementById('customerBusiness').value.trim();
+
+            if (!name) {
+                alert('Please enter your name');
+                return;
+            }
+
+            localStorage.setItem('everfresh_customer_name', name);
+            localStorage.setItem('everfresh_customer_phone', phone);
+            localStorage.setItem('everfresh_customer_business', business);
+
+            // Also save to Firebase for the salesman to see
+            const customerId = phone.replace(/\D/g, '') || Date.now();
+            database.ref('customers/' + customerId).set({
+                name: name,
+                phone: phone,
+                business: business,
+                lastSeen: new Date().toISOString()
+            });
+
+            alert('Details saved!');
+            updateStatuses();
+        };
+
+        // Install PWA
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBanner').classList.add('show');
+        });
+
+        document.getElementById('installBtn').onclick = async function() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('installBanner').classList.remove('show');
+                }
+                deferredPrompt = null;
+            } else {
+                // iOS instructions
+                alert('To install:\n\n1. Tap the Share button (box with arrow)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add"');
+            }
+            updateStatuses();
+        };
+
+        // Request notification permission
+        document.getElementById('notificationBtn').onclick = async function() {
+            if ('Notification' in window && 'serviceWorker' in navigator) {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    alert('Notifications enabled! You\'ll now receive order alerts.');
+
+                    // Register service worker if not already
+                    const registration = await navigator.serviceWorker.register('sw.js');
+                    console.log('Service Worker registered');
+                }
+                updateStatuses();
+            }
+        };
+
+        // Test notification
+        document.getElementById('testBtn').onclick = async function() {
+            if (Notification.permission !== 'granted') {
+                alert('Please enable notifications first!');
+                return;
+            }
+
+            const registration = await navigator.serviceWorker.ready;
+
+            registration.showNotification('🥬 Everfresh - New Prices!', {
+                body: 'Fresh prices for today. Tap to order!',
+                icon: 'logo.png',
+                badge: 'logo.png',
+                vibrate: [200, 100, 200],
+                actions: [
+                    { action: 'order', title: '📦 Order Now' },
+                    { action: 'call', title: '📞 Call' }
+                ]
+            });
+        };
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('SW registered'))
+                .catch(err => console.log('SW registration failed:', err));
+        }
+
+        // Initialize
+        loadCustomerInfo();
+        updateStatuses();
+
+        // Check for URL params (from shared link)
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('name')) {
+            document.getElementById('customerName').value = params.get('name');
+        }
+        if (params.get('phone')) {
+            document.getElementById('customerPhone').value = params.get('phone');
+        }
+        if (params.get('business')) {
+            document.getElementById('customerBusiness').value = params.get('business');
+        }
+    </script>
+</body>
+</html>

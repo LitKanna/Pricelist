@@ -1,0 +1,24 @@
+{
+  "name": "Everfresh Orders",
+  "short_name": "Everfresh",
+  "description": "Fresh produce ordering made easy",
+  "start_url": "/Pricelist/customer.html",
+  "display": "standalone",
+  "background_color": "#15803d",
+  "theme_color": "#15803d",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
