@@ -325,14 +325,20 @@
     </div>
 
     <div class="content">
-        <!-- Install Banner -->
+        <!-- iOS Install Banner -->
         <div class="install-banner" id="installBanner">
             <h3>📲 Install App</h3>
-            <p>Add Everfresh to your home screen for the best experience and instant notifications!</p>
-            <button class="install-btn" id="installBtn">Add to Home Screen</button>
+            <p id="installText">Add Everfresh to your home screen for the best experience and instant notifications!</p>
+            <div id="iosInstructions" style="display:none; background: rgba(255,255,255,0.15); border-radius: 10px; padding: 12px; margin-bottom: 12px; font-size: 14px;">
+                <strong>On iPhone:</strong><br>
+                1. Tap <span style="font-size: 18px;">⎙</span> Share button below<br>
+                2. Scroll down, tap <strong>"Add to Home Screen"</strong><br>
+                3. Tap <strong>"Add"</strong>
+            </div>
+            <button class="install-btn" id="installBtn">I've Added It!</button>
         </div>
 
-        <!-- Notification Permission Banner -->
+        <!-- Notification Permission Banner (only after install on iOS) -->
         <div class="notification-banner" id="notificationBanner">
             <h3>🔔 Enable Notifications</h3>
             <p>Get notified when new prices are available with easy order buttons!</p>
@@ -414,6 +420,12 @@
 
         let deferredPrompt;
 
+        // Check if iOS
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+
         // Check if running as installed PWA
         function isInstalledPWA() {
             return window.matchMedia('(display-mode: standalone)').matches ||
@@ -422,32 +434,56 @@
 
         // Update status displays
         function updateStatuses() {
+            const iOS = isIOS();
+            const installed = isInstalledPWA();
+
             // Install status
             const installStatus = document.getElementById('installStatus');
-            if (isInstalledPWA()) {
+            const installBanner = document.getElementById('installBanner');
+            const iosInstructions = document.getElementById('iosInstructions');
+            const installBtn = document.getElementById('installBtn');
+
+            if (installed) {
                 installStatus.textContent = '✓ Yes';
                 installStatus.className = 'value success';
-                document.getElementById('installBanner').classList.remove('show');
+                installBanner.classList.remove('show');
             } else {
                 installStatus.textContent = 'Not yet';
                 installStatus.className = 'value pending';
+                installBanner.classList.add('show');
+
+                // Show iOS-specific instructions
+                if (iOS) {
+                    iosInstructions.style.display = 'block';
+                    installBtn.textContent = "I've Added It!";
+                }
             }
 
             // Notification status
             const notifStatus = document.getElementById('notifStatus');
-            if ('Notification' in window) {
+            const notifBanner = document.getElementById('notificationBanner');
+
+            // iOS only supports notifications when installed as PWA
+            if (iOS && !installed) {
+                notifStatus.textContent = 'Install app first';
+                notifStatus.className = 'value pending';
+                notifBanner.classList.remove('show');
+            } else if ('Notification' in window) {
                 if (Notification.permission === 'granted') {
                     notifStatus.textContent = '✓ Enabled';
                     notifStatus.className = 'value success';
-                    document.getElementById('notificationBanner').classList.remove('show');
+                    notifBanner.classList.remove('show');
                 } else if (Notification.permission === 'denied') {
                     notifStatus.textContent = 'Blocked';
                     notifStatus.className = 'value';
-                    document.getElementById('notificationBanner').classList.remove('show');
+                    notifBanner.classList.remove('show');
                 } else {
                     notifStatus.textContent = 'Not enabled';
                     notifStatus.className = 'value pending';
-                    document.getElementById('notificationBanner').classList.add('show');
+                    // Only show notification banner if app is installed (for iOS)
+                    if (!iOS || installed) {
+                        notifBanner.classList.add('show');
+                    }
                 }
             } else {
                 notifStatus.textContent = 'Not supported';
@@ -520,9 +556,12 @@
                     document.getElementById('installBanner').classList.remove('show');
                 }
                 deferredPrompt = null;
+            } else if (isIOS()) {
+                // iOS - user says they've added it
+                alert('Great! Now open the Everfresh app from your home screen to enable notifications.');
+                document.getElementById('installBanner').classList.remove('show');
             } else {
-                // iOS instructions
-                alert('To install:\n\n1. Tap the Share button (box with arrow)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add"');
+                alert('To install:\n\n1. Tap the menu (three dots)\n2. Tap "Add to Home Screen" or "Install"');
             }
             updateStatuses();
         };
