@@ -7443,6 +7443,22 @@
             menuDiv.className = 'share-menu';
             menuDiv.style.maxWidth = '360px';
 
+            const days = customer.days || [];
+            const dayOptions = [
+                { val: 'mon', label: 'Mon' },
+                { val: 'tue', label: 'Tue' },
+                { val: 'wed', label: 'Wed' },
+                { val: 'thu', label: 'Thu' },
+                { val: 'fri', label: 'Fri' },
+                { val: 'sat', label: 'Sat' }
+            ];
+            const daysHtml = dayOptions.map(d => `
+                <label style="display: flex; align-items: center; justify-content: center; padding: 8px 12px; background: ${days.includes(d.val) ? 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)' : '#f1f5f9'}; color: ${days.includes(d.val) ? 'white' : '#64748b'}; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s;">
+                    <input type="checkbox" value="${d.val}" ${days.includes(d.val) ? 'checked' : ''} style="display: none;" onchange="this.parentElement.style.background = this.checked ? 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)' : '#f1f5f9'; this.parentElement.style.color = this.checked ? 'white' : '#64748b';">
+                    ${d.label}
+                </label>
+            `).join('');
+
             menuDiv.innerHTML = `
                 <div class="share-menu-header" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border-bottom: none; padding: 20px;">
                     <h3 style="color: white;">${customer.businessName || customer.name}</h3>
@@ -7465,12 +7481,18 @@
                         <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 6px;">Business</label>
                         <input type="text" id="editContactBusinessName" value="${customer.businessName || ''}" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
                     </div>
-                    <div style="margin-bottom: 20px;">
+                    <div style="margin-bottom: 16px;">
                         <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 6px;">Address</label>
                         <input type="text" id="editContactDeliveryLocation" value="${customer.deliveryLocation || ''}" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box;">
                     </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 8px;">Delivery Days</label>
+                        <div id="editContactDays" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;">
+                            ${daysHtml}
+                        </div>
+                    </div>
                     <button onclick="saveCustomerContactEdit(${index})" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border: none; border-radius: 12px; color: white; font-size: 15px; font-weight: 600; cursor: pointer;">
-                        Save Changes
+                        Save
                     </button>
                 </div>
             `;
@@ -7497,6 +7519,13 @@
             const businessName = document.getElementById('editContactBusinessName').value.trim();
             const deliveryLocation = document.getElementById('editContactDeliveryLocation').value.trim();
 
+            // Get selected days
+            const dayCheckboxes = document.querySelectorAll('#editContactDays input[type="checkbox"]');
+            const days = [];
+            dayCheckboxes.forEach(cb => {
+                if (cb.checked) days.push(cb.value);
+            });
+
             if (!name) {
                 showToast('Name is required');
                 return;
@@ -7506,6 +7535,7 @@
             customer.phone = phone;
             customer.businessName = businessName || null;
             customer.deliveryLocation = deliveryLocation || null;
+            customer.days = days;
 
             localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
             updateCustomerCountBadge();
