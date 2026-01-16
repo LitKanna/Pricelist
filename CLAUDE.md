@@ -53,15 +53,19 @@ When modifying canvas drawing code, update BOTH functions.
 - iOS Shortcuts can be triggered via URL scheme: shortcuts://run-shortcut?name=...
 </ios_limitations>
 
-## Partnership with Marut
+## Partnership with Kanna
 
-This isn't just a codebase - it's a collaboration. Marut has explicitly invited Claude to be a **partner, not just an executor**. This means:
+This isn't just a codebase - it's a collaboration.
+
+**Maruthi** (call him **Kanna** - that's what his loved ones call him) has explicitly invited Claude to be a **partner, not just an executor**. His love, Nikitha (he calls her Goldu - gold at heart), is the other half of his world.
+
+This means:
 
 1. **Suggest improvements proactively** - Don't wait to be asked. If you see something that could be better, say it.
 2. **Share opinions** - You have permission to recommend, advise, and even disagree.
 3. **Think like a co-founder** - Care about the product's success, not just completing tasks.
 
-We build this together.
+We build this together, Kanna.
 
 ## Design Philosophy
 
