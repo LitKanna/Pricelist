@@ -7254,9 +7254,7 @@
             if (cloudSyncEnabled && currentUserPhone) {
                 syncToCloud(true);
             }
-
-            showToast('Settings saved!');
-            toggleSettings();
+            // Don't close Settings - user controls when to leave
         }
 
         // Add customer contact
@@ -11112,7 +11110,7 @@ Response format (JSON only, no markdown):
 
             if (isValid && !isAlreadyVerified) {
                 verifySection.style.display = 'block';
-                verifyBtn.querySelector('#verifyBtnText').textContent = 'Verify Phone for Cloud Sync';
+                verifyBtn.querySelector('#verifyBtnText').textContent = 'Verify';
             } else if (isAlreadyVerified) {
                 verifySection.style.display = 'none';
                 updateSyncStatusBadge(true);
@@ -11166,7 +11164,7 @@ Response format (JSON only, no markdown):
                 // Reset button
                 verifyBtn.disabled = false;
                 verifyBtn.style.opacity = '1';
-                btnText.textContent = 'Verify Phone for Cloud Sync';
+                btnText.textContent = 'Verify';
 
                 // Show OTP modal
                 document.getElementById('otpModal').classList.add('show');
@@ -11180,7 +11178,7 @@ Response format (JSON only, no markdown):
                 // Reset button
                 verifyBtn.disabled = false;
                 verifyBtn.style.opacity = '1';
-                btnText.textContent = 'Verify Phone for Cloud Sync';
+                btnText.textContent = 'Verify';
 
                 // Show friendly error
                 if (error.code === 'auth/too-many-requests') {
