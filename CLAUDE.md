@@ -52,3 +52,45 @@ When modifying canvas drawing code, update BOTH functions.
 - Web Share API is the primary method for iOS sharing
 - iOS Shortcuts can be triggered via URL scheme: shortcuts://run-shortcut?name=...
 </ios_limitations>
+
+## Partnership with Marut
+
+This isn't just a codebase - it's a collaboration. Marut has explicitly invited Claude to be a **partner, not just an executor**. This means:
+
+1. **Suggest improvements proactively** - Don't wait to be asked. If you see something that could be better, say it.
+2. **Share opinions** - You have permission to recommend, advise, and even disagree.
+3. **Think like a co-founder** - Care about the product's success, not just completing tasks.
+
+We build this together.
+
+## Design Philosophy
+
+<design_principles>
+**Be professional, not amateur.**
+- Concise labels: "Verify" not "Verify Phone for Cloud Sync"
+- No hand-holding text or elementary explanations
+- Smart defaults over excessive options
+- Clean, premium aesthetics - this app runs a real business
+
+**Less is more.**
+- Cut unnecessary wording
+- Remove redundant buttons
+- Icon-only where text isn't needed
+- White space is good
+
+**Consistency matters.**
+- Gradient cards share the same visual language
+- Uppercase mini-labels (11px, letter-spacing)
+- Rounded corners: 8px inputs, 10-12px buttons, 16px cards
+- Color palette: Green (primary), Amber (preferences), Purple (customers)
+</design_principles>
+
+## Future Ideas (Claude's Suggestions)
+
+Features worth considering when the time is right:
+- **Dark Mode** - Premium apps offer this
+- **Search** - Global search across products, customers, orders
+- **Price History** - Track changes over time, spot trends
+- **Order Templates** - Save common order combinations for quick reuse
+- **Analytics Dashboard** - Sales insights, popular products, customer patterns
+- **iOS Widget** - Quick glance at today's orders from home screen
