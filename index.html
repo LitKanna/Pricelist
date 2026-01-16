@@ -2856,13 +2856,15 @@
                     </div>
                 </div>
 
-                <button onclick="addCustomerContact()" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.95); border: none; border-radius: 10px; font-size: 15px; font-weight: 600; color: #6d28d9; cursor: pointer;">
-                    Add Customer
-                </button>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button onclick="addCustomerContact()" style="padding: 12px; background: rgba(255,255,255,0.95); border: none; border-radius: 10px; font-size: 15px; font-weight: 600; color: #6d28d9; cursor: pointer;">
+                        Add
+                    </button>
+                    <button onclick="openCustomersModal()" style="padding: 12px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 10px; font-size: 15px; font-weight: 600; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        View All <span id="customerCountBadge" style="background: rgba(255,255,255,0.3); padding: 2px 8px; border-radius: 10px; font-size: 13px;">0</span>
+                    </button>
+                </div>
             </div>
-
-            <!-- Customers List -->
-            <div id="customersList"></div>
         </div>
 
         <!-- Customer Pricing Panel -->
@@ -7319,18 +7321,67 @@
 
         // Delete customer contact
         function deleteCustomerContact(index) {
-            if (confirm('Delete this customer contact?')) {
+            if (confirm('Delete this customer?')) {
                 customerContacts.splice(index, 1);
                 localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
-                renderCustomersList();
+                updateCustomerCountBadge();
+                // Re-render modal if open
+                const modalList = document.getElementById('customersModalList');
+                if (modalList) renderCustomersModalList();
             }
         }
 
-        // Render customers list
-        function renderCustomersList() {
-            const container = document.getElementById('customersList');
+        // Update customer count badge
+        function updateCustomerCountBadge() {
+            const badge = document.getElementById('customerCountBadge');
+            if (badge) badge.textContent = customerContacts.length;
+        }
+
+        // Open customers modal
+        function openCustomersModal() {
+            const modal = document.createElement('div');
+            modal.className = 'share-menu-overlay';
+            modal.id = 'customersModal';
+            modal.onclick = (e) => { if (e.target === modal) closeCustomersModal(); };
+
+            const menuDiv = document.createElement('div');
+            menuDiv.className = 'share-menu';
+            menuDiv.style.maxWidth = '400px';
+            menuDiv.style.maxHeight = '80vh';
+            menuDiv.style.display = 'flex';
+            menuDiv.style.flexDirection = 'column';
+
+            menuDiv.innerHTML = `
+                <div class="share-menu-header" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border-bottom: none; padding: 20px;">
+                    <h3 style="color: white;">Customers</h3>
+                    <button class="share-menu-close" onclick="closeCustomersModal()" style="background: rgba(255,255,255,0.15); color: white;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="pointer-events: none;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+                <div id="customersModalList" style="flex: 1; overflow-y: auto; padding: 16px;"></div>
+            `;
+
+            modal.appendChild(menuDiv);
+            document.body.appendChild(modal);
+            setTimeout(() => modal.classList.add('show'), 10);
+            renderCustomersModalList();
+        }
+
+        function closeCustomersModal() {
+            const modal = document.getElementById('customersModal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+
+        // Render customers list inside modal
+        function renderCustomersModalList() {
+            const container = document.getElementById('customersModalList');
+            if (!container) return;
+
             if (customerContacts.length === 0) {
-                container.innerHTML = '';
+                container.innerHTML = '<div style="text-align: center; padding: 40px 20px; color: #94a3b8;"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 12px; opacity: 0.5;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><div style="font-size: 14px;">No customers yet</div></div>';
                 return;
             }
 
@@ -7343,25 +7394,25 @@
                 if (days.length === 0) {
                     daysHtml = '<span style="font-size: 11px; color: #22c55e; font-weight: 500;">Every day</span>';
                 } else {
-                    daysHtml = days.map(d => `<span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: rgba(139,92,246,0.1); color: #8b5cf6; border-radius: 50%; font-size: 10px; font-weight: 600;">${dayNames[d] || d}</span>`).join('');
+                    daysHtml = days.map(d => `<span style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; background: rgba(139,92,246,0.1); color: #8b5cf6; border-radius: 50%; font-size: 9px; font-weight: 600;">${dayNames[d] || d}</span>`).join('');
                 }
 
                 const businessName = customer.businessName || customer.name;
                 html += `
-                    <div style="background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid #e2e8f0;">
-                        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+                    <div style="background: #f8fafc; border-radius: 12px; padding: 14px; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
                             <div style="flex: 1; min-width: 0;">
-                                <div style="font-weight: 600; font-size: 15px; color: #0f172a; margin-bottom: 2px;">${businessName}</div>
-                                ${customer.businessName && customer.businessName !== customer.name ? `<div style="font-size: 13px; color: #64748b;">${customer.name}</div>` : ''}
-                                ${customer.deliveryLocation ? `<div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">${customer.deliveryLocation}</div>` : ''}
-                                <div style="display: flex; align-items: center; gap: 6px; margin-top: 8px;">${daysHtml}</div>
+                                <div style="font-weight: 600; font-size: 14px; color: #0f172a; margin-bottom: 1px;">${businessName}</div>
+                                ${customer.businessName && customer.businessName !== customer.name ? `<div style="font-size: 12px; color: #64748b;">${customer.name}</div>` : ''}
+                                ${customer.deliveryLocation ? `<div style="font-size: 11px; color: #94a3b8; margin-top: 3px;">${customer.deliveryLocation}</div>` : ''}
+                                <div style="display: flex; align-items: center; gap: 4px; margin-top: 6px;">${daysHtml}</div>
                             </div>
                             <div style="display: flex; gap: 6px;">
-                                <button onclick="openCustomerContactEditModal(${index})" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: rgba(139,92,246,0.1); color: #8b5cf6; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                                <button onclick="openCustomerContactEditModal(${index})" style="width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(139,92,246,0.1); color: #8b5cf6; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
                                 </button>
-                                <button onclick="deleteCustomerContact(${index})" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: rgba(239,68,68,0.1); color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                <button onclick="deleteCustomerContact(${index})" style="width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(239,68,68,0.1); color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                                 </button>
                             </div>
                         </div>
@@ -7369,6 +7420,11 @@
                 `;
             });
             container.innerHTML = html;
+        }
+
+        // Legacy function for compatibility
+        function renderCustomersList() {
+            updateCustomerCountBadge();
         }
 
         // Edit customer contact details
@@ -7450,8 +7506,11 @@
             customer.deliveryLocation = deliveryLocation || null;
 
             localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
-            renderCustomersList();
+            updateCustomerCountBadge();
             closeCustomerContactEditModal();
+            // Re-render modal if open
+            const modalList = document.getElementById('customersModalList');
+            if (modalList) renderCustomersModalList();
             showToast('Customer updated');
 
             if (cloudSyncEnabled && currentUserPhone) {
