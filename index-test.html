@@ -10692,10 +10692,12 @@ Response format (JSON only, no markdown):
                 customerCard.querySelector('.customer-info')?.appendChild(sentBadge);
             }
 
-            // iOS with iMessage: Trigger shortcut directly
+            // iOS with iMessage: Trigger shortcut with auto-return
             if (isIOS() && method === 'imessage') {
                 const shortcutInput = `${phone},${message}`;
-                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+                // Use x-callback-url to return to Chrome after shortcut completes
+                const returnUrl = encodeURIComponent(window.location.href);
+                const shortcutUrl = `shortcuts://x-callback-url/run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}&x-success=${returnUrl}&x-cancel=${returnUrl}`;
                 window.location.href = shortcutUrl;
                 return;
             }
@@ -10708,10 +10710,11 @@ Response format (JSON only, no markdown):
                 return;
             }
 
-            // Fallback for non-iOS iMessage
+            // Fallback for non-iOS iMessage (Mac)
             if (method === 'imessage' && !isIOS()) {
                 const shortcutInput = `${phone},${message}`;
-                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+                const returnUrl = encodeURIComponent(window.location.href);
+                const shortcutUrl = `shortcuts://x-callback-url/run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}&x-success=${returnUrl}&x-cancel=${returnUrl}`;
                 window.location.href = shortcutUrl;
             }
         }
