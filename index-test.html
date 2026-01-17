@@ -4980,31 +4980,62 @@
 
         function setupSwipeHandlers(element, idx) {
             let startX = 0;
+            let startY = 0;
             let currentX = 0;
             let isDragging = false;
+            let isSwipeGesture = false;
 
             element.addEventListener('touchstart', (e) => {
+                // Ignore if touch started on a button or input
+                const target = e.target;
+                if (target.tagName === 'BUTTON' || target.tagName === 'INPUT' || target.closest('button')) {
+                    isDragging = false;
+                    return;
+                }
+
                 // Close any other open swipe first
                 if (currentlySwipedElement && currentlySwipedElement !== element) {
                     closeAllSwipes();
+                    currentlySwipedElement.style.transform = 'translateX(0)';
                 }
+
                 startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                currentX = startX;
                 isDragging = true;
-                element.style.transition = 'none';
+                isSwipeGesture = false;
             }, { passive: true });
 
             element.addEventListener('touchmove', (e) => {
                 if (!isDragging) return;
+
                 currentX = e.touches[0].clientX;
-                const diff = currentX - startX;
+                const currentY = e.touches[0].clientY;
+                const diffX = currentX - startX;
+                const diffY = currentY - startY;
+
+                // Determine if this is a horizontal swipe (not vertical scroll)
+                if (!isSwipeGesture && Math.abs(diffX) > 10) {
+                    // Only consider it a swipe if horizontal movement > vertical
+                    if (Math.abs(diffX) > Math.abs(diffY)) {
+                        isSwipeGesture = true;
+                        element.style.transition = 'none';
+                    } else {
+                        // Vertical scroll, abort swipe
+                        isDragging = false;
+                        return;
+                    }
+                }
+
+                if (!isSwipeGesture) return;
 
                 // Only allow left swipe (negative diff), max 80px
-                if (diff < 0) {
-                    const translateX = Math.max(diff, -80);
+                if (diffX < 0) {
+                    const translateX = Math.max(diffX, -80);
                     element.style.transform = `translateX(${translateX}px)`;
                 } else if (element.classList.contains('swiped')) {
                     // Allow swiping back
-                    const translateX = Math.min(-80 + diff, 0);
+                    const translateX = Math.min(-80 + diffX, 0);
                     element.style.transform = `translateX(${translateX}px)`;
                 }
             }, { passive: true });
@@ -5012,16 +5043,24 @@
             element.addEventListener('touchend', (e) => {
                 if (!isDragging) return;
                 isDragging = false;
+
                 element.style.transition = 'transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+
+                // Only process if we detected a swipe gesture
+                if (!isSwipeGesture) {
+                    startX = 0;
+                    currentX = 0;
+                    return;
+                }
 
                 const diff = currentX - startX;
 
-                // If swiped more than 40px left, show delete
-                if (diff < -40 && !element.classList.contains('swiped')) {
+                // If swiped more than 50px left, show delete
+                if (diff < -50 && !element.classList.contains('swiped')) {
                     element.classList.add('swiped');
                     element.style.transform = 'translateX(-80px)';
                     currentlySwipedElement = element;
-                } else if (diff > 40 && element.classList.contains('swiped')) {
+                } else if (diff > 50 && element.classList.contains('swiped')) {
                     // Swipe back to close
                     element.classList.remove('swiped');
                     element.style.transform = 'translateX(0)';
@@ -5037,6 +5076,7 @@
 
                 startX = 0;
                 currentX = 0;
+                isSwipeGesture = false;
             });
 
             // Close swipe on tap elsewhere
