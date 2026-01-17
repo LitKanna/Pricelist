@@ -2708,6 +2708,38 @@
             </div>
 
             <div class="share-menu-body" style="flex: 1; overflow-y: auto; padding: 16px;">
+                <!-- Prepare Image Section -->
+                <div id="prepareSection" style="margin-bottom: 16px;">
+                    <div id="prepareNeeded" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #fcd34d; border-radius: 12px; padding: 14px; display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 40px; height: 40px; background: rgba(217, 119, 6, 0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: #92400e; font-size: 14px;">Save image first</div>
+                            <div style="font-size: 12px; color: #a16207;">One-time step, then all sends are instant</div>
+                        </div>
+                        <button onclick="prepareImageForSending()" style="background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">
+                            Prepare
+                        </button>
+                    </div>
+                    <div id="prepareReady" style="display: none; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; border-radius: 12px; padding: 14px; display: none; align-items: center; gap: 12px;">
+                        <div style="width: 40px; height: 40px; background: rgba(34, 197, 94, 0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: #166534; font-size: 14px;">Ready to send!</div>
+                            <div style="font-size: 12px; color: #15803d;">Tap any customer to send instantly</div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Day Filter Section -->
                 <div id="dayFilterSection" style="margin-bottom: 16px;">
                     <!-- Day Selection Pills -->
@@ -10404,9 +10436,70 @@ Response format (JSON only, no markdown):
             // Render customer list
             renderCustomerShareList('all');
 
+            // Update prepare section visibility
+            updatePrepareSection();
+
             document.getElementById('modalBackdrop').classList.add('show');
             document.getElementById('customerShareMenu').classList.add('show');
             document.body.classList.add('modal-open');
+        }
+
+        // Update prepare section based on image saved status
+        function updatePrepareSection() {
+            const prepareNeeded = document.getElementById('prepareNeeded');
+            const prepareReady = document.getElementById('prepareReady');
+
+            if (imageSavedThisSession) {
+                prepareNeeded.style.display = 'none';
+                prepareReady.style.display = 'flex';
+            } else {
+                prepareNeeded.style.display = 'flex';
+                prepareReady.style.display = 'none';
+            }
+        }
+
+        // Prepare image for sending (one-time save)
+        async function prepareImageForSending() {
+            const prepareBtn = document.querySelector('#prepareNeeded button');
+            const originalText = prepareBtn.textContent;
+            prepareBtn.textContent = 'Preparing...';
+            prepareBtn.disabled = true;
+
+            try {
+                // Publish price list
+                await publishPriceList();
+
+                // Generate image blob
+                const blob = await generateImageBlob();
+                if (!blob) throw new Error('Failed to generate image');
+
+                // Save via share sheet
+                if (navigator.share && navigator.canShare) {
+                    const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
+
+                    if (navigator.canShare({ files: [file] })) {
+                        await navigator.share({ files: [file] });
+                        imageSavedThisSession = true;
+                        updatePrepareSection();
+                        showToast('Image saved! Ready to send.');
+                        return;
+                    }
+                }
+
+                // Fallback: direct download
+                downloadBlob(blob);
+                imageSavedThisSession = true;
+                updatePrepareSection();
+                showToast('Image downloaded! Ready to send.');
+
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Prepare error:', error);
+                    showToast('Failed to prepare. Try again.');
+                }
+                prepareBtn.textContent = originalText;
+                prepareBtn.disabled = false;
+            }
         }
 
         // Filter by tomorrow (smart button)
@@ -10573,129 +10666,53 @@ Response format (JSON only, no markdown):
         // Send to specific customer via chosen method (iMessage or WhatsApp)
         async function sendToCustomerVia(index, method) {
             const customer = customerContacts[index];
-            const phone = customer.phone.replace(/\D/g, ''); // Remove non-digits
+            const phone = customer.phone.replace(/\D/g, '');
 
-            closeCustomerShareMenu();
+            // If image not prepared yet, prompt to prepare first
+            if (!imageSavedThisSession) {
+                showToast('Please tap "Prepare" first to save the image');
+                return;
+            }
 
-            const loading = document.getElementById('loading');
-            loading.classList.add('show');
+            // Save the sent prices for this customer
+            saveCustomerSentPrices(customer.name);
 
-            try {
-                // Publish price list for order link
-                await publishPriceList();
+            // Create personalized message
+            const message = generateShareMessage(customer);
 
-                // Generate image blob
-                const blob = await generateImageBlob();
+            // Mark customer as sent in UI
+            const customerCard = document.querySelector(`[data-customer-index="${index}"]`);
+            if (customerCard) {
+                customerCard.style.opacity = '0.5';
+                customerCard.querySelector('.customer-status')?.remove();
+                const sentBadge = document.createElement('span');
+                sentBadge.className = 'customer-status';
+                sentBadge.style.cssText = 'background: #dcfce7; color: #166534; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600;';
+                sentBadge.textContent = 'Sent';
+                customerCard.querySelector('.customer-info')?.appendChild(sentBadge);
+            }
 
-                if (!blob) {
-                    throw new Error('Failed to generate image');
-                }
+            // iOS with iMessage: Trigger shortcut directly
+            if (isIOS() && method === 'imessage') {
+                const shortcutInput = `${phone},${message}`;
+                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+                window.location.href = shortcutUrl;
+                return;
+            }
 
-                // Save the sent prices for this customer
-                saveCustomerSentPrices(customer.name);
+            // WhatsApp: Open directly with message
+            if (method === 'whatsapp') {
+                const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+                window.open(whatsappUrl, '_blank');
+                showToast(`Opening WhatsApp for ${customer.name}`);
+                return;
+            }
 
-                // Create personalized message with rotating variations (pass full customer for order link)
-                const message = generateShareMessage(customer);
-
-                loading.classList.remove('show');
-
-                // iOS with iMessage: Streamlined flow
-                if (isIOS() && method === 'imessage') {
-
-                    // Only save image if not already saved this session
-                    if (!imageSavedThisSession) {
-                        if (navigator.share && navigator.canShare) {
-                            const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
-
-                            if (navigator.canShare({ files: [file] })) {
-                                try {
-                                    // Show share sheet - user taps "Save Image"
-                                    await navigator.share({
-                                        files: [file]
-                                    });
-                                    // Mark as saved for this session
-                                    imageSavedThisSession = true;
-                                } catch (shareError) {
-                                    if (shareError.name === 'AbortError') {
-                                        return;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // Trigger shortcut immediately (no confirmation)
-                    const shortcutInput = `${phone},${message}`;
-                    const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                    window.location.href = shortcutUrl;
-                    return;
-                }
-
-                // iOS with WhatsApp or non-iOS: Use Web Share
-                if (navigator.share && navigator.canShare) {
-                    const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
-
-                    if (navigator.canShare({ files: [file] })) {
-                        try {
-                            await navigator.share({
-                                title: `Price List for ${customer.name}`,
-                                text: message,
-                                files: [file]
-                            });
-                            return; // Success - user picks app from share sheet
-                        } catch (shareError) {
-                            if (shareError.name === 'AbortError') {
-                                return;
-                            }
-                        }
-                    }
-                }
-
-                // Fallback for non-iOS iMessage (clipboard method)
-                if (method === 'imessage' && !isIOS()) {
-                    const clipboardResult = await copyImageToClipboard(blob);
-
-                    if (clipboardResult.success) {
-                        const userConfirm = confirm(
-                            `✅ Image copied to clipboard!\n\n` +
-                            `Sending to: ${customer.name}\n` +
-                            `Phone: ${customer.phone}\n\n` +
-                            `The shortcut will open and send via iMessage.\n\n` +
-                            `Tap OK to continue.`
-                        );
-
-                        if (userConfirm) {
-                            const shortcutInput = `${phone},${message}`;
-                            const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                            window.location.href = shortcutUrl;
-                        }
-                        return;
-                    }
-                }
-
-                // Final fallback: Download
-                if (method === 'whatsapp') {
-                    // Download and open WhatsApp
-                    const userConfirm = confirm(
-                        `Sending to: ${customer.name}\n\n` +
-                        `Image will download, then WhatsApp will open.\n` +
-                        `Attach the image and send!\n\n` +
-                        `Tap OK to continue.`
-                    );
-
-                    if (userConfirm) {
-                        downloadBlob(blob);
-                        setTimeout(() => {
-                            const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-                            window.open(whatsappUrl, '_blank');
-                        }, 500);
-                    }
-                }
-
-            } catch (error) {
-                loading.classList.remove('show');
-                console.error('Share error:', error);
-                alert('Error: ' + error.message);
+            // Fallback for non-iOS iMessage
+            if (method === 'imessage' && !isIOS()) {
+                const shortcutInput = `${phone},${message}`;
+                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+                window.location.href = shortcutUrl;
             }
         }
 
