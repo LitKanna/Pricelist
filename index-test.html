@@ -3143,7 +3143,7 @@
                         <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 6px;">Name</label>
                         <input type="text" id="salesmanName" placeholder=""
                                style="width: 100%; padding: 10px 12px; border: none; border-radius: 8px; font-size: 16px; background: rgba(255,255,255,0.95); color: #1e293b; box-sizing: border-box;"
-                               onchange="updateProfileDisplay(); saveSettings();">
+                               oninput="onNameInput()" onchange="updateProfileDisplay(); saveSettings();">
                     </div>
                     <div>
                         <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 6px;">Phone</label>
@@ -11742,10 +11742,21 @@ Response format (JSON only, no markdown):
             }
         }
 
+        // Handle name input - trigger verify check
+        function onNameInput() {
+            const name = document.getElementById('salesmanName').value.trim();
+            if (name) {
+                salesmanInfo.name = name;
+            }
+            // Re-check if we should auto-verify (in case phone was entered first)
+            onPhoneInput();
+        }
+
         // Handle phone input - auto-verify after 2 seconds
         let phoneVerifyTimeout = null;
         function onPhoneInput() {
             const phone = document.getElementById('salesmanPhone').value.trim();
+            const name = document.getElementById('salesmanName').value.trim();
 
             // Clear any pending auto-verify
             if (phoneVerifyTimeout) {
@@ -11766,8 +11777,8 @@ Response format (JSON only, no markdown):
 
             if (isAlreadyVerified && cloudSyncEnabled) {
                 updateSyncStatusBadge(true);
-            } else if (isValid) {
-                // Auto-send verification after 2 seconds
+            } else if (isValid && name) {
+                // Auto-send verification after 2 seconds (only if name is filled)
                 phoneVerifyTimeout = setTimeout(() => {
                     startPhoneVerification();
                 }, 2000);
