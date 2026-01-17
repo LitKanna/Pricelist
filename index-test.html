@@ -3127,7 +3127,7 @@
                         <span id="syncStatusText">Synced</span>
                     </div>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div>
                         <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 6px;">Name</label>
                         <input type="text" id="salesmanName" placeholder=""
@@ -3136,16 +3136,26 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 6px;">Phone</label>
-                        <input type="tel" id="salesmanPhone" placeholder=""
-                               style="width: 100%; padding: 10px 12px; border: none; border-radius: 8px; font-size: 16px; background: rgba(255,255,255,0.95); color: #1e293b; box-sizing: border-box;"
-                               oninput="onPhoneInput()" onchange="saveSettings();">
+                        <div style="position: relative;">
+                            <input type="tel" id="salesmanPhone" placeholder=""
+                                   style="width: 100%; padding: 10px 40px 10px 12px; border: none; border-radius: 8px; font-size: 16px; background: rgba(255,255,255,0.95); color: #1e293b; box-sizing: border-box;"
+                                   oninput="onPhoneInput()" onchange="saveSettings();">
+                            <!-- Verify icon (shows when phone valid but not synced) -->
+                            <button id="verifyPhoneBtn" onclick="startPhoneVerification()"
+                                    style="display: none; position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); border: none; cursor: pointer; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 2px 6px rgba(21,128,61,0.3);">
+                                <svg id="verifyBtnIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="pointer-events: none;">
+                                    <line x1="22" y1="2" x2="11" y2="13"/>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                                </svg>
+                            </button>
+                            <!-- Verified checkmark (shows when synced) -->
+                            <div id="phoneVerifiedIcon" style="display: none; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; background: #22c55e; border-radius: 50%; align-items: center; justify-content: center;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="pointer-events: none;">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div id="verifyPhoneSection" style="display: none;">
-                    <button id="verifyPhoneBtn" onclick="startPhoneVerification()"
-                            style="width: 100%; padding: 12px; background: rgba(255,255,255,0.95); border: none; border-radius: 10px; font-size: 15px; font-weight: 600; color: #15803d; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;">
-                        <span id="verifyBtnText">Verify</span>
-                    </button>
                 </div>
             </div>
             <div id="recaptcha-container"></div>
@@ -11737,50 +11747,50 @@ Response format (JSON only, no markdown):
             }
         }
 
-        // Handle phone input - show/hide verify button smoothly
+        // Handle phone input - show/hide verify icon
         function onPhoneInput() {
             const phone = document.getElementById('salesmanPhone').value.trim();
-            const verifySection = document.getElementById('verifyPhoneSection');
             const verifyBtn = document.getElementById('verifyPhoneBtn');
-
-            if (!phone) {
-                verifySection.style.display = 'none';
-                return;
-            }
+            const verifiedIcon = document.getElementById('phoneVerifiedIcon');
 
             // Save to salesmanInfo
-            salesmanInfo.phone = phone;
+            if (phone) {
+                salesmanInfo.phone = phone;
+            }
 
             // Check if valid phone and not already verified
             const isValid = isValidPhoneNumber(phone);
             const currentVerifiedPhone = localStorage.getItem('everfresh_sync_phone') || '';
             const normalizedNew = normalizePhoneForStorage(phone);
-            const isAlreadyVerified = normalizedNew === currentVerifiedPhone;
+            const isAlreadyVerified = currentVerifiedPhone && normalizedNew === currentVerifiedPhone;
 
             if (isValid && !isAlreadyVerified) {
-                verifySection.style.display = 'block';
-                verifyBtn.querySelector('#verifyBtnText').textContent = 'Verify';
-            } else if (isAlreadyVerified) {
-                verifySection.style.display = 'none';
+                // Show verify button, hide verified icon
+                verifyBtn.style.display = 'flex';
+                verifiedIcon.style.display = 'none';
+            } else if (isAlreadyVerified && cloudSyncEnabled) {
+                // Show verified checkmark, hide verify button
+                verifyBtn.style.display = 'none';
+                verifiedIcon.style.display = 'flex';
                 updateSyncStatusBadge(true);
             } else {
-                verifySection.style.display = 'none';
+                // Hide both
+                verifyBtn.style.display = 'none';
+                verifiedIcon.style.display = 'none';
             }
         }
 
         // Update sync status badge
         function updateSyncStatusBadge(synced) {
             const badge = document.getElementById('syncStatusBadge');
-            const icon = document.getElementById('syncStatusIcon');
-            const text = document.getElementById('syncStatusText');
+            const verifiedIcon = document.getElementById('phoneVerifiedIcon');
 
-            if (synced && cloudSyncEnabled) {
+            if (synced && cloudSyncEnabled && currentUserPhone) {
                 badge.style.display = 'flex';
-                badge.style.alignItems = 'center';
-                icon.textContent = '✓';
-                text.textContent = 'Synced';
+                if (verifiedIcon) verifiedIcon.style.display = 'flex';
             } else {
                 badge.style.display = 'none';
+                if (verifiedIcon) verifiedIcon.style.display = 'none';
             }
         }
 
@@ -11788,7 +11798,7 @@ Response format (JSON only, no markdown):
         async function startPhoneVerification() {
             const phone = document.getElementById('salesmanPhone').value.trim();
             const verifyBtn = document.getElementById('verifyPhoneBtn');
-            const btnText = document.getElementById('verifyBtnText');
+            const btnIcon = document.getElementById('verifyBtnIcon');
 
             if (!phone || !isValidPhoneNumber(phone)) {
                 showToast('Enter a valid phone number');
@@ -11799,10 +11809,10 @@ Response format (JSON only, no markdown):
             pendingVerificationPhone = formattedPhone; // Store for resend
             document.getElementById('verifyingPhone').textContent = formattedPhone;
 
-            // Show loading state on button
+            // Show loading state on button (spinning)
             verifyBtn.disabled = true;
             verifyBtn.style.opacity = '0.7';
-            btnText.textContent = 'Sending...';
+            btnIcon.innerHTML = '<circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="32"><animate attributeName="stroke-dashoffset" dur="1s" values="32;0" repeatCount="indefinite"/></circle>';
 
             try {
                 // Initialize reCAPTCHA fresh
@@ -11811,10 +11821,10 @@ Response format (JSON only, no markdown):
                 // Send OTP
                 confirmationResult = await auth.signInWithPhoneNumber(formattedPhone, recaptchaVerifier);
 
-                // Reset button
+                // Reset button icon
                 verifyBtn.disabled = false;
                 verifyBtn.style.opacity = '1';
-                btnText.textContent = 'Verify';
+                btnIcon.innerHTML = '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>';
 
                 // Reset OTP modal state
                 resetOTPModalState();
@@ -11832,10 +11842,10 @@ Response format (JSON only, no markdown):
             } catch (error) {
                 console.error('Phone auth error:', error);
 
-                // Reset button
+                // Reset button icon
                 verifyBtn.disabled = false;
                 verifyBtn.style.opacity = '1';
-                btnText.textContent = 'Verify';
+                btnIcon.innerHTML = '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>';
 
                 // Show friendly error
                 if (error.code === 'auth/too-many-requests') {
@@ -12035,22 +12045,27 @@ Response format (JSON only, no markdown):
 
         // Update sync UI based on state
         function updateSyncUI() {
-            const statusIcon = document.getElementById('syncStatusIcon');
-            const statusText = document.getElementById('syncStatusText');
+            const syncBadge = document.getElementById('syncStatusBadge');
             const verifyBtn = document.getElementById('verifyPhoneBtn');
+            const verifiedIcon = document.getElementById('phoneVerifiedIcon');
 
             if (cloudSyncEnabled && currentUserPhone) {
-                statusIcon.textContent = '●';
-                statusText.textContent = 'Synced';
+                // Synced state
+                if (syncBadge) syncBadge.style.display = 'flex';
                 if (verifyBtn) verifyBtn.style.display = 'none';
+                if (verifiedIcon) verifiedIcon.style.display = 'flex';
             } else {
-                statusIcon.textContent = '○';
-                statusText.textContent = 'Offline';
-                if (verifyBtn) verifyBtn.style.display = 'block';
+                // Not synced
+                if (syncBadge) syncBadge.style.display = 'none';
+                if (verifiedIcon) verifiedIcon.style.display = 'none';
+                // Show verify button only if phone is valid
+                const phone = document.getElementById('salesmanPhone')?.value?.trim();
+                if (verifyBtn && phone && isValidPhoneNumber(phone)) {
+                    verifyBtn.style.display = 'flex';
+                } else if (verifyBtn) {
+                    verifyBtn.style.display = 'none';
+                }
             }
-
-            // Update debug info
-            updateSyncDebugInfo();
         }
 
         // Open Cloud Sync panel
