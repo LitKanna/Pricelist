@@ -7879,10 +7879,11 @@
                         const encodedCat = deleteBtn.dataset.categoryEncoded;
                         const categoryName = decodeURIComponent(encodedCat);
 
-                        // Get the actual values from the input fields in this row
-                        const inputs = productRow.querySelectorAll('input.input-field');
-                        const productName = inputs[0]?.value || '';
-                        const productGrade = inputs[1]?.value || '';
+                        // Get the actual values from the input fields using data-col
+                        const nameInput = productRow.querySelector('input[data-col="0"]');
+                        const gradeInput = productRow.querySelector('input[data-col="1"]');
+                        const productName = nameInput?.value || '';
+                        const productGrade = gradeInput?.value || '';
 
                         // Find and delete by matching product name and grade
                         deleteProductByMatch(categoryName, productName, productGrade);
@@ -8591,10 +8592,7 @@
         function deleteProductByMatch(categoryName, productName, productGrade) {
             if (!priceData[categoryName]) return;
 
-            // First, collect all current input values to save any edits
-            collectData();
-
-            // Find the product by matching name and grade
+            // Find the product by matching name and grade - NO collectData!
             const products = priceData[categoryName];
             let deleteIndex = -1;
 
@@ -8617,7 +8615,8 @@
 
             if (deleteIndex !== -1) {
                 priceData[categoryName].splice(deleteIndex, 1);
-                saveToLocal(false);
+                // Save directly without collectData
+                localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
                 renderCategories();
             }
         }
@@ -8627,9 +8626,8 @@
             if (!priceData[categoryName] || idx < 0 || idx >= priceData[categoryName].length) {
                 return;
             }
-            collectData();
             priceData[categoryName].splice(idx, 1);
-            saveToLocal(false);
+            localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
             renderCategories();
         }
 
