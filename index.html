@@ -1290,6 +1290,164 @@
         }
     }
 
+    /* ========================================
+       iPAD OPTIMIZED LAYOUT
+       Targets iPad Mini (768px) and up
+       ======================================== */
+    @media (min-width: 768px) and (max-width: 1199px) {
+        /* Body gets iPad class via JS for more specific targeting */
+        body.is-ipad {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%);
+        }
+
+        /* Wider container for iPad */
+        body.is-ipad .container {
+            max-width: 95%;
+            padding: 20px 24px;
+        }
+
+        /* Header optimized for iPad */
+        body.is-ipad .header {
+            padding: 16px 24px;
+            border-radius: 20px;
+        }
+
+        body.is-ipad .header h1 {
+            font-size: 26px;
+        }
+
+        /* Two-column category grid on iPad */
+        body.is-ipad #categoriesContainer {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        /* Category cards optimized */
+        body.is-ipad .category {
+            margin-bottom: 0;
+            break-inside: avoid;
+        }
+
+        /* Larger product grid for iPad */
+        body.is-ipad .product-grid-with-drag {
+            grid-template-columns: 28px 2fr 1.2fr 0.9fr 0.9fr 36px;
+            gap: 12px;
+            padding: 14px 18px;
+        }
+
+        body.is-ipad .table-header-with-drag {
+            grid-template-columns: 28px 2fr 1.2fr 0.9fr 0.9fr 36px;
+            gap: 12px;
+            padding: 10px 18px;
+        }
+
+        /* Larger input fields */
+        body.is-ipad .input-field {
+            padding: 10px 12px;
+            font-size: 15px;
+        }
+
+        /* Larger table headers */
+        body.is-ipad .table-header-cell {
+            font-size: 11px;
+        }
+
+        /* Bigger delete button */
+        body.is-ipad .product-delete {
+            width: 36px;
+            height: 36px;
+            font-size: 18px;
+        }
+
+        /* Bigger add button */
+        body.is-ipad .add-product-btn {
+            padding: 14px;
+            font-size: 15px;
+        }
+
+        /* Action buttons row */
+        body.is-ipad .btn-group {
+            gap: 12px;
+        }
+
+        body.is-ipad .btn {
+            padding: 12px 20px;
+            font-size: 14px;
+        }
+
+        /* Popups/modals wider on iPad */
+        body.is-ipad .customer-share-menu {
+            max-width: 600px;
+            border-radius: 28px 28px 0 0;
+        }
+
+        /* Settings panel */
+        body.is-ipad .settings-panel {
+            max-width: 700px;
+        }
+
+        /* Order panel 2-column layout */
+        body.is-ipad #orderPanel .order-search-container {
+            max-width: 100%;
+        }
+
+        /* Customer cards grid */
+        body.is-ipad #customersList {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        /* Invoice list grid */
+        body.is-ipad #invoicesList {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+    }
+
+    /* iPad Pro and larger tablets - 3 column layout */
+    @media (min-width: 1024px) and (max-width: 1399px) {
+        body.is-ipad #categoriesContainer {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        body.is-ipad .customer-share-menu {
+            max-width: 700px;
+        }
+
+        body.is-ipad #customersList {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        body.is-ipad #invoicesList {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    /* iPad Landscape specific */
+    @media (min-width: 1024px) and (max-height: 850px) and (orientation: landscape) {
+        body.is-ipad .container {
+            max-width: 98%;
+        }
+
+        body.is-ipad #categoriesContainer {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        body.is-ipad .category {
+            font-size: 14px;
+        }
+
+        body.is-ipad .product-grid-with-drag {
+            padding: 10px 14px;
+            gap: 8px;
+        }
+    }
+
     .settings-panel h3 {
         font-size: 22px;
         font-weight: 700;
@@ -10120,6 +10278,51 @@ Response format (JSON only, no markdown):
             return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
         }
+
+        // Detect iPad specifically (including iPad OS which reports as MacIntel)
+        function isIPad() {
+            // Direct iPad detection
+            if (/iPad/.test(navigator.userAgent)) return true;
+            // iPad OS 13+ reports as MacIntel with touch support
+            if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) return true;
+            // Check screen size as fallback (768px+ width with touch)
+            if (navigator.maxTouchPoints > 0 && window.innerWidth >= 768 && window.innerWidth <= 1400) return true;
+            return false;
+        }
+
+        // Detect iPhone specifically
+        function isIPhone() {
+            return /iPhone/.test(navigator.userAgent) ||
+                   (isIOS() && !isIPad());
+        }
+
+        // Apply device-specific classes to body
+        function applyDeviceClasses() {
+            document.body.classList.remove('is-ipad', 'is-iphone', 'is-ios');
+            if (isIOS()) {
+                document.body.classList.add('is-ios');
+                if (isIPad()) {
+                    document.body.classList.add('is-ipad');
+                    console.log('[Device] Detected: iPad');
+                } else {
+                    document.body.classList.add('is-iphone');
+                    console.log('[Device] Detected: iPhone');
+                }
+            } else {
+                // Check if tablet-sized screen (for Android tablets, etc.)
+                if (window.innerWidth >= 768 && window.innerWidth <= 1400 && navigator.maxTouchPoints > 0) {
+                    document.body.classList.add('is-ipad'); // Use iPad styles for tablets
+                    console.log('[Device] Detected: Tablet');
+                }
+            }
+        }
+
+        // Apply on load and on resize/orientation change
+        applyDeviceClasses();
+        window.addEventListener('resize', applyDeviceClasses);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(applyDeviceClasses, 100);
+        });
 
         // Copy image blob to clipboard (works on Chrome desktop/Android)
         async function copyImageToClipboard(blob) {
