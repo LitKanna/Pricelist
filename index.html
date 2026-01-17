@@ -3019,10 +3019,16 @@
                             <div style="font-size: 18px; font-weight: 600;" id="profileNameDisplay">Not Set</div>
                         </div>
                     </div>
-                    <div id="syncStatusBadge" style="display: none; padding: 6px 12px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 12px; font-weight: 600;">
+                    <div id="syncStatusBadge" onclick="toggleSyncDebug()" style="display: none; padding: 6px 12px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer;">
                         <span id="syncStatusIcon" style="margin-right: 4px;"></span>
                         <span id="syncStatusText">Synced</span>
                     </div>
+                </div>
+                <!-- Debug: Sync Path (tap to see) -->
+                <div id="syncDebugInfo" style="display: none; margin-top: 8px; padding: 8px 12px; background: rgba(0,0,0,0.2); border-radius: 8px; font-size: 11px; font-family: monospace; word-break: break-all;">
+                    <div>Path: <span id="debugSyncPath">-</span></div>
+                    <div>Device: <span id="debugDevice">-</span></div>
+                    <div>Listener: <span id="debugListener">-</span></div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
                     <div>
@@ -3503,6 +3509,16 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
+
+        // Set auth persistence to LOCAL (survives browser restart)
+        // This is critical for iOS Chrome which may not persist auth by default
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .then(() => {
+                console.log('[Auth] Persistence set to LOCAL');
+            })
+            .catch((error) => {
+                console.error('[Auth] Persistence error:', error);
+            });
 
         // Cloud sync state
         let cloudSyncEnabled = false;
@@ -11706,6 +11722,29 @@ Response format (JSON only, no markdown):
                 statusText.textContent = 'Offline';
                 if (verifyBtn) verifyBtn.style.display = 'block';
             }
+
+            // Update debug info
+            updateSyncDebugInfo();
+        }
+
+        // Update debug info display
+        function updateSyncDebugInfo() {
+            const pathEl = document.getElementById('debugSyncPath');
+            const deviceEl = document.getElementById('debugDevice');
+            const listenerEl = document.getElementById('debugListener');
+
+            if (pathEl) pathEl.textContent = currentUserPhone ? 'users/' + currentUserPhone : 'Not set';
+            if (deviceEl) deviceEl.textContent = isIPhone() ? 'iPhone' : isIPad() ? 'iPad' : 'Desktop/Other';
+            if (listenerEl) listenerEl.textContent = realtimeListener ? 'Active' : 'Not active';
+        }
+
+        // Toggle debug info visibility (tap on sync badge)
+        function toggleSyncDebug() {
+            const debugInfo = document.getElementById('syncDebugInfo');
+            if (debugInfo) {
+                debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+                updateSyncDebugInfo();
+            }
         }
 
         // Start real-time sync listener
@@ -11977,6 +12016,11 @@ Response format (JSON only, no markdown):
             const savedPhone = localStorage.getItem('everfresh_sync_phone');
             const syncEnabled = localStorage.getItem('everfresh_sync_enabled') === 'true';
 
+            console.log('[Sync] checkExistingSync called');
+            console.log('[Sync] savedPhone:', savedPhone);
+            console.log('[Sync] syncEnabled:', syncEnabled);
+            console.log('[Sync] Device:', isIPhone() ? 'iPhone' : isIPad() ? 'iPad' : 'Other');
+
             if (savedPhone && syncEnabled) {
                 currentUserPhone = savedPhone;
                 cloudSyncEnabled = true;
@@ -11990,7 +12034,15 @@ Response format (JSON only, no markdown):
                 console.log('[Sync] Restoring sync session for:', savedPhone);
                 syncFromCloud(true);
                 startRealtimeSync();
+
+                // iOS-specific: Verify connection is working
+                if (isIOS()) {
+                    setTimeout(() => {
+                        verifySyncConnection();
+                    }, 3000);
+                }
             } else {
+                console.log('[Sync] No saved sync session found');
                 // Check if phone is entered but not verified
                 const phone = document.getElementById('salesmanPhone');
                 if (phone && phone.value) {
@@ -12001,18 +12053,71 @@ Response format (JSON only, no markdown):
             updateSyncUI();
         }
 
+        // Verify sync connection is working (especially for iOS)
+        async function verifySyncConnection() {
+            if (!currentUserPhone) {
+                console.log('[Sync] Verify: No phone number');
+                return;
+            }
+
+            try {
+                // Try to read from Firebase to verify connection
+                const snapshot = await database.ref('users/' + currentUserPhone + '/lastUpdated').once('value');
+                const cloudTimestamp = snapshot.val();
+                console.log('[Sync] Verify: Cloud timestamp:', cloudTimestamp);
+
+                if (cloudTimestamp) {
+                    console.log('[Sync] Verify: Connection OK, real-time listener should work');
+                    // Re-establish listener if needed
+                    if (!realtimeListener) {
+                        console.log('[Sync] Verify: Re-starting real-time listener');
+                        startRealtimeSync();
+                    }
+                } else {
+                    console.log('[Sync] Verify: No cloud data yet, uploading...');
+                    syncToCloud(true);
+                }
+            } catch (error) {
+                console.error('[Sync] Verify: Connection failed:', error);
+                // Show error to user
+                const statusText = document.getElementById('syncStatusText');
+                if (statusText) statusText.textContent = 'Reconnecting...';
+                // Retry connection
+                setTimeout(() => {
+                    console.log('[Sync] Verify: Retrying connection...');
+                    startRealtimeSync();
+                }, 5000);
+            }
+        }
+
         // Listen for Firebase auth state changes
         auth.onAuthStateChanged((user) => {
             console.log('[Auth] State changed:', user ? user.phoneNumber : 'signed out');
+            console.log('[Auth] Current user object:', user);
+
             if (user && user.phoneNumber) {
                 const normalizedPhone = normalizePhoneForStorage(user.phoneNumber);
+                console.log('[Auth] Normalized phone:', normalizedPhone);
+                console.log('[Auth] Current stored phone:', currentUserPhone);
+
                 if (!cloudSyncEnabled || currentUserPhone !== normalizedPhone) {
                     currentUserPhone = normalizedPhone;
                     cloudSyncEnabled = true;
                     localStorage.setItem('everfresh_sync_phone', normalizedPhone);
                     localStorage.setItem('everfresh_sync_enabled', 'true');
+                    console.log('[Auth] Sync enabled, starting sync...');
                     updateSyncUI();
                     syncFromCloud(true);
+                    startRealtimeSync();
+                }
+            } else {
+                // User signed out or no user - but we still have localStorage
+                // Don't disable sync if we have saved credentials
+                const savedPhone = localStorage.getItem('everfresh_sync_phone');
+                if (savedPhone && !currentUserPhone) {
+                    console.log('[Auth] No Firebase user but have saved phone, restoring...');
+                    currentUserPhone = savedPhone;
+                    cloudSyncEnabled = true;
                     startRealtimeSync();
                 }
             }
