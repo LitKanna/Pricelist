@@ -7874,11 +7874,18 @@
                 // Handle delete product button
                 const deleteBtn = e.target.closest('.product-delete');
                 if (deleteBtn) {
-                    const encodedCat = deleteBtn.dataset.categoryEncoded;
-                    const idx = parseInt(deleteBtn.dataset.idx);
-                    if (encodedCat !== undefined && !isNaN(idx)) {
+                    const productRow = deleteBtn.closest('.product');
+                    if (productRow) {
+                        const encodedCat = deleteBtn.dataset.categoryEncoded;
                         const categoryName = decodeURIComponent(encodedCat);
-                        deleteRow(categoryName, idx);
+
+                        // Get the actual values from the input fields in this row
+                        const inputs = productRow.querySelectorAll('input.input-field');
+                        const productName = inputs[0]?.value || '';
+                        const productGrade = inputs[1]?.value || '';
+
+                        // Find and delete by matching product name and grade
+                        deleteProductByMatch(categoryName, productName, productGrade);
                     }
                     return;
                 }
@@ -8580,32 +8587,47 @@
             renderCategories();
         }
 
-        // Delete row
+        // Delete product by matching name and grade (more reliable than index)
+        function deleteProductByMatch(categoryName, productName, productGrade) {
+            if (!priceData[categoryName]) return;
+
+            // First, collect all current input values to save any edits
+            collectData();
+
+            // Find the product by matching name and grade
+            const products = priceData[categoryName];
+            let deleteIndex = -1;
+
+            for (let i = 0; i < products.length; i++) {
+                if (products[i][0] === productName && products[i][1] === productGrade) {
+                    deleteIndex = i;
+                    break;
+                }
+            }
+
+            // If exact match not found, try matching just by name
+            if (deleteIndex === -1) {
+                for (let i = 0; i < products.length; i++) {
+                    if (products[i][0] === productName) {
+                        deleteIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            if (deleteIndex !== -1) {
+                priceData[categoryName].splice(deleteIndex, 1);
+                saveToLocal(false);
+                renderCategories();
+            }
+        }
+
+        // Legacy delete row function (kept for compatibility)
         function deleteRow(categoryName, idx) {
-            // Verify the category and index exist
             if (!priceData[categoryName] || idx < 0 || idx >= priceData[categoryName].length) {
                 return;
             }
-
-            // First save any edits the user made to OTHER products (not the one being deleted)
-            const inputs = document.querySelectorAll(`input[data-category-encoded="${encodeURIComponent(categoryName)}"]`);
-            inputs.forEach(input => {
-                const row = parseInt(input.dataset.row);
-                const col = parseInt(input.dataset.col);
-                // Skip the row being deleted
-                if (row === idx) return;
-                // Skip if row doesn't exist
-                if (!priceData[categoryName][row]) return;
-
-                let value = input.value;
-                if (col === 0) value = formatProductName(value);
-                if (col === 1) value = formatGradeSize(value);
-                if (col === 2 && !selectedCustomer) value = formatPriceWithSymbol(value);
-
-                priceData[categoryName][row][col] = value;
-            });
-
-            // Now delete the product
+            collectData();
             priceData[categoryName].splice(idx, 1);
             saveToLocal(false);
             renderCategories();
