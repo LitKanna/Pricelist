@@ -8114,15 +8114,57 @@
                 if (e.target.tagName === 'INPUT') {
                     imageSavedThisSession = false;
 
-                    // Auto-save with debounce (1.5 seconds after user stops typing)
+                    // Auto-save with debounce (shorter on iOS since keyboard dismissal is common)
+                    const debounceTime = isIOS() ? 800 : 1500;
                     if (autoSaveTimer) clearTimeout(autoSaveTimer);
                     autoSaveTimer = setTimeout(() => {
                         console.log('[AutoSave] Saving changes...');
                         saveToLocal(false); // Silent save (no toast)
-                    }, 1500);
+                    }, debounceTime);
                 }
             });
+
+            // iOS fix: Save immediately when input loses focus (keyboard dismissed)
+            container.addEventListener('blur', function(e) {
+                if (e.target.tagName === 'INPUT') {
+                    // Clear pending timer and save immediately
+                    if (autoSaveTimer) {
+                        clearTimeout(autoSaveTimer);
+                        autoSaveTimer = null;
+                    }
+                    console.log('[AutoSave] Blur triggered - saving immediately');
+                    saveToLocal(false);
+                }
+            }, true); // Use capture phase to catch all blur events
         }
+
+        // iOS fix: Save when page visibility changes (user switches apps)
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') {
+                // Save immediately when page is hidden
+                if (autoSaveTimer) {
+                    clearTimeout(autoSaveTimer);
+                    autoSaveTimer = null;
+                }
+                console.log('[AutoSave] Page hidden - saving immediately');
+                collectData();
+                localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
+                localStorage.setItem('everfresh_category_margins', JSON.stringify(categoryMargins));
+                // Trigger cloud sync if enabled
+                if (cloudSyncEnabled && currentUserPhone) {
+                    syncToCloud(true);
+                }
+            }
+        });
+
+        // iOS fix: Save on beforeunload/pagehide
+        window.addEventListener('pagehide', function() {
+            if (autoSaveTimer) {
+                clearTimeout(autoSaveTimer);
+            }
+            collectData();
+            localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
+        });
         
         // Update category margin
         function updateCategoryMargin(categoryName, margin) {
