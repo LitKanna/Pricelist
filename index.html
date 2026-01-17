@@ -3029,6 +3029,9 @@
                     <div>Path: <span id="debugSyncPath">-</span></div>
                     <div>Device: <span id="debugDevice">-</span></div>
                     <div>Listener: <span id="debugListener">-</span></div>
+                    <button onclick="resetSyncAndReauth()" style="margin-top: 8px; padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; width: 100%;">
+                        Reset Sync & Re-verify
+                    </button>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
                     <div>
@@ -11745,6 +11748,49 @@ Response format (JSON only, no markdown):
                 debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
                 updateSyncDebugInfo();
             }
+        }
+
+        // Reset sync and allow re-authentication
+        async function resetSyncAndReauth() {
+            if (!confirm('This will disconnect sync from the current phone number. You will need to re-verify with your phone. Continue?')) {
+                return;
+            }
+
+            console.log('[Sync] Resetting sync...');
+
+            // Stop real-time listener
+            stopRealtimeSync();
+
+            // Sign out from Firebase
+            try {
+                await auth.signOut();
+                console.log('[Sync] Signed out from Firebase');
+            } catch (e) {
+                console.log('[Sync] Sign out error (may already be signed out):', e);
+            }
+
+            // Clear localStorage sync data
+            localStorage.removeItem('everfresh_sync_phone');
+            localStorage.removeItem('everfresh_sync_enabled');
+
+            // Reset state
+            currentUserPhone = null;
+            cloudSyncEnabled = false;
+
+            // Update UI
+            const verifySection = document.getElementById('verifyPhoneSection');
+            if (verifySection) verifySection.style.display = 'block';
+
+            const syncBadge = document.getElementById('syncStatusBadge');
+            if (syncBadge) syncBadge.style.display = 'none';
+
+            const debugInfo = document.getElementById('syncDebugInfo');
+            if (debugInfo) debugInfo.style.display = 'none';
+
+            updateSyncUI();
+            updateSyncDebugInfo();
+
+            showToast('Sync reset. Please re-verify your phone number.');
         }
 
         // Start real-time sync listener
