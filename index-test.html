@@ -1866,6 +1866,45 @@
         display: none; /* Chrome/Safari/Opera */
     }
 
+    /* Swipe-to-delete styles */
+    .swipe-container {
+        position: relative;
+        overflow: hidden;
+        border-radius: 10px;
+        margin-bottom: 6px;
+    }
+
+    .swipe-delete-action {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 80px;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: 0 10px 10px 0;
+    }
+
+    .swipe-content {
+        position: relative;
+        background: white;
+        transform: translateX(0);
+        transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        z-index: 1;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .swipe-content.swiped {
+        transform: translateX(-80px);
+    }
+
     .order-item-row {
         display: flex;
         align-items: center;
@@ -4929,6 +4968,87 @@
             renderOrderItems();
         }
 
+        // Track currently swiped item
+        let currentlySwipedElement = null;
+
+        function closeAllSwipes() {
+            if (currentlySwipedElement) {
+                currentlySwipedElement.classList.remove('swiped');
+                currentlySwipedElement = null;
+            }
+        }
+
+        function setupSwipeHandlers(element, idx) {
+            let startX = 0;
+            let currentX = 0;
+            let isDragging = false;
+
+            element.addEventListener('touchstart', (e) => {
+                // Close any other open swipe first
+                if (currentlySwipedElement && currentlySwipedElement !== element) {
+                    closeAllSwipes();
+                }
+                startX = e.touches[0].clientX;
+                isDragging = true;
+                element.style.transition = 'none';
+            }, { passive: true });
+
+            element.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                currentX = e.touches[0].clientX;
+                const diff = currentX - startX;
+
+                // Only allow left swipe (negative diff), max 80px
+                if (diff < 0) {
+                    const translateX = Math.max(diff, -80);
+                    element.style.transform = `translateX(${translateX}px)`;
+                } else if (element.classList.contains('swiped')) {
+                    // Allow swiping back
+                    const translateX = Math.min(-80 + diff, 0);
+                    element.style.transform = `translateX(${translateX}px)`;
+                }
+            }, { passive: true });
+
+            element.addEventListener('touchend', (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                element.style.transition = 'transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+
+                const diff = currentX - startX;
+
+                // If swiped more than 40px left, show delete
+                if (diff < -40 && !element.classList.contains('swiped')) {
+                    element.classList.add('swiped');
+                    element.style.transform = 'translateX(-80px)';
+                    currentlySwipedElement = element;
+                } else if (diff > 40 && element.classList.contains('swiped')) {
+                    // Swipe back to close
+                    element.classList.remove('swiped');
+                    element.style.transform = 'translateX(0)';
+                    currentlySwipedElement = null;
+                } else {
+                    // Snap back to current state
+                    if (element.classList.contains('swiped')) {
+                        element.style.transform = 'translateX(-80px)';
+                    } else {
+                        element.style.transform = 'translateX(0)';
+                    }
+                }
+
+                startX = 0;
+                currentX = 0;
+            });
+
+            // Close swipe on tap elsewhere
+            element.addEventListener('click', (e) => {
+                if (element.classList.contains('swiped')) {
+                    e.stopPropagation();
+                    closeAllSwipes();
+                    element.style.transform = 'translateX(0)';
+                }
+            });
+        }
+
         function renderOrderItems(scrollToIndex) {
             const container = document.getElementById('orderItemsContainer');
             const totalEl = document.getElementById('orderGrandTotal');
@@ -4955,90 +5075,91 @@
             currentOrderItems.forEach((item, idx) => {
                 grandTotal += item.lineTotal;
 
-                const card = document.createElement('div');
-                card.id = 'order-item-' + idx;
-                card.style.cssText = 'background: white; border-radius: 10px; padding: 10px 12px; margin-bottom: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; transition: background 0.3s;';
+                // Swipe container
+                const swipeContainer = document.createElement('div');
+                swipeContainer.className = 'swipe-container';
+                swipeContainer.id = 'order-item-' + idx;
 
-                // Top row: Name + Delete button
-                const topRow = document.createElement('div');
-                topRow.style.cssText = 'display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;';
+                // Delete action (revealed on swipe)
+                const deleteAction = document.createElement('div');
+                deleteAction.className = 'swipe-delete-action';
+                deleteAction.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+                deleteAction.onclick = () => removeOrderItem(idx);
 
+                // Swipe content (the visible card)
+                const swipeContent = document.createElement('div');
+                swipeContent.className = 'swipe-content';
+                swipeContent.style.cssText = 'padding: 10px 12px;';
+
+                // Compact single-row layout
+                const row = document.createElement('div');
+                row.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+
+                // Name section (left)
                 const nameSection = document.createElement('div');
-                nameSection.style.cssText = 'flex: 1;';
-                nameSection.innerHTML = '<div style="font-weight: 700; font-size: 15px; color: #0f172a; margin-bottom: 2px;">' + item.name + '</div><div style="font-size: 12px; color: #64748b;">' + item.grade + '</div>';
+                nameSection.style.cssText = 'flex: 1; min-width: 0;';
+                nameSection.innerHTML = '<div style="font-weight: 600; font-size: 14px; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + item.name + '</div><div style="font-size: 11px; color: #64748b;">' + item.grade + '</div>';
 
-                const deleteBtn = document.createElement('button');
-                deleteBtn.style.cssText = 'width: 28px; height: 28px; border: none; border-radius: 8px; background: #fef2f2; color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 500; transition: all 0.15s;';
-                deleteBtn.innerHTML = '×';
-                deleteBtn.onclick = () => removeOrderItem(idx);
-
-                topRow.appendChild(nameSection);
-                topRow.appendChild(deleteBtn);
-
-                // Bottom row: Qty controls + Price
-                const bottomRow = document.createElement('div');
-                bottomRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center;';
-
-                // Qty controls
+                // Qty controls (center)
                 const qtyControls = document.createElement('div');
-                qtyControls.style.cssText = 'display: flex; align-items: center; gap: 2px; background: #f1f5f9; border-radius: 10px; padding: 4px;';
+                qtyControls.style.cssText = 'display: flex; align-items: center; gap: 2px; background: #f1f5f9; border-radius: 8px; padding: 2px;';
 
                 const minusBtn = document.createElement('button');
-                minusBtn.style.cssText = 'width: 32px; height: 32px; border: none; border-radius: 8px; background: white; color: #0f172a; font-size: 18px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);';
+                minusBtn.style.cssText = 'width: 28px; height: 28px; border: none; border-radius: 6px; background: white; color: #0f172a; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);';
                 minusBtn.textContent = '−';
-                minusBtn.onclick = () => updateOrderQty(idx, -1);
+                minusBtn.onclick = (e) => { e.stopPropagation(); updateOrderQty(idx, -1); };
 
                 const qtyDisplay = document.createElement('input');
                 qtyDisplay.type = 'number';
                 qtyDisplay.value = item.qty;
                 qtyDisplay.min = '1';
-                qtyDisplay.style.cssText = 'width: 50px; text-align: center; font-weight: 700; font-size: 16px; color: #0f172a; border: none; background: transparent; -moz-appearance: textfield; padding: 4px 0;';
+                qtyDisplay.style.cssText = 'width: 36px; text-align: center; font-weight: 700; font-size: 14px; color: #0f172a; border: none; background: transparent; -moz-appearance: textfield; padding: 2px 0;';
                 qtyDisplay.onchange = (e) => { const newQty = parseInt(e.target.value) || 1; currentOrderItems[idx].qty = Math.max(1, newQty); currentOrderItems[idx].lineTotal = currentOrderItems[idx].qty * currentOrderItems[idx].unitPrice; renderOrderItems(); };
                 qtyDisplay.onfocus = (e) => e.target.select();
 
                 const plusBtn = document.createElement('button');
-                plusBtn.style.cssText = 'width: 32px; height: 32px; border: none; border-radius: 8px; background: white; color: #0f172a; font-size: 18px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);';
+                plusBtn.style.cssText = 'width: 28px; height: 28px; border: none; border-radius: 6px; background: white; color: #0f172a; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);';
                 plusBtn.textContent = '+';
-                plusBtn.onclick = () => updateOrderQty(idx, 1);
+                plusBtn.onclick = (e) => { e.stopPropagation(); updateOrderQty(idx, 1); };
 
                 qtyControls.appendChild(minusBtn);
                 qtyControls.appendChild(qtyDisplay);
                 qtyControls.appendChild(plusBtn);
 
-                // Price section
+                // Price section (right)
                 const priceSection = document.createElement('div');
-                priceSection.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+                priceSection.style.cssText = 'text-align: right; min-width: 60px;';
+                priceSection.innerHTML = '<div style="font-weight: 700; font-size: 15px; color: #10b981;">$' + item.lineTotal.toFixed(item.lineTotal % 1 === 0 ? 0 : 2) + '</div><div style="font-size: 10px; color: #94a3b8;">$' + item.unitPrice.toFixed(item.unitPrice % 1 === 0 ? 0 : 2) + ' ea</div>';
+                priceSection.onclick = (e) => { e.stopPropagation(); openPriceEditModal(idx); };
+                priceSection.style.cursor = 'pointer';
 
-                const priceInfo = document.createElement('div');
-                priceInfo.style.cssText = 'text-align: right;';
-                priceInfo.innerHTML = '<div style="font-size: 11px; color: #94a3b8;">$' + item.unitPrice.toFixed(item.unitPrice % 1 === 0 ? 0 : 2) + ' × ' + item.qty + '</div><div style="font-weight: 700; font-size: 17px; color: #10b981;">$' + item.lineTotal.toFixed(item.lineTotal % 1 === 0 ? 0 : 2) + '</div>';
+                row.appendChild(nameSection);
+                row.appendChild(qtyControls);
+                row.appendChild(priceSection);
 
-                const editBtn = document.createElement('button');
-                editBtn.style.cssText = 'width: 32px; height: 32px; border: none; border-radius: 8px; background: #f0fdf4; color: #15803d; cursor: pointer; display: flex; align-items: center; justify-content: center;';
-                editBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
-                editBtn.onclick = (e) => { e.stopPropagation(); openPriceEditModal(idx); };
+                swipeContent.appendChild(row);
 
-                priceSection.appendChild(priceInfo);
-                priceSection.appendChild(editBtn);
+                // Add touch handlers for swipe
+                setupSwipeHandlers(swipeContent, idx);
 
-                bottomRow.appendChild(qtyControls);
-                bottomRow.appendChild(priceSection);
-
-                card.appendChild(topRow);
-                card.appendChild(bottomRow);
-                container.appendChild(card);
+                swipeContainer.appendChild(deleteAction);
+                swipeContainer.appendChild(swipeContent);
+                container.appendChild(swipeContainer);
             });
 
             totalEl.textContent = '$' + grandTotal.toFixed(grandTotal % 1 === 0 ? 0 : 2);
 
             // Auto-scroll to added item with highlight
             if (scrollToIndex !== undefined) {
-                const addedCard = document.getElementById('order-item-' + scrollToIndex);
-                if (addedCard) {
+                const addedContainer = document.getElementById('order-item-' + scrollToIndex);
+                if (addedContainer) {
+                    const swipeContent = addedContainer.querySelector('.swipe-content');
                     setTimeout(() => {
-                        addedCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        addedCard.style.background = '#f0fdf4';
-                        setTimeout(() => { addedCard.style.background = 'white'; }, 600);
+                        addedContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        if (swipeContent) {
+                            swipeContent.style.background = '#f0fdf4';
+                            setTimeout(() => { swipeContent.style.background = 'white'; }, 600);
+                        }
                     }, 50);
                 }
             }
