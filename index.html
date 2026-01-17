@@ -7842,7 +7842,7 @@
                                 <div class="product-field">
                                     <input type="text" class="input-field" value="${displayPrice}" placeholder="$0.00" data-category-encoded="${encodedCategoryName}" data-row="${idx}" data-col="2" ${selectedCustomer ? 'readonly style="background: #f0fdf4; color: #15803d;"' : ''}>
                                 </div>
-                                <button class="product-delete" data-category-encoded="${encodedCategoryName}" data-idx="${idx}">×</button>
+                                <button class="product-delete" data-category-encoded="${encodedCategoryName}" data-idx="${idx}" data-product-name="${item[0]}" title="Delete ${item[0]}">×</button>
                             </div>
                         </div>
                     `;
@@ -7871,7 +7871,26 @@
             const container = document.getElementById('categoriesContainer');
             
             container.addEventListener('click', function(e) {
-                // Handle delete product button
+                // Handle delete product button - use closest() to ensure correct element
+                const deleteBtn = e.target.closest('.product-delete');
+                if (deleteBtn) {
+                    const encodedCat = deleteBtn.dataset.categoryEncoded;
+                    const idx = parseInt(deleteBtn.dataset.idx);
+                    if (encodedCat !== undefined && !isNaN(idx)) {
+                        const categoryName = decodeURIComponent(encodedCat);
+                        // Verify the index is valid and get product name for confirmation
+                        if (priceData[categoryName] && priceData[categoryName][idx]) {
+                            const productName = priceData[categoryName][idx][0] || 'Unknown';
+                            console.log(`Deleting: ${productName} at index ${idx} in ${categoryName}`);
+                            deleteRow(categoryName, idx);
+                        } else {
+                            console.error(`Invalid delete: category=${categoryName}, idx=${idx}, length=${priceData[categoryName]?.length}`);
+                        }
+                    }
+                    return;
+                }
+
+                // Handle delete product button (legacy fallback)
                 if (e.target.classList.contains('product-delete')) {
                     const encodedCat = e.target.dataset.categoryEncoded;
                     const idx = parseInt(e.target.dataset.idx);
@@ -8581,7 +8600,19 @@
 
         // Delete row
         function deleteRow(categoryName, idx) {
-            collectData(); // Save current changes first
+            // Collect current input values first
+            collectData();
+
+            // Verify the category and index exist
+            if (!priceData[categoryName] || idx < 0 || idx >= priceData[categoryName].length) {
+                console.error(`deleteRow: Invalid params - category=${categoryName}, idx=${idx}`);
+                return;
+            }
+
+            // Log what's being deleted
+            const deletedProduct = priceData[categoryName][idx];
+            console.log(`deleteRow: Removing "${deletedProduct[0]}" at index ${idx}`);
+
             priceData[categoryName].splice(idx, 1);
             saveToLocal(false); // No toast notification
             renderCategories();
