@@ -7556,11 +7556,47 @@
             localStorage.setItem('everfresh_salesman_info', JSON.stringify(salesmanInfo));
             updateProfileDisplay();
 
-            // Trigger silent cloud sync if enabled
+            // Check if phone number matches sync phone
+            const normalizedSettingsPhone = normalizePhoneForStorage(salesmanInfo.phone);
+            const syncMismatch = currentUserPhone && normalizedSettingsPhone !== currentUserPhone;
+
+            if (syncMismatch) {
+                // Phone number changed but not re-verified - show warning
+                console.log('[Settings] Phone mismatch! Settings:', normalizedSettingsPhone, 'Sync:', currentUserPhone);
+                showPhoneMismatchWarning();
+                // Don't sync to cloud with wrong path!
+                return;
+            }
+
+            // Trigger silent cloud sync if enabled (only if phones match)
             if (cloudSyncEnabled && currentUserPhone) {
                 syncToCloud(true);
             }
             // Don't close Settings - user controls when to leave
+        }
+
+        // Show warning when settings phone doesn't match sync phone
+        function showPhoneMismatchWarning() {
+            const existingWarning = document.getElementById('phoneMismatchWarning');
+            if (existingWarning) return; // Already showing
+
+            const verifySection = document.getElementById('verifyPhoneSection');
+            if (verifySection) {
+                verifySection.style.display = 'block';
+
+                // Add warning message
+                let warning = document.createElement('div');
+                warning.id = 'phoneMismatchWarning';
+                warning.style.cssText = 'background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 13px; color: #dc2626;';
+                warning.innerHTML = '<strong>⚠️ Phone Changed!</strong><br>Your phone number changed but sync is still using the old number. Tap Verify to update sync.';
+                verifySection.insertBefore(warning, verifySection.firstChild);
+            }
+        }
+
+        // Hide phone mismatch warning
+        function hidePhoneMismatchWarning() {
+            const warning = document.getElementById('phoneMismatchWarning');
+            if (warning) warning.remove();
         }
 
         // Add customer contact
@@ -11665,6 +11701,13 @@ Response format (JSON only, no markdown):
                 currentUserPhone = normalizePhoneForStorage(user.phoneNumber);
                 cloudSyncEnabled = true;
 
+                // IMPORTANT: Update salesmanInfo.phone to match the verified phone
+                // This ensures frontend display and backend sync path are ALWAYS in sync
+                const displayPhone = user.phoneNumber.replace('+61', '0'); // Convert +61xxxxxxxxx to 0xxxxxxxxx for display
+                salesmanInfo.phone = displayPhone;
+                document.getElementById('salesmanPhone').value = displayPhone;
+                localStorage.setItem('everfresh_salesman_info', JSON.stringify(salesmanInfo));
+
                 // Save sync state locally
                 localStorage.setItem('everfresh_sync_phone', currentUserPhone);
                 localStorage.setItem('everfresh_sync_enabled', 'true');
@@ -11676,6 +11719,7 @@ Response format (JSON only, no markdown):
 
                 // Hide verify button, show sync badge
                 document.getElementById('verifyPhoneSection').style.display = 'none';
+                hidePhoneMismatchWarning(); // Clear any mismatch warning
                 updateSyncStatusBadge(true);
 
                 // Update UI
@@ -11786,6 +11830,9 @@ Response format (JSON only, no markdown):
 
             const debugInfo = document.getElementById('syncDebugInfo');
             if (debugInfo) debugInfo.style.display = 'none';
+
+            // Clear any phone mismatch warning
+            hidePhoneMismatchWarning();
 
             updateSyncUI();
             updateSyncDebugInfo();
