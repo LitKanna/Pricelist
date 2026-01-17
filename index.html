@@ -8600,18 +8600,25 @@
 
         // Delete row
         function deleteRow(categoryName, idx) {
+            // Get product name BEFORE collectData (in case it changes)
+            const productBefore = priceData[categoryName]?.[idx]?.[0] || 'Unknown';
+
             // Collect current input values first
             collectData();
 
             // Verify the category and index exist
             if (!priceData[categoryName] || idx < 0 || idx >= priceData[categoryName].length) {
                 console.error(`deleteRow: Invalid params - category=${categoryName}, idx=${idx}`);
+                showToast(`Error: Invalid index ${idx}`);
                 return;
             }
 
-            // Log what's being deleted
-            const deletedProduct = priceData[categoryName][idx];
-            console.log(`deleteRow: Removing "${deletedProduct[0]}" at index ${idx}`);
+            // Get product name AFTER collectData to compare
+            const productAfter = priceData[categoryName][idx][0];
+
+            // Log and show what's being deleted
+            console.log(`deleteRow: Removing "${productAfter}" at index ${idx} (before collectData: "${productBefore}")`);
+            showToast(`Deleting: ${productAfter} (idx ${idx})`);
 
             priceData[categoryName].splice(idx, 1);
             saveToLocal(false); // No toast notification
