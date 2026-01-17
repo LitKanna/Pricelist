@@ -3148,18 +3148,16 @@
                     <div style="position: relative;">
                         <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 6px;">Phone</label>
                         <input type="tel" id="salesmanPhone" placeholder=""
-                               style="width: 100%; padding: 10px 40px 10px 12px; border: none; border-radius: 8px; font-size: 16px; background: rgba(255,255,255,0.95); color: #1e293b; box-sizing: border-box;"
+                               style="width: 100%; padding: 10px 12px; border: 2px solid transparent; border-radius: 8px; font-size: 16px; background: rgba(255,255,255,0.95); color: #1e293b; box-sizing: border-box; transition: border-color 0.2s;"
                                oninput="onPhoneInput()" onchange="saveSettings();">
-                        <!-- Verify icon - absolute positioned, no layout shift -->
+                        <!-- Verify link - clean text, no ugly button -->
                         <button id="verifyPhoneBtn" onclick="startPhoneVerification()"
-                                style="display: none; position: absolute; right: 6px; top: 26px; width: 26px; height: 26px; border-radius: 6px; background: #3b82f6; border: none; cursor: pointer; align-items: center; justify-content: center;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="pointer-events: none;">
-                                <path d="M5 12h14M12 5l7 7-7 7"/>
-                            </svg>
+                                style="display: none; position: absolute; right: 10px; top: 26px; height: 26px; background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 600; color: #3b82f6;">
+                            Verify
                         </button>
-                        <!-- Verified checkmark -->
-                        <div id="phoneVerifiedIcon" style="display: none; position: absolute; right: 6px; top: 26px; width: 26px; height: 26px; background: #22c55e; border-radius: 6px; align-items: center; justify-content: center;">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="pointer-events: none;">
+                        <!-- Verified indicator - just a small checkmark -->
+                        <div id="phoneVerifiedIcon" style="display: none; position: absolute; right: 10px; top: 29px; color: #22c55e;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <polyline points="20 6 9 17 4 12"/>
                             </svg>
                         </div>
