@@ -361,6 +361,17 @@
         50% { transform: scale(1.1); }
     }
 
+    @keyframes verifyPulse {
+        0%, 100% {
+            transform: translateY(-50%) scale(1);
+            box-shadow: 0 2px 8px rgba(21,128,61,0.35);
+        }
+        50% {
+            transform: translateY(-50%) scale(1.08);
+            box-shadow: 0 4px 12px rgba(21,128,61,0.5);
+        }
+    }
+
     @keyframes slideUp {
         from {
             opacity: 0;
@@ -3142,14 +3153,13 @@
                                    oninput="onPhoneInput()" onchange="saveSettings();">
                             <!-- Verify icon (shows when phone valid but not synced) -->
                             <button id="verifyPhoneBtn" onclick="startPhoneVerification()"
-                                    style="display: none; position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); border: none; cursor: pointer; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 2px 6px rgba(21,128,61,0.3);">
-                                <svg id="verifyBtnIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="pointer-events: none;">
-                                    <line x1="22" y1="2" x2="11" y2="13"/>
-                                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                                    style="display: none; position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); border: none; cursor: pointer; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(21,128,61,0.35); animation: verifyPulse 2s ease-in-out infinite;">
+                                <svg id="verifyBtnIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="pointer-events: none;">
+                                    <polyline points="20 6 9 17 4 12"/>
                                 </svg>
                             </button>
                             <!-- Verified checkmark (shows when synced) -->
-                            <div id="phoneVerifiedIcon" style="display: none; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; background: #22c55e; border-radius: 50%; align-items: center; justify-content: center;">
+                            <div id="phoneVerifiedIcon" style="display: none; position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; background: #22c55e; border-radius: 50%; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(21,128,61,0.25);">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="pointer-events: none;">
                                     <polyline points="20 6 9 17 4 12"/>
                                 </svg>
@@ -11824,7 +11834,7 @@ Response format (JSON only, no markdown):
                 // Reset button icon
                 verifyBtn.disabled = false;
                 verifyBtn.style.opacity = '1';
-                btnIcon.innerHTML = '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>';
+                btnIcon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
 
                 // Reset OTP modal state
                 resetOTPModalState();
@@ -11845,7 +11855,7 @@ Response format (JSON only, no markdown):
                 // Reset button icon
                 verifyBtn.disabled = false;
                 verifyBtn.style.opacity = '1';
-                btnIcon.innerHTML = '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>';
+                btnIcon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
 
                 // Show friendly error
                 if (error.code === 'auth/too-many-requests') {
