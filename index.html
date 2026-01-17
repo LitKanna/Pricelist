@@ -11752,7 +11752,7 @@ Response format (JSON only, no markdown):
             onPhoneInput();
         }
 
-        // Handle phone input - auto-verify after 2 seconds
+        // Handle phone input - auto-verify after 2 seconds (only for new users)
         let phoneVerifyTimeout = null;
         function onPhoneInput() {
             const phone = document.getElementById('salesmanPhone').value.trim();
@@ -11769,20 +11769,24 @@ Response format (JSON only, no markdown):
                 salesmanInfo.phone = phone;
             }
 
-            // Check if valid phone and not already verified
+            // Check verification status
             const isValid = isValidPhoneNumber(phone);
             const currentVerifiedPhone = localStorage.getItem('everfresh_sync_phone') || '';
             const normalizedNew = normalizePhoneForStorage(phone);
             const isAlreadyVerified = currentVerifiedPhone && normalizedNew === currentVerifiedPhone;
+            const hasAnyVerifiedPhone = !!currentVerifiedPhone;
 
             if (isAlreadyVerified && cloudSyncEnabled) {
+                // Same phone, already synced
                 updateSyncStatusBadge(true);
-            } else if (isValid && name) {
-                // Auto-send verification after 2 seconds (only if name is filled)
+            } else if (isValid && name && !hasAnyVerifiedPhone) {
+                // NEW user (no phone verified yet) - auto-verify after 2 seconds
                 phoneVerifyTimeout = setTimeout(() => {
                     startPhoneVerification();
                 }, 2000);
             }
+            // If user already has a verified phone but typed different number,
+            // do nothing - they need to sign out first to change phones
         }
 
         // Update sync status badge
