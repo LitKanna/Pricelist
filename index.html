@@ -11540,6 +11540,11 @@ Response format (JSON only, no markdown):
                     if (nameInput) nameInput.value = salesmanInfo.name || '';
                     if (phoneInput) phoneInput.value = salesmanInfo.phone || '';
                     if (nextDayToggle) nextDayToggle.checked = salesmanInfo.sendForNextDay !== false;
+                    // Update profile display
+                    const profileDisplay = document.getElementById('profileNameDisplay');
+                    if (profileDisplay) {
+                        profileDisplay.textContent = salesmanInfo.name || 'Not Set';
+                    }
                 }
 
                 // Save locally (without triggering cloud sync)
@@ -11547,6 +11552,7 @@ Response format (JSON only, no markdown):
                 localStorage.setItem('everfresh_category_margins', JSON.stringify(categoryMargins));
                 localStorage.setItem('everfresh_customers', JSON.stringify(customers));
                 localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
+                localStorage.setItem('everfresh_salesman_info', JSON.stringify(salesmanInfo));
                 if (selectedCustomer) {
                     localStorage.setItem('everfresh_selected_customer_id', selectedCustomer.id.toString());
                 } else {
@@ -11688,6 +11694,11 @@ Response format (JSON only, no markdown):
                     document.getElementById('salesmanName').value = salesmanInfo.name || '';
                     document.getElementById('salesmanPhone').value = salesmanInfo.phone || '';
                     document.getElementById('nextDayToggle').checked = salesmanInfo.sendForNextDay !== false;
+                    // Update profile display
+                    const profileDisplay = document.getElementById('profileNameDisplay');
+                    if (profileDisplay) {
+                        profileDisplay.textContent = salesmanInfo.name || 'Not Set';
+                    }
                 }
 
                 // Save locally (but don't trigger another cloud sync!)
@@ -11695,6 +11706,7 @@ Response format (JSON only, no markdown):
                 localStorage.setItem('everfresh_category_margins', JSON.stringify(categoryMargins));
                 localStorage.setItem('everfresh_customers', JSON.stringify(customers));
                 localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
+                localStorage.setItem('everfresh_salesman_info', JSON.stringify(salesmanInfo));
                 if (selectedCustomer) {
                     localStorage.setItem('everfresh_selected_customer_id', selectedCustomer.id.toString());
                 } else {
