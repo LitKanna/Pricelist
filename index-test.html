@@ -11842,7 +11842,7 @@ Response format (JSON only, no markdown):
 
             const menuDiv = document.createElement('div');
             menuDiv.className = 'share-menu';
-            menuDiv.style.cssText = 'max-width: 480px; max-height: 90vh; border-radius: 24px; overflow: hidden;';
+            menuDiv.style.cssText = 'max-width: 480px; max-height: 90vh; border-radius: 24px 24px 0 0; overflow: hidden;';
 
             const pending = incomingOrders.filter(o => o.status === 'pending');
 
@@ -11998,7 +11998,7 @@ Response format (JSON only, no markdown):
 
             const menuDiv = document.createElement('div');
             menuDiv.className = 'share-menu';
-            menuDiv.style.cssText = 'max-width: 440px; border-radius: 24px; overflow: hidden;';
+            menuDiv.style.cssText = 'max-width: 440px; border-radius: 24px 24px 0 0; overflow: hidden;';
 
             menuDiv.innerHTML = `
                 <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 20px 24px;">
@@ -12108,7 +12108,7 @@ Response format (JSON only, no markdown):
 
             const menuDiv = document.createElement('div');
             menuDiv.className = 'share-menu';
-            menuDiv.style.cssText = 'max-width: 380px; border-radius: 24px; overflow: hidden;';
+            menuDiv.style.cssText = 'max-width: 380px; border-radius: 24px 24px 0 0; overflow: hidden;';
 
             // Get team members
             const teamList = teamMembers.length > 0 ? teamMembers : [{name: 'Booking Team', phone: ''}, {name: 'Packing Team', phone: ''}];
