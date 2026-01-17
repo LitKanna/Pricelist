@@ -3120,19 +3120,12 @@
                             <div style="font-size: 18px; font-weight: 600;" id="profileNameDisplay">Not Set</div>
                         </div>
                     </div>
-                    <div id="syncStatusBadge" onclick="toggleSyncDebug()" style="display: none; padding: 6px 12px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer;">
-                        <span id="syncStatusIcon" style="margin-right: 4px;"></span>
+                    <div id="syncStatusBadge" onclick="openCloudSyncPanel()" style="display: none; padding: 6px 12px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+                        </svg>
                         <span id="syncStatusText">Synced</span>
                     </div>
-                </div>
-                <!-- Debug: Sync Path (tap to see) -->
-                <div id="syncDebugInfo" style="display: none; margin-top: 8px; padding: 8px 12px; background: rgba(0,0,0,0.2); border-radius: 8px; font-size: 11px; font-family: monospace; word-break: break-all;">
-                    <div>Path: <span id="debugSyncPath">-</span></div>
-                    <div>Device: <span id="debugDevice">-</span></div>
-                    <div>Listener: <span id="debugListener">-</span></div>
-                    <button onclick="resetSyncAndReauth()" style="margin-top: 8px; padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; width: 100%;">
-                        Reset Sync & Re-verify
-                    </button>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
                     <div>
@@ -3196,6 +3189,39 @@
                             <span id="otpStatusText" style="font-size: 13px; color: #94a3b8;">Code sent via SMS</span>
                             <button id="resendCodeBtn" onclick="resendOTP()" style="display: none; background: none; border: none; color: #22c55e; font-size: 13px; font-weight: 600; cursor: pointer; padding: 4px 8px; margin-left: 4px;">Resend</button>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cloud Sync Panel -->
+            <div id="cloudSyncOverlay" class="share-menu-overlay" style="display: none;" onclick="if(event.target === this) closeCloudSyncPanel();">
+                <div class="share-menu" style="max-width: 340px;">
+                    <div style="padding: 24px 20px 20px; text-align: center;">
+                        <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; box-shadow: 0 4px 12px rgba(34,197,94,0.3);">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+                            </svg>
+                        </div>
+                        <div style="font-size: 20px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">Cloud Sync</div>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; color: #22c55e; font-weight: 500;">
+                            <span style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%;"></span>
+                            Connected
+                        </div>
+                    </div>
+                    <div style="padding: 0 20px 20px;">
+                        <div style="background: #f8fafc; border-radius: 12px; overflow: hidden; margin-bottom: 16px;">
+                            <div style="padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0;">
+                                <span style="font-size: 14px; color: #64748b;">Account</span>
+                                <span id="syncAccountPhone" style="font-size: 14px; font-weight: 600; color: #0f172a;">-</span>
+                            </div>
+                            <div style="padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;">
+                                <span style="font-size: 14px; color: #64748b;">Device</span>
+                                <span id="syncDeviceType" style="font-size: 14px; font-weight: 500; color: #0f172a;">-</span>
+                            </div>
+                        </div>
+                        <button onclick="signOutSync()" style="width: 100%; padding: 14px; background: white; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; font-weight: 500; color: #64748b; cursor: pointer; transition: all 0.15s ease;">
+                            Sign Out
+                        </button>
                     </div>
                 </div>
             </div>
@@ -12027,33 +12053,46 @@ Response format (JSON only, no markdown):
             updateSyncDebugInfo();
         }
 
-        // Update debug info display
-        function updateSyncDebugInfo() {
-            const pathEl = document.getElementById('debugSyncPath');
-            const deviceEl = document.getElementById('debugDevice');
-            const listenerEl = document.getElementById('debugListener');
+        // Open Cloud Sync panel
+        function openCloudSyncPanel() {
+            const overlay = document.getElementById('cloudSyncOverlay');
+            if (!overlay) return;
 
-            if (pathEl) pathEl.textContent = currentUserPhone ? 'users/' + currentUserPhone : 'Not set';
-            if (deviceEl) deviceEl.textContent = isIPhone() ? 'iPhone' : isIPad() ? 'iPad' : 'Desktop/Other';
-            if (listenerEl) listenerEl.textContent = realtimeListener ? 'Active' : 'Not active';
-        }
+            // Update panel info
+            const phoneEl = document.getElementById('syncAccountPhone');
+            const deviceEl = document.getElementById('syncDeviceType');
 
-        // Toggle debug info visibility (tap on sync badge)
-        function toggleSyncDebug() {
-            const debugInfo = document.getElementById('syncDebugInfo');
-            if (debugInfo) {
-                debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
-                updateSyncDebugInfo();
+            if (phoneEl) {
+                // Format phone: 61433975055 → 0433975055
+                const displayPhone = currentUserPhone ? '0' + currentUserPhone.slice(2) : '-';
+                phoneEl.textContent = displayPhone;
             }
-        }
-
-        // Reset sync and allow re-authentication
-        async function resetSyncAndReauth() {
-            if (!confirm('This will disconnect sync from the current phone number. You will need to re-verify with your phone. Continue?')) {
-                return;
+            if (deviceEl) {
+                deviceEl.textContent = isIPhone() ? 'iPhone' : isIPad() ? 'iPad' : 'Desktop';
             }
 
-            console.log('[Sync] Resetting sync...');
+            // Show panel with animation
+            overlay.style.display = 'flex';
+            overlay.offsetHeight; // Trigger reflow
+            overlay.classList.add('show');
+            document.body.classList.add('modal-open');
+        }
+
+        // Close Cloud Sync panel
+        function closeCloudSyncPanel() {
+            const overlay = document.getElementById('cloudSyncOverlay');
+            if (!overlay) return;
+
+            overlay.classList.remove('show');
+            document.body.classList.remove('modal-open');
+            setTimeout(() => { overlay.style.display = 'none'; }, 300);
+        }
+
+        // Sign out from sync
+        async function signOutSync() {
+            closeCloudSyncPanel();
+
+            console.log('[Sync] Signing out...');
 
             // Stop real-time listener
             stopRealtimeSync();
@@ -12063,7 +12102,7 @@ Response format (JSON only, no markdown):
                 await auth.signOut();
                 console.log('[Sync] Signed out from Firebase');
             } catch (e) {
-                console.log('[Sync] Sign out error (may already be signed out):', e);
+                console.log('[Sync] Sign out error:', e);
             }
 
             // Clear localStorage sync data
@@ -12081,15 +12120,15 @@ Response format (JSON only, no markdown):
             const syncBadge = document.getElementById('syncStatusBadge');
             if (syncBadge) syncBadge.style.display = 'none';
 
-            const debugInfo = document.getElementById('syncDebugInfo');
-            if (debugInfo) debugInfo.style.display = 'none';
-
             // Clear any phone mismatch warning
             hidePhoneMismatchWarning();
 
             updateSyncUI();
-            updateSyncDebugInfo();
-            // No toast needed - the UI already shows the verify section
+        }
+
+        // Legacy function for compatibility
+        function updateSyncDebugInfo() {
+            // No longer needed - handled by openCloudSyncPanel
         }
 
         // Start real-time sync listener
