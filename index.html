@@ -10792,7 +10792,7 @@ Response format (JSON only, no markdown):
 
         // Generate share message with rotating variations
         // customer can be a string (name only) or object {name, phone, businessName}
-        function generateShareMessage(customer = null, includeOrderLink = true) {
+        function generateShareMessage(customer = null, includeOrderLink = false) {
             const effectiveDate = getEffectiveDate();
             const formattedDate = effectiveDate.toLocaleDateString('en-AU', {
                 weekday: 'long',
