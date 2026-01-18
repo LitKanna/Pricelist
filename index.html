@@ -3825,7 +3825,17 @@
         let lastGeneratedImageUrl = null;
 
         // Session flag: image already saved to Photos (skip re-saving)
-        let imageSavedThisSession = false;
+        // Persisted in sessionStorage to survive shortcut returns
+        let imageSavedThisSession = sessionStorage.getItem('everfresh_imageSaved') === 'true';
+
+        function setImageSavedThisSession(value) {
+            imageSavedThisSession = value;
+            if (value) {
+                sessionStorage.setItem('everfresh_imageSaved', 'true');
+            } else {
+                sessionStorage.removeItem('everfresh_imageSaved');
+            }
+        }
 
         // Get effective date based on settings - uses Sydney timezone
         function getEffectiveDate() {
@@ -4443,7 +4453,7 @@
                 showToast(selectedCustomer.name + ' pricing applied');
             }
 
-            imageSavedThisSession = false;
+            setImageSavedThisSession(false);
             renderCustomerTiersList();
             renderCategories();
 
@@ -7320,7 +7330,7 @@
             }
 
             // Reset image cache so new image is generated with new prices
-            imageSavedThisSession = false;
+            setImageSavedThisSession(false);
 
             renderCustomerTiersList();
             renderCategories();
@@ -8477,7 +8487,7 @@
             // Handle margin select change
             container.addEventListener('change', function(e) {
                 // Reset image saved flag when any data changes
-                imageSavedThisSession = false;
+                setImageSavedThisSession(false);
 
                 if (e.target.classList.contains('margin-select')) {
                     const encodedCat = e.target.dataset.categoryEncoded;
@@ -8503,7 +8513,7 @@
             // Also reset on input event for immediate typing feedback + auto-save
             container.addEventListener('input', function(e) {
                 if (e.target.tagName === 'INPUT') {
-                    imageSavedThisSession = false;
+                    setImageSavedThisSession(false);
 
                     // Auto-save with debounce (shorter on iOS since keyboard dismissal is common)
                     const debounceTime = isIOS() ? 800 : 1500;
@@ -11159,7 +11169,7 @@ Response format (JSON only, no markdown):
 
                     if (navigator.canShare({ files: [file] })) {
                         await navigator.share({ files: [file] });
-                        imageSavedThisSession = true;
+                        setImageSavedThisSession(true);
                         updatePrepareSection();
                         showToast('Image saved! Ready to send.');
                         return;
@@ -11168,7 +11178,7 @@ Response format (JSON only, no markdown):
 
                 // Fallback: direct download
                 downloadBlob(blob);
-                imageSavedThisSession = true;
+                setImageSavedThisSession(true);
                 updatePrepareSection();
                 showToast('Image downloaded! Ready to send.');
 
@@ -11378,6 +11388,8 @@ Response format (JSON only, no markdown):
                 // Use x-callback-url to return to Chrome after shortcut completes
                 const returnUrl = encodeURIComponent(window.location.href);
                 const shortcutUrl = `shortcuts://x-callback-url/run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}&x-success=${returnUrl}&x-cancel=${returnUrl}`;
+                // Mark that we're in sending mode so popup reopens on return
+                sessionStorage.setItem('everfresh_sendingMode', 'true');
                 window.location.href = shortcutUrl;
                 return;
             }
@@ -11455,7 +11467,7 @@ Response format (JSON only, no markdown):
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
                             await navigator.share({ files: [file] });
-                            imageSavedThisSession = true;
+                            setImageSavedThisSession(true);
                         } catch (shareError) {
                             if (shareError.name === 'AbortError') {
                                 progressDiv.style.display = 'none';
@@ -11565,7 +11577,7 @@ Response format (JSON only, no markdown):
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
                             await navigator.share({ files: [file] });
-                            imageSavedThisSession = true;
+                            setImageSavedThisSession(true);
                         } catch (shareError) {
                             if (shareError.name === 'AbortError') {
                                 progressDiv.style.display = 'none';
@@ -13260,6 +13272,17 @@ Response format (JSON only, no markdown):
         setupGlobalEventDelegation();
         checkExistingSync();
         updateHeaderDate();
+
+        // Auto-reopen customer menu if returning from shortcut
+        if (sessionStorage.getItem('everfresh_sendingMode') === 'true') {
+            sessionStorage.removeItem('everfresh_sendingMode');
+            // Small delay to let page render first
+            setTimeout(() => {
+                if (imageSavedThisSession && customerContacts.length > 0) {
+                    showCustomerShareMenu();
+                }
+            }, 300);
+        }
     </script>
 </body>
 </html>
