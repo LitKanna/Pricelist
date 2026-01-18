@@ -13276,12 +13276,15 @@ Response format (JSON only, no markdown):
         // Auto-reopen customer menu if returning from shortcut
         if (sessionStorage.getItem('everfresh_sendingMode') === 'true') {
             sessionStorage.removeItem('everfresh_sendingMode');
-            // Small delay to let page render first
+            // Force open the popup directly (bypass validation)
             setTimeout(() => {
-                if (imageSavedThisSession && customerContacts.length > 0) {
-                    showCustomerShareMenu();
-                }
-            }, 300);
+                currentDayFilter = 'all';
+                renderCustomerShareList('all');
+                updatePrepareSection();
+                document.getElementById('modalBackdrop').classList.add('show');
+                document.getElementById('customerShareMenu').classList.add('show');
+                document.body.classList.add('modal-open');
+            }, 100);
         }
     </script>
 </body>
