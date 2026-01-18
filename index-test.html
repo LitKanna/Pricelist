@@ -3825,15 +3825,15 @@
         let lastGeneratedImageUrl = null;
 
         // Session flag: image already saved to Photos (skip re-saving)
-        // Persisted in sessionStorage to survive shortcut returns
-        let imageSavedThisSession = sessionStorage.getItem('everfresh_imageSaved') === 'true';
+        // Persisted in localStorage to survive app switches on iOS
+        let imageSavedThisSession = localStorage.getItem('everfresh_imageSaved') === 'true';
 
         function setImageSavedThisSession(value) {
             imageSavedThisSession = value;
             if (value) {
-                sessionStorage.setItem('everfresh_imageSaved', 'true');
+                localStorage.setItem('everfresh_imageSaved', 'true');
             } else {
-                sessionStorage.removeItem('everfresh_imageSaved');
+                localStorage.removeItem('everfresh_imageSaved');
             }
         }
 
@@ -11389,7 +11389,7 @@ Response format (JSON only, no markdown):
                 const returnUrl = encodeURIComponent(window.location.href);
                 const shortcutUrl = `shortcuts://x-callback-url/run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}&x-success=${returnUrl}&x-cancel=${returnUrl}`;
                 // Mark that we're in sending mode so popup reopens on return
-                sessionStorage.setItem('everfresh_sendingMode', 'true');
+                localStorage.setItem('everfresh_sendingMode', 'true');
                 window.location.href = shortcutUrl;
                 return;
             }
@@ -13274,8 +13274,8 @@ Response format (JSON only, no markdown):
         updateHeaderDate();
 
         // Auto-reopen customer menu if returning from shortcut
-        if (sessionStorage.getItem('everfresh_sendingMode') === 'true') {
-            sessionStorage.removeItem('everfresh_sendingMode');
+        if (localStorage.getItem('everfresh_sendingMode') === 'true') {
+            localStorage.removeItem('everfresh_sendingMode');
             // Force open the popup directly (bypass validation)
             setTimeout(() => {
                 currentDayFilter = 'all';
