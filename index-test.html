@@ -2941,27 +2941,30 @@
                 </span>
                 <span>Send</span>
             </button>
-            <button onclick="openBookingsPanel()" class="new-order-btn" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);">
-                <span class="order-icon-wrap" style="background: #1e40af;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        </div>
+
+        <!-- Team Section -->
+        <div class="share-controls" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 10px 20px; gap: 8px;">
+            <span style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; padding-right: 8px;">Team</span>
+            <button onclick="openBookingsPanel()" class="new-order-btn" style="background: white; border: 1px solid #dbeafe; padding: 8px 14px;">
+                <span class="order-icon-wrap" style="background: #1e40af; width: 28px; height: 28px;">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                         <polyline points="14 2 14 8 20 8"/>
-                        <line x1="16" y1="13" x2="8" y2="13"/>
-                        <line x1="16" y1="17" x2="8" y2="17"/>
                     </svg>
                 </span>
-                <span style="color: #1e40af;">Bookings</span>
+                <span style="color: #1e40af; font-size: 13px;">Bookings</span>
                 <span class="preorder-badge" id="bookingsBadge" style="display: none; background: #1e40af;"></span>
             </button>
-            <button onclick="openPackingPanel()" class="new-order-btn" style="background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);">
-                <span class="order-icon-wrap" style="background: #c2410c;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <button onclick="openPackingPanel()" class="new-order-btn" style="background: white; border: 1px solid #fed7aa; padding: 8px 14px;">
+                <span class="order-icon-wrap" style="background: #c2410c; width: 28px; height: 28px;">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2">
                         <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                         <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
                         <line x1="12" y1="22.08" x2="12" y2="12"/>
                     </svg>
                 </span>
-                <span style="color: #c2410c;">Packing</span>
+                <span style="color: #c2410c; font-size: 13px;">Packing</span>
                 <span class="preorder-badge" id="packingBadge" style="display: none; background: #c2410c;"></span>
             </button>
         </div>
@@ -5672,6 +5675,9 @@
             const customerName = (data.customerDisplay || 'customer').toUpperCase();
             const sender = data.senderName || 'Team';
 
+            // Push order to Bookings/Packing tab based on mode
+            await pushOrderToTeamTab(mode, customerName);
+
             // Rotating message variations with rotating emojis
             const bookingMessages = [
                 `Hey ${memberName} 👋 New order from ${customerName}! Please book it when you can. Thanks! - ${sender}`,
@@ -5749,6 +5755,50 @@
                 setTimeout(() => URL.revokeObjectURL(url), 100);
             } catch (err) {
                 console.error('sendToTeamMember error:', err);
+            }
+        }
+
+        // Push order to Bookings or Packing tab when salesman sends to team
+        async function pushOrderToTeamTab(mode, customerDisplay) {
+            const isBookingMode = mode === 'booking' || mode === 'addon-booking';
+            const isPackingMode = mode === 'packer' || mode === 'addon-packer';
+
+            // Build order data from current order
+            const items = currentOrderItems.map(item => ({
+                name: item.name,
+                description: item.description || '',
+                quantity: item.quantity,
+                price: '$' + (item.price || 0).toFixed(0)
+            }));
+
+            const total = currentOrderItems.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
+
+            const notes = document.getElementById('orderNotes')?.value || '';
+            const isAddon = mode.startsWith('addon') || /add[\s-]?on/i.test(notes);
+
+            const teamOrder = {
+                customerName: orderCustomerName || 'Walk-in',
+                customerBusiness: customerDisplay || orderCustomerName || 'Walk-in',
+                customerPhone: selectedCustomer?.phone || '',
+                items: items,
+                totalAmount: total,
+                specialRequests: notes,
+                orderType: isAddon ? 'addon' : 'new',
+                status: 'pending',
+                acceptedAt: Date.now(),
+                acceptedAtFormatted: new Date().toLocaleString('en-AU'),
+                sentBy: salesmanInfo.name || 'Salesman'
+            };
+
+            // Push to appropriate Firebase queue
+            try {
+                if (isBookingMode) {
+                    await database.ref('bookingOrders').push(teamOrder);
+                } else if (isPackingMode) {
+                    await database.ref('packingOrders').push(teamOrder);
+                }
+            } catch (err) {
+                console.error('Error pushing to team tab:', err);
             }
         }
 
@@ -13411,6 +13461,34 @@ Response format (JSON only, no markdown):
             const memberName = member.name.split(' ')[0];
             const customerName = (data.customerDisplay || 'customer').toUpperCase();
             const sender = data.senderName || 'Team';
+            const order = data.order;
+
+            // Push preorder to appropriate Firebase queue (Bookings or Packing)
+            if (order) {
+                const teamOrder = {
+                    customerName: order.customerName,
+                    customerBusiness: order.customerBusiness || order.customerName,
+                    customerPhone: order.customerPhone,
+                    items: order.items,
+                    totalAmount: order.totalAmount,
+                    specialRequests: order.specialRequests || '',
+                    orderType: 'preorder',
+                    status: 'pending',
+                    acceptedAt: Date.now(),
+                    acceptedAtFormatted: new Date().toLocaleString('en-AU'),
+                    sentBy: salesmanInfo.name || 'Salesman'
+                };
+
+                try {
+                    if (mode === 'booking') {
+                        await database.ref('bookingOrders').push(teamOrder);
+                    } else {
+                        await database.ref('packingOrders').push(teamOrder);
+                    }
+                } catch (err) {
+                    console.error('Error pushing preorder to team tab:', err);
+                }
+            }
 
             const bookingMessages = [
                 `Hey ${memberName} 👋 Pre-order from ${customerName}! Please book it. Thanks! - ${sender}`,
@@ -13434,7 +13512,6 @@ Response format (JSON only, no markdown):
 
             // Non-iOS: Generate and share
             try {
-                const order = data.order;
                 const blob = await generatePreorderImage(order, mode);
 
                 if (!blob) throw new Error('Failed to generate image');
