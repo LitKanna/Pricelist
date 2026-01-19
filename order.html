@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Order - Everfresh</title>
@@ -29,6 +29,27 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        html {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Hide scrollbar */
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        html, body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Prevent pinch zoom */
+        html {
+            touch-action: pan-x pan-y;
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #f2f2f7;
@@ -36,6 +57,7 @@
             line-height: 1.5;
             min-height: 100vh;
             padding-bottom: 100px;
+            overscroll-behavior: none;
         }
 
         /* Compact Header */
