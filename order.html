@@ -172,6 +172,7 @@
         .input-group {
             display: flex;
             flex-direction: column;
+            min-width: 0;
         }
 
         .input-group.full {
@@ -186,13 +187,22 @@
         }
 
         .input-group input {
-            padding: 12px;
+            width: 100%;
+            padding: 12px 14px;
             border: 1px solid #e2e8f0;
             border-radius: 10px;
-            font-size: 15px;
+            font-size: 16px;
             font-family: inherit;
             background: #f8fafc;
             transition: all 0.2s;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            color: #0f172a;
+        }
+
+        .input-group input::placeholder {
+            color: #94a3b8;
         }
 
         .input-group input:focus {
