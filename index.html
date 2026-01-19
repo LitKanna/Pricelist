@@ -10802,7 +10802,7 @@ Response format (JSON only, no markdown):
 
         // Generate share message with rotating variations
         // customer can be a string (name only) or object {name, phone, businessName}
-        function generateShareMessage(customer = null, includeOrderLink = false) {
+        function generateShareMessage(customer = null, includeOrderLink = true) {
             const effectiveDate = getEffectiveDate();
             const formattedDate = effectiveDate.toLocaleDateString('en-AU', {
                 weekday: 'long',
@@ -12705,10 +12705,15 @@ Response format (JSON only, no markdown):
             collectData();
 
             const effectiveDate = getEffectiveDate();
+            const formattedDate = effectiveDate.toLocaleDateString('en-AU', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long'
+            });
 
             const publishData = {
                 products: priceData,
-                effectiveDate: effectiveDate,
+                effectiveDate: formattedDate,
                 publishedAt: Date.now(),
                 publishedBy: salesmanInfo.name || 'Everfresh'
             };
