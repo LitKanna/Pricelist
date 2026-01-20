@@ -6318,10 +6318,19 @@
         }
 
         function openInvoiceManagement() {
-            alert('Invoice function called!'); // DEBUG
-            migrateOrdersForInvoice();
-            renderInvoiceList();
-            document.getElementById('invoiceManagementPanel').classList.add('show');
+            try {
+                migrateOrdersForInvoice();
+                renderInvoiceList();
+                const panel = document.getElementById('invoiceManagementPanel');
+                if (panel) {
+                    panel.classList.add('show');
+                    alert('Panel show class added! Panel exists.');
+                } else {
+                    alert('ERROR: Panel not found!');
+                }
+            } catch(e) {
+                alert('ERROR: ' + e.message);
+            }
         }
 
         function closeInvoiceManagement() {
