@@ -656,13 +656,27 @@
             container.innerHTML = '';
 
             for (const [category, products] of Object.entries(priceData)) {
-                const selectedCount = products.filter((_, i) => quantities[category + '_' + i] > 0).length;
+                // Filter out unavailable items ($0, N/A, empty, or no price)
+                const availableProducts = products.map((product, index) => ({ product, index }))
+                    .filter(({ product }) => {
+                        const price = product[2];
+                        if (!price) return false;
+                        const priceNum = parseFloat(price.replace('$', ''));
+                        if (isNaN(priceNum) || priceNum <= 0) return false;
+                        if (price.toLowerCase() === 'n/a' || price.toLowerCase() === 'na') return false;
+                        return true;
+                    });
+
+                // Skip category if no available products
+                if (availableProducts.length === 0) continue;
+
+                const selectedCount = availableProducts.filter(({ index }) => quantities[category + '_' + index] > 0).length;
 
                 const catDiv = document.createElement('div');
                 catDiv.className = 'category';
 
                 let productsHtml = '';
-                products.forEach((product, index) => {
+                availableProducts.forEach(({ product, index }) => {
                     const [name, desc, price] = product;
                     const productId = category + '_' + index;
                     const qty = quantities[productId] || 0;
