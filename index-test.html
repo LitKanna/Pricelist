@@ -13189,7 +13189,7 @@ Response format (JSON only, no markdown):
 
             const menuDiv = document.createElement('div');
             menuDiv.className = 'share-menu';
-            menuDiv.style.cssText = 'max-width: 440px; border-radius: 24px 24px 0 0; overflow: hidden;';
+            menuDiv.style.cssText = 'max-width: 440px; border-radius: 24px 24px 0 0; max-height: 85vh; display: flex; flex-direction: column;';
 
             menuDiv.innerHTML = `
                 <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 20px 24px;">
@@ -13226,7 +13226,7 @@ Response format (JSON only, no markdown):
                         </button>
                     </div>
                 </div>
-                <div style="padding: 20px; background: white;">
+                <div style="padding: 20px; background: white; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;">
                     <div style="margin-bottom: 16px;">
                         <div style="font-weight: 600; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Order Items</div>
                         ${itemsHtml}
