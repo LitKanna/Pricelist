@@ -13155,27 +13155,22 @@ Response format (JSON only, no markdown):
             }
         }
 
-        // View incoming order details - Beautiful redesign
+        // View incoming order details - Editable with swipe-to-delete
+        let editableOrderItems = [];
+        let currentEditOrderId = null;
+
         function viewIncomingOrder(orderId) {
             const order = incomingOrders.find(o => o.id === orderId);
             if (!order) return;
 
-            let itemsHtml = '';
-            if (order.items) {
-                order.items.forEach(item => {
-                    itemsHtml += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; color: #0f172a; font-size: 14px;">${item.name}</div>
-                                ${item.description ? `<div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">${item.description}</div>` : ''}
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 16px;">
-                                <span style="background: #f1f5f9; padding: 4px 10px; border-radius: 20px; font-size: 13px; color: #64748b; font-weight: 500;">×${item.quantity}</span>
-                                <span style="font-weight: 700; color: #15803d; font-size: 14px; min-width: 50px; text-align: right;">${item.price}</span>
-                            </div>
-                        </div>`;
-                });
-            }
+            // Store editable copy of items
+            currentEditOrderId = orderId;
+            editableOrderItems = order.items ? order.items.map((item, idx) => ({
+                ...item,
+                id: idx,
+                quantity: parseFloat(item.quantity) || 1,
+                priceNum: parseFloat(item.price.replace('$', '')) || 0
+            })) : [];
 
             const date = new Date(order.createdAt);
             const formattedDate = date.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -13228,13 +13223,16 @@ Response format (JSON only, no markdown):
                 </div>
                 <div style="padding: 20px; background: white; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;">
                     <div style="margin-bottom: 16px;">
-                        <div style="font-weight: 600; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Order Items</div>
-                        ${itemsHtml}
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div style="font-weight: 600; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Order Items</div>
+                            <div style="font-size: 11px; color: #94a3b8;">Swipe left to delete</div>
+                        </div>
+                        <div id="editableItemsList"></div>
                     </div>
 
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 12px; margin-bottom: 16px;">
+                    <div id="orderTotalDisplay" style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 12px; margin-bottom: 16px;">
                         <span style="font-weight: 600; color: #166534; font-size: 16px;">Total Amount</span>
-                        <span style="font-weight: 800; color: #15803d; font-size: 24px;">$${(order.totalAmount || 0).toFixed(0)}</span>
+                        <span id="editableTotalAmount" style="font-weight: 800; color: #15803d; font-size: 24px;">$${(order.totalAmount || 0).toFixed(0)}</span>
                     </div>
 
                     ${order.specialRequests ? `
@@ -13249,18 +13247,19 @@ Response format (JSON only, no markdown):
                         </div>` : ''}
 
                     <div style="display: flex; gap: 10px;">
-                        <button onclick="sendPreorderToTeam('${order.id}'); document.body.style.overflow=''; this.closest('.share-menu-overlay').remove();" style="flex: 1; padding: 14px; background: #0f172a; border: none; border-radius: 12px; font-weight: 600; font-size: 14px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <button onclick="declineIncomingOrder('${order.id}')" style="flex: 1; padding: 14px; background: #fef2f2; border: 2px solid #fecaca; border-radius: 12px; font-weight: 600; font-size: 14px; color: #dc2626; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M22 2L11 13"/>
-                                <path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/>
+                                <line x1="9" y1="9" x2="15" y2="15"/>
                             </svg>
-                            Send to Team
+                            Decline
                         </button>
-                        <button onclick="acceptIncomingOrder('${order.id}'); document.body.style.overflow=''; this.closest('.share-menu-overlay').remove();" style="flex: 1; padding: 14px; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); border: none; border-radius: 12px; font-weight: 600; font-size: 14px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <button onclick="acceptEditedOrder('${order.id}')" style="flex: 1; padding: 14px; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); border: none; border-radius: 12px; font-weight: 600; font-size: 14px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="20 6 9 17 4 12"/>
                             </svg>
-                            Accept Order
+                            Accept
                         </button>
                     </div>
                 </div>`;
@@ -13268,7 +13267,252 @@ Response format (JSON only, no markdown):
             detailModal.appendChild(menuDiv);
             document.body.appendChild(detailModal);
             document.body.style.overflow = 'hidden';
-            requestAnimationFrame(() => detailModal.classList.add('show'));
+            requestAnimationFrame(() => {
+                detailModal.classList.add('show');
+                renderEditableItems();
+            });
+        }
+
+        // Render editable items with swipe-to-delete
+        function renderEditableItems() {
+            const container = document.getElementById('editableItemsList');
+            if (!container) return;
+
+            if (editableOrderItems.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 32px; color: #94a3b8;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 12px; opacity: 0.5;">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                        <div style="font-size: 14px;">No items in order</div>
+                    </div>`;
+                updateEditableTotal();
+                return;
+            }
+
+            container.innerHTML = editableOrderItems.map((item, idx) => `
+                <div class="swipe-item" data-item-id="${item.id}" style="position: relative; overflow: hidden; margin-bottom: 8px; border-radius: 12px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+                    <div class="swipe-delete-bg" style="position: absolute; right: 0; top: 0; bottom: 0; width: 80px; background: #ef4444; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 13px;">
+                        Delete
+                    </div>
+                    <div class="swipe-content" style="position: relative; background: white; padding: 12px; display: flex; align-items: center; gap: 12px; transition: transform 0.2s ease; z-index: 1;">
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-weight: 600; color: #0f172a; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</div>
+                            ${item.description ? `<div style="font-size: 11px; color: #94a3b8; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.description}</div>` : ''}
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                            <div style="display: flex; align-items: center; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                <button onclick="adjustItemQty(${item.id}, -1)" style="width: 28px; height: 28px; border: none; background: none; cursor: pointer; color: #64748b; font-size: 16px; font-weight: bold;">−</button>
+                                <input type="number" value="${item.quantity}" onchange="updateItemQty(${item.id}, this.value)" style="width: 36px; border: none; background: none; text-align: center; font-size: 13px; font-weight: 600; color: #0f172a; -moz-appearance: textfield;" min="0.5" step="0.5">
+                                <button onclick="adjustItemQty(${item.id}, 1)" style="width: 28px; height: 28px; border: none; background: none; cursor: pointer; color: #64748b; font-size: 16px; font-weight: bold;">+</button>
+                            </div>
+                            <div style="display: flex; align-items: center; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0; padding: 0 4px;">
+                                <span style="color: #15803d; font-size: 13px; font-weight: 600;">$</span>
+                                <input type="number" value="${item.priceNum.toFixed(2)}" onchange="updateItemPrice(${item.id}, this.value)" style="width: 50px; border: none; background: none; text-align: center; font-size: 13px; font-weight: 700; color: #15803d; -moz-appearance: textfield;" min="0" step="0.5">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Setup swipe handlers
+            container.querySelectorAll('.swipe-item').forEach(item => {
+                setupSwipeToDelete(item);
+            });
+
+            updateEditableTotal();
+        }
+
+        // Setup swipe to delete touch handling
+        function setupSwipeToDelete(element) {
+            const content = element.querySelector('.swipe-content');
+            let startX = 0;
+            let currentX = 0;
+            let isDragging = false;
+
+            const handleStart = (e) => {
+                const touch = e.touches ? e.touches[0] : e;
+                startX = touch.clientX;
+                currentX = 0;
+                isDragging = true;
+                content.style.transition = 'none';
+            };
+
+            const handleMove = (e) => {
+                if (!isDragging) return;
+                const touch = e.touches ? e.touches[0] : e;
+                currentX = touch.clientX - startX;
+
+                // Only allow left swipe
+                if (currentX < 0) {
+                    const translateX = Math.max(currentX, -80);
+                    content.style.transform = `translateX(${translateX}px)`;
+                }
+            };
+
+            const handleEnd = () => {
+                if (!isDragging) return;
+                isDragging = false;
+                content.style.transition = 'transform 0.2s ease';
+
+                if (currentX < -50) {
+                    // Swipe far enough - delete
+                    content.style.transform = 'translateX(-100%)';
+                    setTimeout(() => {
+                        const itemId = parseInt(element.dataset.itemId);
+                        deleteEditableItem(itemId);
+                    }, 200);
+                } else {
+                    // Snap back
+                    content.style.transform = 'translateX(0)';
+                }
+            };
+
+            // Touch events
+            content.addEventListener('touchstart', handleStart, { passive: true });
+            content.addEventListener('touchmove', handleMove, { passive: true });
+            content.addEventListener('touchend', handleEnd);
+
+            // Mouse events for desktop testing
+            content.addEventListener('mousedown', handleStart);
+            content.addEventListener('mousemove', handleMove);
+            content.addEventListener('mouseup', handleEnd);
+            content.addEventListener('mouseleave', handleEnd);
+        }
+
+        // Adjust item quantity with +/- buttons
+        function adjustItemQty(itemId, delta) {
+            const item = editableOrderItems.find(i => i.id === itemId);
+            if (!item) return;
+
+            item.quantity = Math.max(0.5, item.quantity + delta);
+            renderEditableItems();
+        }
+
+        // Update item quantity from input
+        function updateItemQty(itemId, value) {
+            const item = editableOrderItems.find(i => i.id === itemId);
+            if (!item) return;
+
+            const qty = parseFloat(value) || 0.5;
+            item.quantity = Math.max(0.5, qty);
+            updateEditableTotal();
+        }
+
+        // Update item price from input
+        function updateItemPrice(itemId, value) {
+            const item = editableOrderItems.find(i => i.id === itemId);
+            if (!item) return;
+
+            item.priceNum = parseFloat(value) || 0;
+            item.price = '$' + item.priceNum.toFixed(2);
+            updateEditableTotal();
+        }
+
+        // Delete editable item
+        function deleteEditableItem(itemId) {
+            editableOrderItems = editableOrderItems.filter(i => i.id !== itemId);
+            renderEditableItems();
+        }
+
+        // Update total display
+        function updateEditableTotal() {
+            const total = editableOrderItems.reduce((sum, item) => sum + (item.quantity * item.priceNum), 0);
+            const totalEl = document.getElementById('editableTotalAmount');
+            if (totalEl) {
+                totalEl.textContent = '$' + total.toFixed(0);
+            }
+        }
+
+        // Decline incoming order
+        async function declineIncomingOrder(orderId) {
+            if (!confirm('Decline this order? The customer will need to be notified.')) return;
+
+            try {
+                await database.ref('incomingOrders/' + orderId + '/status').set('declined');
+                showToast('Order declined');
+                document.body.style.overflow = '';
+                const modal = document.getElementById('orderDetailModal');
+                if (modal) modal.remove();
+                closeIncomingOrders();
+            } catch (err) {
+                showToast('Error declining order');
+            }
+        }
+
+        // Accept order with edited items
+        async function acceptEditedOrder(orderId) {
+            if (editableOrderItems.length === 0) {
+                showToast('No items to accept');
+                return;
+            }
+
+            const order = incomingOrders.find(o => o.id === orderId);
+            if (!order) return;
+
+            // Calculate new total
+            const newTotal = editableOrderItems.reduce((sum, item) => sum + (item.quantity * item.priceNum), 0);
+
+            // Prepare items for saving
+            const finalItems = editableOrderItems.map(item => ({
+                name: item.name,
+                description: item.description || '',
+                quantity: item.quantity,
+                price: '$' + item.priceNum.toFixed(2)
+            }));
+
+            // Create order in local orders
+            const newOrder = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString('en-AU'),
+                timestamp: Date.now(),
+                customerName: order.customerName,
+                businessName: order.customerBusiness || order.customerName,
+                phone: order.customerPhone,
+                items: finalItems.map(item => ({
+                    name: item.name,
+                    description: item.description,
+                    quantity: item.quantity,
+                    price: parseFloat(item.price.replace('$', '')) || 0
+                })),
+                grandTotal: newTotal,
+                status: 'pending',
+                notes: order.specialRequests || ''
+            };
+
+            orders.push(newOrder);
+            saveOrdersToLocal();
+
+            // Create booking/packing order data with edited items
+            const teamOrder = {
+                originalOrderId: orderId,
+                customerName: order.customerName,
+                customerBusiness: order.customerBusiness || order.customerName,
+                customerPhone: order.customerPhone,
+                items: finalItems,
+                totalAmount: newTotal,
+                specialRequests: order.specialRequests || '',
+                status: 'pending',
+                acceptedAt: Date.now(),
+                acceptedAtFormatted: new Date().toLocaleString('en-AU')
+            };
+
+            // Push to both bookings and packing queues in Firebase
+            await Promise.all([
+                database.ref('bookingOrders').push(teamOrder),
+                database.ref('packingOrders').push(teamOrder),
+                database.ref('incomingOrders/' + orderId + '/status').set('accepted')
+            ]);
+
+            showToast('Order accepted & sent to teams!');
+            document.body.style.overflow = '';
+            const modal = document.getElementById('orderDetailModal');
+            if (modal) modal.remove();
+            closeIncomingOrders();
+
+            // Update badges
+            updateBookingsBadge();
+            updatePackingBadge();
         }
 
         // Send pre-order to team for booking and packing - matches New Order tab style
