@@ -13355,7 +13355,7 @@ Response format (JSON only, no markdown):
             updateEditableTotal();
         }
 
-        // Setup swipe to delete touch handling
+        // Setup swipe to delete touch handling - iOS style smooth
         function setupSwipeToDelete(element) {
             const content = element.querySelector('.swipe-content');
             let startX = 0;
@@ -13363,10 +13363,10 @@ Response format (JSON only, no markdown):
             let currentX = 0;
             let isSwiping = false;
             let swipeStarted = false;
-            const SWIPE_THRESHOLD = 20; // Min horizontal movement to start swipe
+            let directionLocked = false;
+            const SWIPE_THRESHOLD = 15;
 
             const handleStart = (e) => {
-                // Don't start swipe on buttons or inputs
                 if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
 
                 const touch = e.touches ? e.touches[0] : e;
@@ -13375,6 +13375,7 @@ Response format (JSON only, no markdown):
                 currentX = 0;
                 isSwiping = true;
                 swipeStarted = false;
+                directionLocked = false;
             };
 
             const handleMove = (e) => {
@@ -13384,21 +13385,28 @@ Response format (JSON only, no markdown):
                 const deltaX = touch.clientX - startX;
                 const deltaY = touch.clientY - startY;
 
-                // If vertical movement is greater, don't swipe (user is scrolling)
-                if (!swipeStarted && Math.abs(deltaY) > Math.abs(deltaX)) {
-                    isSwiping = false;
-                    return;
+                // Lock direction on first significant movement
+                if (!directionLocked && (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8)) {
+                    directionLocked = true;
+                    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                        // Vertical - let scroll happen
+                        isSwiping = false;
+                        return;
+                    }
                 }
 
-                // Only start visual swipe after threshold
-                if (!swipeStarted && Math.abs(deltaX) > SWIPE_THRESHOLD) {
+                // Start swipe after threshold
+                if (!swipeStarted && Math.abs(deltaX) > SWIPE_THRESHOLD && deltaX < 0) {
                     swipeStarted = true;
                     content.style.transition = 'none';
                 }
 
-                if (swipeStarted && deltaX < 0) {
+                if (swipeStarted) {
+                    // Prevent scroll during horizontal swipe
+                    if (e.cancelable) e.preventDefault();
+
                     currentX = deltaX;
-                    const translateX = Math.max(deltaX, -70);
+                    const translateX = Math.max(deltaX, -80);
                     content.style.transform = `translateX(${translateX}px)`;
                 }
             };
@@ -13406,31 +13414,55 @@ Response format (JSON only, no markdown):
             const handleEnd = () => {
                 if (!isSwiping) return;
                 isSwiping = false;
-                content.style.transition = 'transform 0.2s ease';
 
-                if (swipeStarted && currentX < -45) {
-                    // Swipe far enough - delete
-                    content.style.transform = 'translateX(-100%)';
-                    setTimeout(() => {
-                        const itemId = parseInt(element.dataset.itemId);
-                        deleteEditableItem(itemId);
-                    }, 200);
+                if (swipeStarted && currentX < -50) {
+                    // Swipe far enough - animate delete
+                    animateDelete(element);
                 } else {
-                    // Snap back
+                    // Snap back with spring effect
+                    content.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
                     content.style.transform = 'translateX(0)';
                 }
             };
 
-            // Touch events
+            // Touch events - passive: false for move to allow preventDefault
             content.addEventListener('touchstart', handleStart, { passive: true });
-            content.addEventListener('touchmove', handleMove, { passive: true });
+            content.addEventListener('touchmove', handleMove, { passive: false });
             content.addEventListener('touchend', handleEnd);
 
-            // Mouse events for desktop testing
+            // Mouse events for desktop
             content.addEventListener('mousedown', handleStart);
             content.addEventListener('mousemove', handleMove);
             content.addEventListener('mouseup', handleEnd);
             content.addEventListener('mouseleave', handleEnd);
+        }
+
+        // Smooth iOS-style delete animation
+        function animateDelete(element) {
+            const content = element.querySelector('.swipe-content');
+            const itemId = parseInt(element.dataset.itemId);
+
+            // Get current height
+            const height = element.offsetHeight;
+            element.style.height = height + 'px';
+            element.style.overflow = 'hidden';
+
+            // Slide content out
+            content.style.transition = 'transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            content.style.transform = 'translateX(-100%)';
+
+            // After slide, collapse height smoothly
+            setTimeout(() => {
+                element.style.transition = 'height 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), margin 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.2s ease';
+                element.style.height = '0px';
+                element.style.marginBottom = '0px';
+                element.style.opacity = '0';
+
+                // After collapse, actually delete
+                setTimeout(() => {
+                    deleteEditableItem(itemId);
+                }, 250);
+            }, 200);
         }
 
         // Adjust item quantity with +/- buttons
