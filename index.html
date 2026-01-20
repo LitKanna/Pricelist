@@ -13301,14 +13301,14 @@ Response format (JSON only, no markdown):
                             ${item.description ? `<div style="font-size: 10px; color: #94a3b8; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.description}</div>` : ''}
                         </div>
                         <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-                            <div style="display: flex; align-items: center; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; height: 28px;">
-                                <button onclick="adjustItemQty(${item.id}, -1)" style="width: 24px; height: 28px; border: none; background: none; cursor: pointer; color: #64748b; font-size: 14px; font-weight: bold;">−</button>
-                                <input type="number" value="${item.quantity}" onchange="updateItemQty(${item.id}, this.value)" style="width: 28px; height: 28px; border: none; background: none; text-align: center; font-size: 12px; font-weight: 600; color: #0f172a; -moz-appearance: textfield;" min="0.5" step="0.5">
-                                <button onclick="adjustItemQty(${item.id}, 1)" style="width: 24px; height: 28px; border: none; background: none; cursor: pointer; color: #64748b; font-size: 14px; font-weight: bold;">+</button>
+                            <div style="display: flex; align-items: center; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; height: 36px;">
+                                <button onclick="adjustItemQty(${item.id}, -1)" style="width: 30px; height: 36px; border: none; background: none; cursor: pointer; color: #64748b; font-size: 18px; font-weight: bold; outline: none;">−</button>
+                                <input type="number" value="${item.quantity}" onchange="updateItemQty(${item.id}, this.value)" style="width: 36px; height: 36px; border: none; background: none; text-align: center; font-size: 14px; font-weight: 600; color: #0f172a; -moz-appearance: textfield; -webkit-appearance: none; outline: none;" min="0.5" step="0.5">
+                                <button onclick="adjustItemQty(${item.id}, 1)" style="width: 30px; height: 36px; border: none; background: none; cursor: pointer; color: #64748b; font-size: 18px; font-weight: bold; outline: none;">+</button>
                             </div>
-                            <div style="display: flex; align-items: center; background: #f0fdf4; border-radius: 6px; border: 1px solid #bbf7d0; height: 28px; padding: 0 8px;">
-                                <span style="color: #15803d; font-size: 12px; font-weight: 600;">$</span>
-                                <input type="number" value="${Math.round(item.priceNum)}" onchange="updateItemPrice(${item.id}, this.value)" style="width: 32px; height: 28px; border: none; background: none; text-align: center; font-size: 12px; font-weight: 600; color: #15803d; -moz-appearance: textfield;" min="0" step="1">
+                            <div style="display: flex; align-items: center; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0; height: 36px; padding: 0 10px;">
+                                <span style="color: #15803d; font-size: 14px; font-weight: 600;">$</span>
+                                <input type="number" value="${Math.round(item.priceNum)}" onchange="updateItemPrice(${item.id}, this.value)" style="width: 40px; height: 36px; border: none; background: none; text-align: center; font-size: 14px; font-weight: 600; color: #15803d; -moz-appearance: textfield; -webkit-appearance: none; outline: none;" min="0" step="1">
                             </div>
                         </div>
                     </div>
