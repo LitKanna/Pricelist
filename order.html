@@ -796,11 +796,16 @@
                            now.getDate().toString().padStart(2, '0') + '-' +
                            Math.random().toString(36).substr(2, 4).toUpperCase();
 
+            // Get salesman phone from URL to link order to correct salesman
+            const urlParams = new URLSearchParams(window.location.search);
+            const salesmanPhone = urlParams.get('salesman');
+
             const order = {
                 orderReference: orderRef,
                 customerName: name,
                 customerPhone: phone,
                 customerBusiness: business || null,
+                salesmanPhone: salesmanPhone || null,
                 items,
                 totalAmount: total,
                 specialRequests: notes || null,
