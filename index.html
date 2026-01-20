@@ -13157,20 +13157,49 @@ Response format (JSON only, no markdown):
 
         // View incoming order details - Editable with swipe-to-delete
         let editableOrderItems = [];
+        let deletedOrderItems = []; // Stack for undo
         let currentEditOrderId = null;
+
+        function getOrderEditsKey(orderId) {
+            return 'everfresh_order_edits_' + orderId;
+        }
+
+        function saveOrderEdits() {
+            if (!currentEditOrderId) return;
+            const data = { items: editableOrderItems, deleted: deletedOrderItems };
+            localStorage.setItem(getOrderEditsKey(currentEditOrderId), JSON.stringify(data));
+        }
+
+        function loadOrderEdits(orderId) {
+            const saved = localStorage.getItem(getOrderEditsKey(orderId));
+            return saved ? JSON.parse(saved) : null;
+        }
+
+        function clearOrderEdits(orderId) {
+            localStorage.removeItem(getOrderEditsKey(orderId));
+        }
 
         function viewIncomingOrder(orderId) {
             const order = incomingOrders.find(o => o.id === orderId);
             if (!order) return;
 
-            // Store editable copy of items
             currentEditOrderId = orderId;
-            editableOrderItems = order.items ? order.items.map((item, idx) => ({
-                ...item,
-                id: idx,
-                quantity: parseFloat(item.quantity) || 1,
-                priceNum: parseFloat(item.price.replace('$', '')) || 0
-            })) : [];
+            deletedOrderItems = [];
+
+            // Check for saved edits first
+            const savedEdits = loadOrderEdits(orderId);
+            if (savedEdits) {
+                editableOrderItems = savedEdits.items || [];
+                deletedOrderItems = savedEdits.deleted || [];
+            } else {
+                // Fresh copy from order
+                editableOrderItems = order.items ? order.items.map((item, idx) => ({
+                    ...item,
+                    id: idx,
+                    quantity: parseFloat(item.quantity) || 1,
+                    priceNum: parseFloat(item.price.replace('$', '')) || 0
+                })) : [];
+            }
 
             const date = new Date(order.createdAt);
             const formattedDate = date.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -13225,7 +13254,9 @@ Response format (JSON only, no markdown):
                     <div style="margin-bottom: 16px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                             <div style="font-weight: 600; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Order Items</div>
-                            <div style="font-size: 11px; color: #94a3b8;">Swipe left to delete</div>
+                            <button id="undoDeleteBtn" onclick="undoDeleteItem()" style="display: none; padding: 6px 12px; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 6px; font-size: 12px; font-weight: 600; color: #92400e; cursor: pointer;">
+                                Undo
+                            </button>
                         </div>
                         <div id="editableItemsList"></div>
                     </div>
@@ -13270,6 +13301,7 @@ Response format (JSON only, no markdown):
             requestAnimationFrame(() => {
                 detailModal.classList.add('show');
                 renderEditableItems();
+                updateUndoButton();
             });
         }
 
@@ -13407,6 +13439,7 @@ Response format (JSON only, no markdown):
             if (!item) return;
 
             item.quantity = Math.max(0.5, item.quantity + delta);
+            saveOrderEdits();
             renderEditableItems();
         }
 
@@ -13417,6 +13450,7 @@ Response format (JSON only, no markdown):
 
             const qty = parseFloat(value) || 0.5;
             item.quantity = Math.max(0.5, qty);
+            saveOrderEdits();
             updateEditableTotal();
         }
 
@@ -13427,13 +13461,38 @@ Response format (JSON only, no markdown):
 
             item.priceNum = Math.round(parseFloat(value) || 0);
             item.price = '$' + item.priceNum;
+            saveOrderEdits();
             updateEditableTotal();
         }
 
         // Delete editable item
         function deleteEditableItem(itemId) {
+            const item = editableOrderItems.find(i => i.id === itemId);
+            if (item) {
+                deletedOrderItems.push(item);
+            }
             editableOrderItems = editableOrderItems.filter(i => i.id !== itemId);
+            saveOrderEdits();
             renderEditableItems();
+            updateUndoButton();
+        }
+
+        function undoDeleteItem() {
+            if (deletedOrderItems.length === 0) return;
+            const item = deletedOrderItems.pop();
+            editableOrderItems.push(item);
+            // Sort by original id to maintain order
+            editableOrderItems.sort((a, b) => a.id - b.id);
+            saveOrderEdits();
+            renderEditableItems();
+            updateUndoButton();
+        }
+
+        function updateUndoButton() {
+            const btn = document.getElementById('undoDeleteBtn');
+            if (btn) {
+                btn.style.display = deletedOrderItems.length > 0 ? 'block' : 'none';
+            }
         }
 
         // Update total display
@@ -13451,6 +13510,7 @@ Response format (JSON only, no markdown):
 
             try {
                 await database.ref('incomingOrders/' + orderId + '/status').set('declined');
+                clearOrderEdits(orderId);
                 showToast('Order declined');
                 document.body.style.overflow = '';
                 const modal = document.getElementById('orderDetailModal');
@@ -13525,6 +13585,7 @@ Response format (JSON only, no markdown):
                 database.ref('incomingOrders/' + orderId + '/status').set('accepted')
             ]);
 
+            clearOrderEdits(orderId);
             showToast('Order accepted & sent to teams!');
             document.body.style.overflow = '';
             const modal = document.getElementById('orderDetailModal');
