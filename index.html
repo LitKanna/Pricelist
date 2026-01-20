@@ -6296,7 +6296,12 @@
             let needsSave = false;
             orders.forEach(order => {
                 if (!order.invoiceNumber) {
-                    const date = new Date(order.createdAt);
+                    // Handle missing or invalid dates
+                    let date = new Date(order.createdAt);
+                    if (isNaN(date.getTime())) {
+                        date = new Date(); // Use current date if invalid
+                        order.createdAt = date.toISOString();
+                    }
                     const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
                     const orderTime = date.getTime().toString().slice(-4);
                     order.invoiceNumber = `INV-${dateStr}-${orderTime}`;
@@ -6318,19 +6323,9 @@
         }
 
         function openInvoiceManagement() {
-            try {
-                migrateOrdersForInvoice();
-                renderInvoiceList();
-                const panel = document.getElementById('invoiceManagementPanel');
-                if (panel) {
-                    panel.classList.add('show');
-                    alert('Panel show class added! Panel exists.');
-                } else {
-                    alert('ERROR: Panel not found!');
-                }
-            } catch(e) {
-                alert('ERROR: ' + e.message);
-            }
+            migrateOrdersForInvoice();
+            renderInvoiceList();
+            document.getElementById('invoiceManagementPanel').classList.add('show');
         }
 
         function closeInvoiceManagement() {
