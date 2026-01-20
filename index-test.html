@@ -12923,7 +12923,8 @@ Response format (JSON only, no markdown):
 
         // Get order link URL (optionally with customer info pre-filled)
         function getOrderLinkURL(customer = null) {
-            const baseURL = window.location.href.replace(/\/[^\/]*$/, '');
+            // Use hardcoded base URL for reliability
+            const baseURL = 'https://litkanna.github.io/Pricelist';
             let url = baseURL + '/order.html';
 
             // If customer info provided, add as URL parameters
