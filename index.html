@@ -6318,6 +6318,7 @@
         }
 
         function openInvoiceManagement() {
+            alert('Invoice function called!'); // DEBUG
             migrateOrdersForInvoice();
             renderInvoiceList();
             document.getElementById('invoiceManagementPanel').classList.add('show');
