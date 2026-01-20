@@ -834,9 +834,32 @@
             const phone = params.get('phone');
             const business = params.get('business');
 
-            if (name) document.getElementById('customerName').value = name;
-            if (phone) document.getElementById('customerPhone').value = phone;
-            if (business) document.getElementById('customerBusiness').value = business;
+            const nameInput = document.getElementById('customerName');
+            const phoneInput = document.getElementById('customerPhone');
+            const businessInput = document.getElementById('customerBusiness');
+
+            // Fill and lock fields if provided in URL
+            if (name) {
+                nameInput.value = name;
+                nameInput.readOnly = true;
+                nameInput.style.background = '#f0fdf4';
+                nameInput.style.color = '#166534';
+                nameInput.style.cursor = 'not-allowed';
+            }
+            if (phone) {
+                phoneInput.value = phone;
+                phoneInput.readOnly = true;
+                phoneInput.style.background = '#f0fdf4';
+                phoneInput.style.color = '#166534';
+                phoneInput.style.cursor = 'not-allowed';
+            }
+            if (business) {
+                businessInput.value = business;
+                businessInput.readOnly = true;
+                businessInput.style.background = '#f0fdf4';
+                businessInput.style.color = '#166534';
+                businessInput.style.cursor = 'not-allowed';
+            }
 
             if (name && phone) {
                 document.getElementById('customerCard').classList.add('prefilled');
