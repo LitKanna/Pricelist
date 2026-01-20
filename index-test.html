@@ -13323,11 +13323,8 @@ Response format (JSON only, no markdown):
             }
 
             container.innerHTML = editableOrderItems.map((item, idx) => `
-                <div class="swipe-item" data-item-id="${item.id}" style="position: relative; overflow: hidden; margin-bottom: 6px; border-radius: 10px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
-                    <div class="swipe-delete-bg" style="position: absolute; right: 0; top: 0; bottom: 0; width: 70px; background: #ef4444; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px;">
-                        Delete
-                    </div>
-                    <div class="swipe-content" style="position: relative; background: white; padding: 10px 12px; display: flex; align-items: center; gap: 10px; transition: transform 0.2s ease; z-index: 1;">
+                <div class="swipe-item" data-item-id="${item.id}" style="margin-bottom: 6px; border-radius: 10px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transform-origin: center center;">
+                    <div class="swipe-content" style="background: white; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
                         <div style="flex: 1; min-width: 0;">
                             <div style="font-weight: 600; color: #0f172a; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</div>
                             ${item.description ? `<div style="font-size: 10px; color: #94a3b8; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.description}</div>` : ''}
@@ -13355,9 +13352,8 @@ Response format (JSON only, no markdown):
             updateEditableTotal();
         }
 
-        // Setup swipe to delete touch handling - iOS style smooth
+        // Setup swipe to delete - fade & scale style
         function setupSwipeToDelete(element) {
-            const content = element.querySelector('.swipe-content');
             let startX = 0;
             let startY = 0;
             let currentX = 0;
@@ -13365,6 +13361,7 @@ Response format (JSON only, no markdown):
             let swipeStarted = false;
             let directionLocked = false;
             const SWIPE_THRESHOLD = 15;
+            const DELETE_THRESHOLD = 60;
 
             const handleStart = (e) => {
                 if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
@@ -13389,25 +13386,28 @@ Response format (JSON only, no markdown):
                 if (!directionLocked && (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8)) {
                     directionLocked = true;
                     if (Math.abs(deltaY) > Math.abs(deltaX)) {
-                        // Vertical - let scroll happen
                         isSwiping = false;
                         return;
                     }
                 }
 
-                // Start swipe after threshold
-                if (!swipeStarted && Math.abs(deltaX) > SWIPE_THRESHOLD && deltaX < 0) {
+                // Start swipe after threshold (left swipe only)
+                if (!swipeStarted && deltaX < -SWIPE_THRESHOLD) {
                     swipeStarted = true;
-                    content.style.transition = 'none';
+                    element.style.transition = 'none';
                 }
 
-                if (swipeStarted) {
-                    // Prevent scroll during horizontal swipe
+                if (swipeStarted && deltaX < 0) {
                     if (e.cancelable) e.preventDefault();
-
                     currentX = deltaX;
-                    const translateX = Math.max(deltaX, -80);
-                    content.style.transform = `translateX(${translateX}px)`;
+
+                    // Calculate fade & scale based on swipe distance
+                    const progress = Math.min(Math.abs(deltaX) / 120, 1);
+                    const scale = 1 - (progress * 0.12); // Scale down to 0.88
+                    const opacity = 1 - (progress * 0.5); // Fade to 0.5
+
+                    element.style.transform = `scale(${scale})`;
+                    element.style.opacity = opacity;
                 }
             };
 
@@ -13415,54 +13415,52 @@ Response format (JSON only, no markdown):
                 if (!isSwiping) return;
                 isSwiping = false;
 
-                if (swipeStarted && currentX < -50) {
-                    // Swipe far enough - animate delete
-                    animateDelete(element);
+                if (swipeStarted && currentX < -DELETE_THRESHOLD) {
+                    // Delete with fade & scale
+                    animateFadeDelete(element);
                 } else {
-                    // Snap back with spring effect
-                    content.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-                    content.style.transform = 'translateX(0)';
+                    // Snap back
+                    element.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+                    element.style.transform = 'scale(1)';
+                    element.style.opacity = '1';
                 }
             };
 
-            // Touch events - passive: false for move to allow preventDefault
-            content.addEventListener('touchstart', handleStart, { passive: true });
-            content.addEventListener('touchmove', handleMove, { passive: false });
-            content.addEventListener('touchend', handleEnd);
+            element.addEventListener('touchstart', handleStart, { passive: true });
+            element.addEventListener('touchmove', handleMove, { passive: false });
+            element.addEventListener('touchend', handleEnd);
 
-            // Mouse events for desktop
-            content.addEventListener('mousedown', handleStart);
-            content.addEventListener('mousemove', handleMove);
-            content.addEventListener('mouseup', handleEnd);
-            content.addEventListener('mouseleave', handleEnd);
+            element.addEventListener('mousedown', handleStart);
+            element.addEventListener('mousemove', handleMove);
+            element.addEventListener('mouseup', handleEnd);
+            element.addEventListener('mouseleave', handleEnd);
         }
 
-        // Smooth iOS-style delete animation
-        function animateDelete(element) {
-            const content = element.querySelector('.swipe-content');
+        // Fade & scale delete animation
+        function animateFadeDelete(element) {
             const itemId = parseInt(element.dataset.itemId);
-
-            // Get current height
             const height = element.offsetHeight;
+
+            // Set fixed height for collapse animation
             element.style.height = height + 'px';
             element.style.overflow = 'hidden';
 
-            // Slide content out - slower
-            content.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-            content.style.transform = 'translateX(-100%)';
+            // Phase 1: Fade out and scale down elegantly
+            element.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease-out';
+            element.style.transform = 'scale(0.75)';
+            element.style.opacity = '0';
 
-            // After slide, collapse height smoothly
+            // Phase 2: Collapse height smoothly
             setTimeout(() => {
-                element.style.transition = 'height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), margin 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.25s ease';
+                element.style.transition = 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
                 element.style.height = '0px';
                 element.style.marginBottom = '0px';
-                element.style.opacity = '0';
 
-                // After collapse, actually delete
+                // Actually delete from data
                 setTimeout(() => {
                     deleteEditableItem(itemId);
                 }, 300);
-            }, 300);
+            }, 350);
         }
 
         // Adjust item quantity with +/- buttons
@@ -13530,29 +13528,28 @@ Response format (JSON only, no markdown):
 
         // Smooth animation for undo - item slides back in
         function animateUndoItem(element) {
-            const content = element.querySelector('.swipe-content');
             const height = element.offsetHeight;
 
-            // Start collapsed and slid out
+            // Start small and faded
             element.style.height = '0px';
             element.style.overflow = 'hidden';
             element.style.opacity = '0';
             element.style.marginBottom = '0px';
-            content.style.transform = 'translateX(-100%)';
+            element.style.transform = 'scale(0.75)';
 
             // Force reflow
             element.offsetHeight;
 
-            // Expand height first
-            element.style.transition = 'height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), margin 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.25s ease';
+            // Phase 1: Expand height
+            element.style.transition = 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
             element.style.height = height + 'px';
             element.style.marginBottom = '6px';
-            element.style.opacity = '1';
 
-            // Then slide content in
+            // Phase 2: Fade in and scale up
             setTimeout(() => {
-                content.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-                content.style.transform = 'translateX(0)';
+                element.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-out';
+                element.style.transform = 'scale(1)';
+                element.style.opacity = '1';
 
                 // Clean up styles after animation
                 setTimeout(() => {
@@ -13560,10 +13557,10 @@ Response format (JSON only, no markdown):
                     element.style.overflow = '';
                     element.style.transition = '';
                     element.style.marginBottom = '';
+                    element.style.transform = '';
                     element.style.opacity = '';
-                    content.style.transition = '';
                 }, 350);
-            }, 250);
+            }, 280);
         }
 
         function updateUndoButton() {
