@@ -12496,6 +12496,11 @@ Response format (JSON only, no markdown):
             // Stop real-time listener
             stopRealtimeSync();
 
+            // Stop all order listeners and clear orders
+            stopIncomingOrdersListener();
+            stopBookingOrdersListener();
+            stopPackingOrdersListener();
+
             // Sign out from Firebase
             try {
                 await auth.signOut();
@@ -13035,6 +13040,16 @@ Response format (JSON only, no markdown):
                 }
                 updateIncomingOrdersBadge();
             });
+        }
+
+        // Stop incoming orders listener (called on sign out)
+        function stopIncomingOrdersListener() {
+            if (incomingOrdersListener) {
+                database.ref('incomingOrders').off('value', incomingOrdersListener);
+                incomingOrdersListener = null;
+            }
+            incomingOrders = [];
+            updateIncomingOrdersBadge();
         }
 
         // Update badge showing pending orders count
@@ -14282,6 +14297,15 @@ Response format (JSON only, no markdown):
             });
         }
 
+        function stopBookingOrdersListener() {
+            if (bookingOrdersListener) {
+                database.ref('bookingOrders').off('value', bookingOrdersListener);
+                bookingOrdersListener = null;
+            }
+            bookingOrders = [];
+            updateBookingsBadge();
+        }
+
         function updateBookingsBadge() {
             const pending = bookingOrders.filter(o => o.status === 'pending').length;
             const badge = document.getElementById('bookingsBadge');
@@ -14538,6 +14562,15 @@ Response format (JSON only, no markdown):
                 }
                 updatePackingBadge();
             });
+        }
+
+        function stopPackingOrdersListener() {
+            if (packingOrdersListener) {
+                database.ref('packingOrders').off('value', packingOrdersListener);
+                packingOrdersListener = null;
+            }
+            packingOrders = [];
+            updatePackingBadge();
         }
 
         function updatePackingBadge() {
