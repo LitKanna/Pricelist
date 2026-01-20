@@ -13291,24 +13291,24 @@ Response format (JSON only, no markdown):
             }
 
             container.innerHTML = editableOrderItems.map((item, idx) => `
-                <div class="swipe-item" data-item-id="${item.id}" style="position: relative; overflow: hidden; margin-bottom: 8px; border-radius: 12px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
-                    <div class="swipe-delete-bg" style="position: absolute; right: 0; top: 0; bottom: 0; width: 80px; background: #ef4444; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 13px;">
+                <div class="swipe-item" data-item-id="${item.id}" style="position: relative; overflow: hidden; margin-bottom: 6px; border-radius: 10px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+                    <div class="swipe-delete-bg" style="position: absolute; right: 0; top: 0; bottom: 0; width: 70px; background: #ef4444; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px;">
                         Delete
                     </div>
-                    <div class="swipe-content" style="position: relative; background: white; padding: 12px; display: flex; align-items: center; gap: 12px; transition: transform 0.2s ease; z-index: 1;">
+                    <div class="swipe-content" style="position: relative; background: white; padding: 10px 12px; display: flex; align-items: center; gap: 10px; transition: transform 0.2s ease; z-index: 1;">
                         <div style="flex: 1; min-width: 0;">
-                            <div style="font-weight: 600; color: #0f172a; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</div>
-                            ${item.description ? `<div style="font-size: 11px; color: #94a3b8; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.description}</div>` : ''}
+                            <div style="font-weight: 600; color: #0f172a; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</div>
+                            ${item.description ? `<div style="font-size: 10px; color: #94a3b8; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.description}</div>` : ''}
                         </div>
-                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                            <div style="display: flex; align-items: center; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-                                <button onclick="adjustItemQty(${item.id}, -1)" style="width: 28px; height: 28px; border: none; background: none; cursor: pointer; color: #64748b; font-size: 16px; font-weight: bold;">−</button>
-                                <input type="number" value="${item.quantity}" onchange="updateItemQty(${item.id}, this.value)" style="width: 36px; border: none; background: none; text-align: center; font-size: 13px; font-weight: 600; color: #0f172a; -moz-appearance: textfield;" min="0.5" step="0.5">
-                                <button onclick="adjustItemQty(${item.id}, 1)" style="width: 28px; height: 28px; border: none; background: none; cursor: pointer; color: #64748b; font-size: 16px; font-weight: bold;">+</button>
+                        <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                            <div style="display: flex; align-items: center; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; height: 28px;">
+                                <button onclick="adjustItemQty(${item.id}, -1)" style="width: 24px; height: 28px; border: none; background: none; cursor: pointer; color: #64748b; font-size: 14px; font-weight: bold;">−</button>
+                                <input type="number" value="${item.quantity}" onchange="updateItemQty(${item.id}, this.value)" style="width: 28px; height: 28px; border: none; background: none; text-align: center; font-size: 12px; font-weight: 600; color: #0f172a; -moz-appearance: textfield;" min="0.5" step="0.5">
+                                <button onclick="adjustItemQty(${item.id}, 1)" style="width: 24px; height: 28px; border: none; background: none; cursor: pointer; color: #64748b; font-size: 14px; font-weight: bold;">+</button>
                             </div>
-                            <div style="display: flex; align-items: center; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0; padding: 0 4px;">
-                                <span style="color: #15803d; font-size: 13px; font-weight: 600;">$</span>
-                                <input type="number" value="${item.priceNum.toFixed(2)}" onchange="updateItemPrice(${item.id}, this.value)" style="width: 50px; border: none; background: none; text-align: center; font-size: 13px; font-weight: 700; color: #15803d; -moz-appearance: textfield;" min="0" step="0.5">
+                            <div style="display: flex; align-items: center; background: #f0fdf4; border-radius: 6px; border: 1px solid #bbf7d0; height: 28px; padding: 0 8px;">
+                                <span style="color: #15803d; font-size: 12px; font-weight: 600;">$</span>
+                                <input type="number" value="${Math.round(item.priceNum)}" onchange="updateItemPrice(${item.id}, this.value)" style="width: 32px; height: 28px; border: none; background: none; text-align: center; font-size: 12px; font-weight: 600; color: #15803d; -moz-appearance: textfield;" min="0" step="1">
                             </div>
                         </div>
                     </div>
@@ -13327,35 +13327,56 @@ Response format (JSON only, no markdown):
         function setupSwipeToDelete(element) {
             const content = element.querySelector('.swipe-content');
             let startX = 0;
+            let startY = 0;
             let currentX = 0;
-            let isDragging = false;
+            let isSwiping = false;
+            let swipeStarted = false;
+            const SWIPE_THRESHOLD = 20; // Min horizontal movement to start swipe
 
             const handleStart = (e) => {
+                // Don't start swipe on buttons or inputs
+                if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+
                 const touch = e.touches ? e.touches[0] : e;
                 startX = touch.clientX;
+                startY = touch.clientY;
                 currentX = 0;
-                isDragging = true;
-                content.style.transition = 'none';
+                isSwiping = true;
+                swipeStarted = false;
             };
 
             const handleMove = (e) => {
-                if (!isDragging) return;
-                const touch = e.touches ? e.touches[0] : e;
-                currentX = touch.clientX - startX;
+                if (!isSwiping) return;
 
-                // Only allow left swipe
-                if (currentX < 0) {
-                    const translateX = Math.max(currentX, -80);
+                const touch = e.touches ? e.touches[0] : e;
+                const deltaX = touch.clientX - startX;
+                const deltaY = touch.clientY - startY;
+
+                // If vertical movement is greater, don't swipe (user is scrolling)
+                if (!swipeStarted && Math.abs(deltaY) > Math.abs(deltaX)) {
+                    isSwiping = false;
+                    return;
+                }
+
+                // Only start visual swipe after threshold
+                if (!swipeStarted && Math.abs(deltaX) > SWIPE_THRESHOLD) {
+                    swipeStarted = true;
+                    content.style.transition = 'none';
+                }
+
+                if (swipeStarted && deltaX < 0) {
+                    currentX = deltaX;
+                    const translateX = Math.max(deltaX, -70);
                     content.style.transform = `translateX(${translateX}px)`;
                 }
             };
 
             const handleEnd = () => {
-                if (!isDragging) return;
-                isDragging = false;
+                if (!isSwiping) return;
+                isSwiping = false;
                 content.style.transition = 'transform 0.2s ease';
 
-                if (currentX < -50) {
+                if (swipeStarted && currentX < -45) {
                     // Swipe far enough - delete
                     content.style.transform = 'translateX(-100%)';
                     setTimeout(() => {
@@ -13404,8 +13425,8 @@ Response format (JSON only, no markdown):
             const item = editableOrderItems.find(i => i.id === itemId);
             if (!item) return;
 
-            item.priceNum = parseFloat(value) || 0;
-            item.price = '$' + item.priceNum.toFixed(2);
+            item.priceNum = Math.round(parseFloat(value) || 0);
+            item.price = '$' + item.priceNum;
             updateEditableTotal();
         }
 
