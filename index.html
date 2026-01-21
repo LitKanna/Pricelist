@@ -9094,6 +9094,7 @@
                 mouseStartY = e.clientY;
                 mouseIsDragging = true;
 
+                console.log('[Drag] Product mousedown fired!', categoryName, productEl.dataset.productIndex);
                 draggedElement = productEl;
                 dragType = 'product';
                 dragSourceCategory = categoryName;
@@ -9211,6 +9212,7 @@
             let originalRect = null;
 
             handle.addEventListener('touchstart', (e) => {
+                console.log('[Drag] Product touchstart fired! autoSortEnabled:', autoSortEnabled);
                 if (autoSortEnabled) return;
 
                 e.preventDefault();
@@ -9221,6 +9223,7 @@
                 touchCurrentY = touch.clientY;
                 isDragging = true;
 
+                console.log('[Drag] Product touch drag starting:', categoryName, productEl.dataset.productIndex);
                 draggedElement = productEl;
                 dragType = 'product';
                 dragSourceCategory = categoryName;
