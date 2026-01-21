@@ -737,7 +737,13 @@
         width: 16px;
         height: 16px;
     }
-    
+
+    /* Override global touch-action for drag handles so they work on iOS */
+    .drag-handle,
+    .category-drag-handle {
+        touch-action: none;
+    }
+
     /* Category drag handle */
     .category-drag-handle {
         width: 28px;
@@ -4212,6 +4218,7 @@
             if (savedAutoSort !== null) {
                 autoSortEnabled = savedAutoSort === 'true';
             }
+            console.log(`[Init] autoSortEnabled loaded as: ${autoSortEnabled} (localStorage value: "${savedAutoSort}")`);
             document.getElementById('autoSortToggle').checked = autoSortEnabled;
             updateAutoSortUI();
             
@@ -8627,12 +8634,15 @@
                 // Add drag event listeners for category
                 if (!autoSortEnabled) {
                     setupCategoryDragEvents(category, categoryName);
-                    
+
                     // Add drag event listeners for products within this category
                     const products = category.querySelectorAll('.product');
+                    console.log(`[Drag Setup] Setting up ${products.length} products in "${categoryName}", autoSortEnabled=${autoSortEnabled}`);
                     products.forEach(product => {
                         setupProductDragEvents(product, categoryName);
                     });
+                } else {
+                    console.log(`[Drag Setup] SKIPPED "${categoryName}" because autoSortEnabled=${autoSortEnabled}`);
                 }
             });
         }
@@ -8842,6 +8852,10 @@
         
         function setupCategoryDragEvents(categoryEl, categoryName) {
             const handle = categoryEl.querySelector('.category-drag-handle');
+            if (!handle) {
+                console.warn('Category drag handle not found:', categoryName);
+                return;
+            }
 
             // Mouse-based drag and drop
             let mouseStartY = 0;
@@ -9059,6 +9073,10 @@
         
         function setupProductDragEvents(productEl, categoryName) {
             const handle = productEl.querySelector('.drag-handle');
+            if (!handle) {
+                console.warn('Drag handle not found for product:', productEl);
+                return;
+            }
 
             // Mouse-based drag and drop (same approach as categories)
             let mouseStartY = 0;
