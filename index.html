@@ -12643,17 +12643,29 @@ Response format (JSON only, no markdown):
                     }
                 }
 
+                // Sync auto-sort setting
+                if (typeof normalizedData.autoSortEnabled === 'boolean') {
+                    autoSortEnabled = normalizedData.autoSortEnabled;
+                    document.getElementById('autoSortToggle').checked = autoSortEnabled;
+                    console.log('[Sync] Real-time: autoSortEnabled synced:', autoSortEnabled);
+                }
+
                 // Save locally (without triggering cloud sync)
                 localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
                 localStorage.setItem('everfresh_category_margins', JSON.stringify(categoryMargins));
                 localStorage.setItem('everfresh_customers', JSON.stringify(customers));
                 localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
                 localStorage.setItem('everfresh_salesman_info', JSON.stringify(salesmanInfo));
+                localStorage.setItem('everfresh_auto_sort', autoSortEnabled.toString());
                 if (selectedCustomer) {
                     localStorage.setItem('everfresh_selected_customer_id', selectedCustomer.id.toString());
                 } else {
                     localStorage.removeItem('everfresh_selected_customer_id');
                 }
+
+                // Update auto-sort UI (CSS class) before rendering
+                updateAutoSortUI();
+
                 renderCustomerTiersList();
 
                 // Refresh UI
@@ -12721,6 +12733,7 @@ Response format (JSON only, no markdown):
                     salesmanInfo: salesmanInfo,
                     categoryOrder: Object.keys(priceData),
                     orders: orders,
+                    autoSortEnabled: autoSortEnabled,
                     lastUpdated: timestamp
                 };
 
@@ -12829,17 +12842,29 @@ Response format (JSON only, no markdown):
                     }
                 }
 
+                // Sync auto-sort setting
+                if (typeof normalizedData.autoSortEnabled === 'boolean') {
+                    autoSortEnabled = normalizedData.autoSortEnabled;
+                    document.getElementById('autoSortToggle').checked = autoSortEnabled;
+                    console.log('[Sync] autoSortEnabled synced from cloud:', autoSortEnabled);
+                }
+
                 // Save locally (but don't trigger another cloud sync!)
                 localStorage.setItem('everfresh_price_data', JSON.stringify(priceData));
                 localStorage.setItem('everfresh_category_margins', JSON.stringify(categoryMargins));
                 localStorage.setItem('everfresh_customers', JSON.stringify(customers));
                 localStorage.setItem('everfresh_customer_contacts', JSON.stringify(customerContacts));
                 localStorage.setItem('everfresh_salesman_info', JSON.stringify(salesmanInfo));
+                localStorage.setItem('everfresh_auto_sort', autoSortEnabled.toString());
                 if (selectedCustomer) {
                     localStorage.setItem('everfresh_selected_customer_id', selectedCustomer.id.toString());
                 } else {
                     localStorage.removeItem('everfresh_selected_customer_id');
                 }
+
+                // Update auto-sort UI (CSS class) before rendering
+                updateAutoSortUI();
+
                 renderCategories();
                 renderCustomersList();
                 renderCustomerTiersList();
