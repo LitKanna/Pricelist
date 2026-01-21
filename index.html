@@ -12600,30 +12600,33 @@ Response format (JSON only, no markdown):
                 // Update lastUploadTimestamp to this value so we don't re-apply on next trigger
                 lastUploadTimestamp = cloudData.lastUpdated;
 
+                // Normalize Firebase data (converts objects with numeric keys back to arrays)
+                const normalizedData = normalizeFirebaseData(cloudData);
+
                 // Apply cloud data
-                if (cloudData.priceData) {
-                    priceData = cloudData.priceData;
+                if (normalizedData.priceData) {
+                    priceData = normalizedData.priceData;
                 }
-                if (cloudData.categoryMargins) {
-                    categoryMargins = cloudData.categoryMargins;
+                if (normalizedData.categoryMargins) {
+                    categoryMargins = normalizedData.categoryMargins;
                 }
-                if (cloudData.customerContacts) {
-                    customerContacts = cloudData.customerContacts;
+                if (normalizedData.customerContacts) {
+                    customerContacts = normalizedData.customerContacts;
                 }
-                if (cloudData.customers) {
-                    customers = cloudData.customers;
+                if (normalizedData.customers) {
+                    customers = normalizedData.customers;
                 }
-                if (cloudData.orders) {
-                    orders = cloudData.orders;
+                if (normalizedData.orders) {
+                    orders = normalizedData.orders;
                     localStorage.setItem('everfresh_orders', JSON.stringify(orders));
                 }
-                if (cloudData.selectedCustomerId) {
-                    selectedCustomer = customers.find(c => c.id === cloudData.selectedCustomerId) || null;
+                if (normalizedData.selectedCustomerId) {
+                    selectedCustomer = customers.find(c => c.id === normalizedData.selectedCustomerId) || null;
                 } else {
                     selectedCustomer = null;
                 }
-                if (cloudData.salesmanInfo) {
-                    salesmanInfo = cloudData.salesmanInfo;
+                if (normalizedData.salesmanInfo) {
+                    salesmanInfo = normalizedData.salesmanInfo;
                     const nameInput = document.getElementById('salesmanName');
                     const phoneInput = document.getElementById('salesmanPhone');
                     const nextDayToggle = document.getElementById('nextDayToggle');
@@ -12732,6 +12735,35 @@ Response format (JSON only, no markdown):
             }
         }
 
+        // Normalize Firebase data (Firebase converts arrays to objects with numeric keys)
+        function normalizeFirebaseData(data) {
+            if (!data || typeof data !== 'object') return data;
+
+            // Check if it's an array-like object (has numeric keys starting from 0)
+            const keys = Object.keys(data);
+            const isArrayLike = keys.length > 0 && keys.every((k, i) => String(i) === k || i === parseInt(k));
+
+            if (isArrayLike && !Array.isArray(data)) {
+                // Convert to array
+                const arr = [];
+                for (let i = 0; i < keys.length; i++) {
+                    arr[i] = normalizeFirebaseData(data[i]);
+                }
+                return arr;
+            }
+
+            // Recursively normalize nested objects/arrays
+            if (Array.isArray(data)) {
+                return data.map(item => normalizeFirebaseData(item));
+            }
+
+            const normalized = {};
+            for (const key in data) {
+                normalized[key] = normalizeFirebaseData(data[key]);
+            }
+            return normalized;
+        }
+
         // Download data from cloud
         async function syncFromCloud(silent = false) {
             if (!currentUserPhone || syncInProgress) {
@@ -12757,30 +12789,33 @@ Response format (JSON only, no markdown):
 
                 console.log('[Sync] Cloud data found, applying...');
 
+                // Normalize Firebase data (converts objects with numeric keys back to arrays)
+                const normalizedData = normalizeFirebaseData(cloudData);
+
                 // Apply cloud data
-                if (cloudData.priceData) {
-                    priceData = cloudData.priceData;
+                if (normalizedData.priceData) {
+                    priceData = normalizedData.priceData;
                 }
-                if (cloudData.categoryMargins) {
-                    categoryMargins = cloudData.categoryMargins;
+                if (normalizedData.categoryMargins) {
+                    categoryMargins = normalizedData.categoryMargins;
                 }
-                if (cloudData.customerContacts) {
-                    customerContacts = cloudData.customerContacts;
+                if (normalizedData.customerContacts) {
+                    customerContacts = normalizedData.customerContacts;
                 }
-                if (cloudData.customers) {
-                    customers = cloudData.customers;
+                if (normalizedData.customers) {
+                    customers = normalizedData.customers;
                 }
-                if (cloudData.orders) {
-                    orders = cloudData.orders;
+                if (normalizedData.orders) {
+                    orders = normalizedData.orders;
                     localStorage.setItem('everfresh_orders', JSON.stringify(orders));
                 }
-                if (cloudData.selectedCustomerId) {
-                    selectedCustomer = customers.find(c => c.id === cloudData.selectedCustomerId) || null;
+                if (normalizedData.selectedCustomerId) {
+                    selectedCustomer = customers.find(c => c.id === normalizedData.selectedCustomerId) || null;
                 } else {
                     selectedCustomer = null;
                 }
-                if (cloudData.salesmanInfo) {
-                    salesmanInfo = cloudData.salesmanInfo;
+                if (normalizedData.salesmanInfo) {
+                    salesmanInfo = normalizedData.salesmanInfo;
                     document.getElementById('salesmanName').value = salesmanInfo.name || '';
                     document.getElementById('salesmanPhone').value = salesmanInfo.phone || '';
                     document.getElementById('nextDayToggle').checked = salesmanInfo.sendForNextDay !== false;
