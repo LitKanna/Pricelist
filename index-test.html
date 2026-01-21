@@ -871,8 +871,13 @@
         
         .drag-handle {
             width: 20px;
+            opacity: 1; /* Always visible on mobile - no hover on touch devices */
         }
-        
+
+        .category-drag-handle {
+            opacity: 1; /* Always visible on mobile */
+        }
+
         .category-header {
             padding: 12px 10px;
             flex-wrap: wrap;
