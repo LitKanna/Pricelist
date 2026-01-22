@@ -13789,6 +13789,7 @@ Response format (JSON only, no markdown):
 
             // Create booking/packing order data with edited items
             const teamOrder = {
+                orderReference: order.orderReference || null,
                 originalOrderId: orderId,
                 customerName: order.customerName,
                 customerBusiness: order.customerBusiness || order.customerName,
@@ -14024,6 +14025,7 @@ Response format (JSON only, no markdown):
             // Push preorder to appropriate Firebase queue (Bookings or Packing)
             if (order) {
                 const teamOrder = {
+                    orderReference: order.orderReference || null,
                     customerName: order.customerName,
                     customerBusiness: order.customerBusiness || order.customerName,
                     customerPhone: order.customerPhone,
@@ -14324,6 +14326,7 @@ Response format (JSON only, no markdown):
 
             // Create booking/packing order data
             const teamOrder = {
+                orderReference: order.orderReference || null,
                 originalOrderId: orderId,
                 customerName: order.customerName,
                 customerBusiness: order.customerBusiness || order.customerName,
@@ -14442,6 +14445,8 @@ Response format (JSON only, no markdown):
                         });
                     }
 
+                    const orderRef = order.orderReference || '';
+
                     ordersHtml += `
                         <div style="background: white; border-radius: 16px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
                             <!-- Visual Header like generated image -->
@@ -14449,7 +14454,7 @@ Response format (JSON only, no markdown):
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                                     <div>
                                         <div style="font-size: 18px; font-weight: 800; color: white; letter-spacing: 0.5px;">${customerName}</div>
-                                        <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px;">${order.customerPhone || ''} • ${timeAgo}</div>
+                                        <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px;">${order.customerPhone || ''} • ${timeAgo}${orderRef ? ' • ' + orderRef : ''}</div>
                                     </div>
                                     <div style="background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 20px;">
                                         <span style="font-size: 10px; font-weight: 700; color: white; letter-spacing: 0.5px;">${orderType}</span>
@@ -14704,6 +14709,8 @@ Response format (JSON only, no markdown):
                         });
                     }
 
+                    const orderRef = order.orderReference || '';
+
                     ordersHtml += `
                         <div style="background: white; border-radius: 16px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
                             <!-- Visual Header like generated image -->
@@ -14711,7 +14718,7 @@ Response format (JSON only, no markdown):
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                                     <div>
                                         <div style="font-size: 18px; font-weight: 800; color: white; letter-spacing: 0.5px;">${customerName}</div>
-                                        <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px;">${timeAgo}</div>
+                                        <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px;">${timeAgo}${orderRef ? ' • ' + orderRef : ''}</div>
                                     </div>
                                     <div style="background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 20px;">
                                         <span style="font-size: 10px; font-weight: 700; color: white; letter-spacing: 0.5px;">${orderType}</span>
