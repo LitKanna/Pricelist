@@ -11050,10 +11050,10 @@ Response format (JSON only, no markdown):
             const orderLink = includeOrderLink ? getOrderLinkURL(customerObj) : '';
 
             const messages = includeOrderLink ? [
-                `${greeting} ${yourName} here from Everfresh 👋 Here are our prices for ${formattedDate}. Feel free to reach out when you'd like to order! For a quick order tap here 👉 ${orderLink}`,
-                `Hey${heyName}! It's ${yourName} from Everfresh 👋 Fresh prices for ${formattedDate}. Give me a call or message when you're ready! Or order instantly through our app 👉 ${orderLink}`,
-                `${greeting} ${yourName} here from Everfresh 👋 Updated prices for ${formattedDate}. Give me a call or text for your order! Thank you. You can also order directly here 👉 ${orderLink}`,
-                `${greeting} It's ${yourName} from Everfresh 👋 Here are our latest prices for ${formattedDate}. Happy to help with anything you need! Tap to order quickly 👉 ${orderLink}`
+                `${greeting} ${yourName} here from Everfresh 👋 Here are our prices for ${formattedDate}. Feel free to reach out when you'd like to order! For a quick order tap here 👇 ${orderLink}`,
+                `Hey${heyName}! It's ${yourName} from Everfresh 👋 Fresh prices for ${formattedDate}. Give me a call or message when you're ready! Or order instantly through our app 👇 ${orderLink}`,
+                `${greeting} ${yourName} here from Everfresh 👋 Updated prices for ${formattedDate}. Give me a call or text for your order! Thank you. You can also order directly here 👇 ${orderLink}`,
+                `${greeting} It's ${yourName} from Everfresh 👋 Here are our latest prices for ${formattedDate}. Happy to help with anything you need! Tap to order quickly 👇 ${orderLink}`
             ] : [
                 `${greeting} ${yourName} here from Everfresh 👋 Here are our latest prices for ${formattedDate}. Feel free to reach out when you'd like to order!`,
                 `Hey${heyName}! It's ${yourName} from Everfresh 👋 Here's our fresh price list for ${formattedDate}. Give me a call or message when you're ready!`,
