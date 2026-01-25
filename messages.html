@@ -222,8 +222,80 @@
             background: var(--slate-50);
         }
 
+        .conversation-card.swiping:active {
+            transform: none;
+        }
+
         .conversation-card.unread {
             border-left: 3px solid var(--green-500);
+        }
+
+        /* ============================================
+           SWIPE TO REVEAL ACTIONS (iOS Style)
+           ============================================ */
+        .swipe-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+        }
+
+        .swipe-actions {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: stretch;
+        }
+
+        .swipe-action {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            border: none;
+            cursor: pointer;
+            gap: 4px;
+            transition: width 0.15s;
+        }
+
+        .swipe-action svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .swipe-action span {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .swipe-action.archive {
+            background: var(--slate-500);
+            color: white;
+        }
+
+        .swipe-action.delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .swipe-action:active {
+            opacity: 0.8;
+        }
+
+        .conversation-card {
+            position: relative;
+            z-index: 1;
+            transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .conversation-card.swiped {
+            transform: translateX(-160px);
+        }
+
+        .conversation-card.swiping {
+            transition: none;
         }
 
         .conversation-avatar {
@@ -1375,6 +1447,39 @@
         function renderConversations(list = conversations) {
             conversationList.textContent = '';
             list.forEach(c => {
+                // Swipe container
+                const container = document.createElement('div');
+                container.className = 'swipe-container';
+                container.dataset.convId = c.id;
+
+                // Action buttons (behind card)
+                const actions = document.createElement('div');
+                actions.className = 'swipe-actions';
+
+                const archiveBtn = document.createElement('button');
+                archiveBtn.className = 'swipe-action archive';
+                archiveBtn.innerHTML = `
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                    </svg>
+                    <span>Archive</span>
+                `;
+                archiveBtn.addEventListener('click', (e) => { e.stopPropagation(); archiveConversation(c.id); });
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'swipe-action delete';
+                deleteBtn.innerHTML = `
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                    <span>Delete</span>
+                `;
+                deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteConversation(c.id); });
+
+                actions.appendChild(archiveBtn);
+                actions.appendChild(deleteBtn);
+
+                // Card
                 const card = document.createElement('div');
                 card.className = 'conversation-card' + (c.unread > 0 ? ' unread' : '');
 
@@ -1420,8 +1525,19 @@
                 card.appendChild(avatar);
                 card.appendChild(content);
 
-                card.addEventListener('click', () => openChat(c.id));
-                conversationList.appendChild(card);
+                card.addEventListener('click', (e) => {
+                    // Only open chat if not swiped
+                    if (!card.classList.contains('swiped')) {
+                        openChat(c.id);
+                    }
+                });
+
+                // Add swipe handlers
+                setupSwipeHandlers(card, container);
+
+                container.appendChild(actions);
+                container.appendChild(card);
+                conversationList.appendChild(container);
             });
         }
 
@@ -1542,6 +1658,122 @@
         function closeAttach() { attachMenu.classList.remove('active'); attachOverlay.classList.remove('active'); }
 
         // ============================================
+        // SWIPE HANDLERS
+        // ============================================
+        let currentSwipedCard = null;
+        const SWIPE_THRESHOLD = 60;
+        const SWIPE_OPEN_AMOUNT = 160;
+
+        function setupSwipeHandlers(card, container) {
+            let startX = 0;
+            let currentX = 0;
+            let isDragging = false;
+
+            card.addEventListener('touchstart', (e) => {
+                // Close any other open swipe
+                if (currentSwipedCard && currentSwipedCard !== card) {
+                    currentSwipedCard.classList.remove('swiped');
+                    currentSwipedCard = null;
+                }
+
+                startX = e.touches[0].clientX;
+                currentX = 0;
+                isDragging = true;
+                card.classList.add('swiping');
+            }, { passive: true });
+
+            card.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+
+                const touch = e.touches[0];
+                const diff = touch.clientX - startX;
+
+                // If card is already swiped open, calculate from that position
+                const isSwiped = card.classList.contains('swiped');
+                let translateX;
+
+                if (isSwiped) {
+                    // Starting from open position
+                    translateX = Math.min(0, Math.max(-SWIPE_OPEN_AMOUNT, -SWIPE_OPEN_AMOUNT + diff));
+                } else {
+                    // Starting from closed position
+                    translateX = Math.min(0, Math.max(-SWIPE_OPEN_AMOUNT - 20, diff));
+                }
+
+                currentX = translateX;
+                card.style.transform = `translateX(${translateX}px)`;
+            }, { passive: true });
+
+            card.addEventListener('touchend', () => {
+                if (!isDragging) return;
+                isDragging = false;
+                card.classList.remove('swiping');
+                card.style.transform = '';
+
+                const isSwiped = card.classList.contains('swiped');
+
+                if (isSwiped) {
+                    // Was open, check if should close
+                    if (currentX > -SWIPE_OPEN_AMOUNT + SWIPE_THRESHOLD) {
+                        card.classList.remove('swiped');
+                        currentSwipedCard = null;
+                    }
+                } else {
+                    // Was closed, check if should open
+                    if (currentX < -SWIPE_THRESHOLD) {
+                        card.classList.add('swiped');
+                        currentSwipedCard = card;
+                    }
+                }
+            });
+
+            // Close swipe on scroll
+            container.addEventListener('scroll', () => {
+                if (card.classList.contains('swiped')) {
+                    card.classList.remove('swiped');
+                    currentSwipedCard = null;
+                }
+            });
+        }
+
+        function closeAllSwipes() {
+            if (currentSwipedCard) {
+                currentSwipedCard.classList.remove('swiped');
+                currentSwipedCard = null;
+            }
+        }
+
+        function archiveConversation(convId) {
+            closeAllSwipes();
+            const idx = conversations.findIndex(c => c.id === convId);
+            if (idx !== -1) {
+                const conv = conversations.splice(idx, 1)[0];
+                showToast(`${conv.name} archived`);
+                renderConversations();
+            }
+        }
+
+        function deleteConversation(convId) {
+            closeAllSwipes();
+            const idx = conversations.findIndex(c => c.id === convId);
+            if (idx !== -1) {
+                const conv = conversations.splice(idx, 1)[0];
+                delete messages[convId];
+                showToast(`${conv.name} deleted`);
+                renderConversations();
+                // If deleted chat was open, close it
+                if (currentConversationId === convId) {
+                    currentConversationId = null;
+                    closeChat();
+                    if (isDesktop) {
+                        emptyState.style.display = 'flex';
+                        chatView.style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        // ============================================
         // EVENTS
         // ============================================
         sendBtn.addEventListener('click', sendMessage);
@@ -1575,9 +1807,20 @@
         });
 
         document.getElementById('searchInput').addEventListener('input', function() {
+            closeAllSwipes();
             const q = this.value.toLowerCase();
             renderConversations(conversations.filter(c => c.name.toLowerCase().includes(q) || c.lastMessage.toLowerCase().includes(q)));
         });
+
+        // Close swipes on scroll
+        conversationList.addEventListener('scroll', closeAllSwipes, { passive: true });
+
+        // Close swipes on tap outside
+        document.addEventListener('touchstart', (e) => {
+            if (currentSwipedCard && !e.target.closest('.swipe-container')) {
+                closeAllSwipes();
+            }
+        }, { passive: true });
 
         window.addEventListener('resize', () => {
             isDesktop = window.innerWidth >= 768;
