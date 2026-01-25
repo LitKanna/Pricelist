@@ -2047,7 +2047,7 @@
                 db.removeChannel(messageSubscription);
             }
 
-            messageSubscription = supabase
+            messageSubscription = db
                 .channel(`messages:${conversationId}`)
                 .on('postgres_changes', {
                     event: 'INSERT',
@@ -2083,7 +2083,7 @@
 
         // Subscribe to conversation list updates
         function subscribeToConversations() {
-            supabase
+            db
                 .channel('conversations')
                 .on('postgres_changes', {
                     event: '*',
