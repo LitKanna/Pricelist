@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f172a">
@@ -61,10 +61,21 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        html {
+            /* Prevent iOS zoom on double-tap and pinch */
+            touch-action: manipulation;
+            -ms-touch-action: manipulation;
+        }
+
         html, body {
             height: 100%;
             width: 100%;
             overflow: hidden;
+            /* Prevent text selection zoom */
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-size-adjust: 100%;
         }
 
         body {
@@ -74,6 +85,8 @@
             color: var(--slate-900);
             background: var(--slate-100);
             -webkit-font-smoothing: antialiased;
+            /* Prevent zoom gestures */
+            touch-action: pan-x pan-y;
         }
 
         /* ============================================
@@ -614,18 +627,56 @@
             height: 14px;
         }
 
-        /* Media Message */
+        /* Media Message - Premium iOS Style */
         .message-media {
             border-radius: 16px;
             overflow: hidden;
-            margin: -8px -12px;
-            margin-bottom: 4px;
+            margin: -12px -16px;
+            margin-bottom: 8px;
+            background: var(--slate-200);
+            position: relative;
         }
 
-        .message-media img {
+        .message-media img,
+        .message-media video {
+            width: 100%;
             max-width: 280px;
-            max-height: 320px;
+            min-width: 200px;
+            height: auto;
             display: block;
+            object-fit: cover;
+        }
+
+        /* Media-only bubble (no text) - cleaner look */
+        .message-bubble.media-only {
+            padding: 4px;
+            background: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        .message-bubble.media-only .message-media {
+            margin: 0;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .message-bubble.media-only .message-media img,
+        .message-bubble.media-only .message-media video {
+            border-radius: 20px;
+            max-width: 260px;
+        }
+
+        .message-bubble.media-only .message-meta {
+            position: absolute;
+            bottom: 8px;
+            right: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            padding: 4px 10px;
+            border-radius: 12px;
+            color: white;
+            margin: 0;
         }
 
         /* File Message */
@@ -634,7 +685,7 @@
             align-items: center;
             gap: 12px;
             padding: 4px;
-            min-width: 220px;
+            min-width: 200px;
         }
 
         .file-icon {
@@ -1044,41 +1095,6 @@
             font-weight: 500;
             color: var(--slate-800);
         }
-
-        /* ============================================
-           TOAST
-           ============================================ */
-        .toast {
-            position: fixed;
-            top: calc(var(--safe-top) + 20px);
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: var(--slate-900);
-            color: white;
-            padding: 14px 24px;
-            border-radius: 14px;
-            font-size: 15px;
-            font-weight: 600;
-            z-index: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: var(--shadow-xl);
-            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .toast.active {
-            transform: translateX(-50%) translateY(0);
-        }
-
-        .toast-icon {
-            width: 22px;
-            height: 22px;
-        }
-
-        .toast-icon.success { color: var(--green-400); }
-        .toast-icon.error { color: #ef4444; }
-
         /* ============================================
            EMPTY STATE
            ============================================ */
@@ -1373,14 +1389,6 @@
         </div>
     </div>
 
-    <!-- TOAST -->
-    <div class="toast" id="toast">
-        <svg class="toast-icon success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-        </svg>
-        <span id="toastMessage">Message sent</span>
-    </div>
-
     <!-- HIDDEN INPUTS -->
     <input type="file" class="hidden-input" id="photoInput" accept="image/*,video/*" multiple>
     <input type="file" class="hidden-input" id="fileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip" multiple>
@@ -1441,7 +1449,6 @@
         const attachMenu = document.getElementById('attachMenu');
         const attachOverlay = document.getElementById('attachOverlay');
         const contactSheet = document.getElementById('contactSheet');
-        const toast = document.getElementById('toast');
 
         // ============================================
         // UTILS
@@ -1456,28 +1463,6 @@
 
         function getInitials(name) {
             return name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
-        }
-
-        function showToast(msg, type = 'success') {
-            document.getElementById('toastMessage').textContent = msg;
-            toast.querySelector('.toast-icon').className = 'toast-icon ' + type;
-
-            // GSAP toast animation
-            if (!prefersReducedMotion) {
-                gsap.fromTo(toast,
-                    { y: 100, opacity: 0 },
-                    { y: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.7)' }
-                );
-                gsap.to(toast, {
-                    y: 100,
-                    opacity: 0,
-                    duration: 0.3,
-                    delay: 2.7,
-                    ease: 'power2.in'
-                });
-            }
-            toast.classList.add('active');
-            setTimeout(() => toast.classList.remove('active'), 3000);
         }
 
         // ============================================
@@ -1822,14 +1807,30 @@
                 row.className = 'message-row ' + (m.dir === 'out' ? 'outgoing' : 'incoming');
 
                 const bubble = document.createElement('div');
-                bubble.className = 'message-bubble';
+                // Add 'media-only' class if has media but no text
+                const isMediaOnly = m.media && !m.text;
+                bubble.className = 'message-bubble' + (isMediaOnly ? ' media-only' : '');
 
                 if (m.media) {
                     const mediaDiv = document.createElement('div');
                     mediaDiv.className = 'message-media';
-                    const img = document.createElement('img');
-                    img.src = m.media;
-                    mediaDiv.appendChild(img);
+
+                    // Check if it's a video
+                    const isVideo = m.media.includes('video') || m.media.endsWith('.mp4') || m.media.endsWith('.mov');
+                    if (isVideo) {
+                        const video = document.createElement('video');
+                        video.src = m.media;
+                        video.controls = true;
+                        video.playsInline = true;
+                        video.preload = 'metadata';
+                        mediaDiv.appendChild(video);
+                    } else {
+                        const img = document.createElement('img');
+                        img.src = m.media;
+                        img.loading = 'lazy';
+                        img.onclick = () => window.open(m.media, '_blank');
+                        mediaDiv.appendChild(img);
+                    }
                     bubble.appendChild(mediaDiv);
                 }
 
@@ -1939,7 +1940,6 @@
             });
             renderMessages(currentConversationId);
             renderConversations();
-            showToast('Sent');
         }
 
         function openAttach() {
@@ -2169,8 +2169,7 @@
             animateRemoveConversation(container, 'left').then(() => {
                 const idx = conversations.findIndex(c => c.id === convId);
                 if (idx !== -1) {
-                    const conv = conversations.splice(idx, 1)[0];
-                    showToast(`${conv.name} archived`);
+                    conversations.splice(idx, 1);
                     renderConversations();
                 }
             });
@@ -2191,9 +2190,8 @@
             animateRemoveConversation(container, 'right').then(() => {
                 const idx = conversations.findIndex(c => c.id === convId);
                 if (idx !== -1) {
-                    const conv = conversations.splice(idx, 1)[0];
+                    conversations.splice(idx, 1);
                     delete messages[convId];
-                    showToast(`${conv.name} deleted`);
                     renderConversations();
                     // If deleted chat was open, close it
                     if (currentConversationId === convId) {
@@ -2226,7 +2224,7 @@
         document.getElementById('attachCamera').addEventListener('click', () => document.getElementById('cameraInput').click());
         document.getElementById('attachPhotos').addEventListener('click', () => document.getElementById('photoInput').click());
         document.getElementById('attachFiles').addEventListener('click', () => document.getElementById('fileInput').click());
-        document.getElementById('attachPricelist').addEventListener('click', () => { closeAttach(); showToast('Coming soon', 'info'); });
+        document.getElementById('attachPricelist').addEventListener('click', () => { closeAttach(); });
 
         document.getElementById('photoInput').addEventListener('change', e => { if (e.target.files.length) handleFiles(e.target.files); e.target.value = ''; });
         document.getElementById('fileInput').addEventListener('change', e => { if (e.target.files.length) handleFiles(e.target.files); e.target.value = ''; });
