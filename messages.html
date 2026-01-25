@@ -18,7 +18,13 @@
 
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js"></script>
+    <script>
+        // Supabase Configuration (anon key is public - protected by RLS)
+        const CONFIG = {
+            SUPABASE_URL: 'https://otiyknwuosgmvsvxdhwb.supabase.co',
+            SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90aXlrbnd1b3NnbXZzdnhkaHdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzMjUyNjksImV4cCI6MjA4NDkwMTI2OX0.cwBEPgfmiTQ7-PDYdZW-4bO8158O6I1p5tUe3Ix3Vbw'
+        };
+    </script>
 
     <style>
         :root {
