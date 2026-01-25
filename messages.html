@@ -228,8 +228,11 @@
             position: relative;
             overflow: hidden;
             border-radius: 16px;
-            /* Let browser handle vertical scroll, we handle horizontal */
+            /* Allow vertical scroll, we handle horizontal swipe */
             touch-action: pan-y;
+            /* Prevent any text selection during swipe */
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .swipe-actions {
@@ -292,9 +295,11 @@
             border: 1px solid var(--slate-200);
             position: relative;
             z-index: 2;
-            /* GPU acceleration - GSAP handles all transforms */
-            transform: translate3d(0, 0, 0);
-            /* Background transition for tap feedback */
+            /* GPU layer for smooth transforms */
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            /* Only transition background, not transform */
             transition: background 0.15s;
         }
 
@@ -306,14 +311,16 @@
             border-left: 3px solid var(--green-500);
         }
 
-        /* During active swipe - hint to browser */
+        /* During active swipe - GPU hint */
         .conversation-card.swiping {
             will-change: transform;
+            /* Disable pointer events during swipe to prevent accidental taps */
+            pointer-events: none;
         }
 
-        /* Swiped state marker - GSAP handles the actual transform */
+        /* Swiped open state */
         .conversation-card.swiped {
-            /* Transform is managed by GSAP */
+            /* GSAP manages transform */
         }
 
         .conversation-avatar {
@@ -2332,45 +2339,65 @@
         }
 
         // ============================================
-        // SWIPE HANDLERS (Smooth iOS-style)
-        // Uses direction detection + GPU acceleration
+        // ============================================
+        // SWIPE HANDLERS - Premium iOS-style
+        // GSAP quickSetter for 60/120fps performance
+        // Direction lock prevents scroll/swipe conflict
         // ============================================
         let currentSwipedCard = null;
         const SWIPE_OPEN_AMOUNT = 160;
-        const DIRECTION_THRESHOLD = 10;  // Pixels to determine direction
-        const VELOCITY_THRESHOLD = 0.3;  // Pixels per ms for fast swipe
+        const DIRECTION_THRESHOLD = 8;   // Pixels to determine direction
+        const VELOCITY_THRESHOLD = 0.25; // Pixels per ms for fast swipe
 
         function setupSwipeHandlers(card, container) {
+            // GSAP quickSetter for ultra-fast updates during drag
+            const setX = gsap.quickSetter(card, 'x', 'px');
+
             let startX = 0;
             let startY = 0;
             let startTime = 0;
             let currentX = 0;
             let lastX = 0;
             let lastTime = 0;
+            let velocityX = 0;
             let isTracking = false;
             let directionLocked = null; // 'horizontal' | 'vertical' | null
+            let rafId = null;
+            let targetX = 0;
+
+            // Get current transform value
+            function getCurrentX() {
+                const transform = gsap.getProperty(card, 'x');
+                return typeof transform === 'number' ? transform : 0;
+            }
 
             card.addEventListener('touchstart', (e) => {
+                // Kill any running animation
+                gsap.killTweensOf(card);
+
                 const touch = e.touches[0];
                 startX = touch.clientX;
                 startY = touch.clientY;
                 startTime = Date.now();
                 lastX = startX;
                 lastTime = startTime;
+                velocityX = 0;
                 isTracking = true;
                 directionLocked = null;
 
-                // Close any other open swipe with GSAP
+                // Get current position (important if interrupted mid-animation)
+                currentX = getCurrentX();
+                targetX = currentX;
+
+                // Close any other open swipe
                 if (currentSwipedCard && currentSwipedCard !== card) {
                     const otherCard = currentSwipedCard;
                     otherCard.classList.remove('swiped');
                     currentSwipedCard = null;
-
                     gsap.to(otherCard, {
                         x: 0,
-                        duration: 0.3,
-                        ease: 'power2.out',
-                        onComplete: () => gsap.set(otherCard, { clearProps: 'transform' })
+                        duration: 0.25,
+                        ease: 'power2.out'
                     });
                 }
             }, { passive: true });
@@ -2381,6 +2408,7 @@
                 const touch = e.touches[0];
                 const diffX = touch.clientX - startX;
                 const diffY = touch.clientY - startY;
+                const now = Date.now();
 
                 // Determine direction on first significant movement
                 if (!directionLocked) {
@@ -2388,115 +2416,125 @@
                     const absDiffY = Math.abs(diffY);
 
                     if (absDiffX > DIRECTION_THRESHOLD || absDiffY > DIRECTION_THRESHOLD) {
-                        if (absDiffX > absDiffY * 1.2) {
-                            // Horizontal swipe detected
+                        if (absDiffX > absDiffY * 1.5) {
+                            // Horizontal swipe - take over
                             directionLocked = 'horizontal';
                             card.classList.add('swiping');
                         } else {
-                            // Vertical scroll - let browser handle it
+                            // Vertical scroll - release to browser
                             directionLocked = 'vertical';
                             isTracking = false;
                             return;
                         }
                     } else {
-                        // Not enough movement yet
-                        return;
+                        return; // Wait for clearer direction
                     }
                 }
 
                 if (directionLocked !== 'horizontal') return;
 
-                // Track velocity
-                lastX = touch.clientX;
-                lastTime = Date.now();
+                // PREVENT default to stop any browser scroll interference
+                e.preventDefault();
 
-                // Calculate position
+                // Calculate velocity (smoothed)
+                const dt = now - lastTime;
+                if (dt > 0) {
+                    const instantVelocity = (touch.clientX - lastX) / dt;
+                    velocityX = velocityX * 0.7 + instantVelocity * 0.3; // Smoothing
+                }
+                lastX = touch.clientX;
+                lastTime = now;
+
+                // Calculate target position
                 const isSwiped = card.classList.contains('swiped');
                 const baseOffset = isSwiped ? -SWIPE_OPEN_AMOUNT : 0;
-                let translateX = baseOffset + diffX;
+                let newX = baseOffset + diffX;
 
-                // Clamp with rubber band effect on edges
-                if (translateX > 0) {
-                    // Rubber band when swiping right past origin
-                    translateX = translateX * 0.3;
-                } else if (translateX < -SWIPE_OPEN_AMOUNT) {
-                    // Rubber band when overswiping left
-                    const overshoot = translateX + SWIPE_OPEN_AMOUNT;
-                    translateX = -SWIPE_OPEN_AMOUNT + (overshoot * 0.3);
+                // Rubber band resistance at edges
+                if (newX > 0) {
+                    newX = newX * 0.25; // Strong resistance right of origin
+                } else if (newX < -SWIPE_OPEN_AMOUNT) {
+                    const overshoot = newX + SWIPE_OPEN_AMOUNT;
+                    newX = -SWIPE_OPEN_AMOUNT + (overshoot * 0.25);
                 }
 
-                currentX = translateX;
-                // Use translate3d for GPU acceleration
-                card.style.transform = `translate3d(${translateX}px, 0, 0)`;
-            }, { passive: true });
+                targetX = newX;
 
-            card.addEventListener('touchend', (e) => {
+                // Use RAF for smooth updates
+                if (!rafId) {
+                    rafId = requestAnimationFrame(() => {
+                        setX(targetX);
+                        currentX = targetX;
+                        rafId = null;
+                    });
+                }
+            }, { passive: false }); // NOT passive - we need preventDefault
+
+            card.addEventListener('touchend', () => {
                 if (!isTracking) return;
                 isTracking = false;
 
-                // If we never locked to horizontal, nothing to do
+                // Cancel any pending RAF
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
+
                 if (directionLocked !== 'horizontal') {
                     card.classList.remove('swiping');
                     return;
                 }
 
                 card.classList.remove('swiping');
-                card.style.transform = '';
 
-                // Calculate velocity
-                const endTime = Date.now();
-                const velocity = (lastX - startX) / (endTime - startTime);
                 const isSwiped = card.classList.contains('swiped');
 
-                // Decide based on position and velocity
+                // Decide open/close based on velocity and position
                 let shouldOpen;
-                if (Math.abs(velocity) > VELOCITY_THRESHOLD) {
-                    // Fast swipe - use velocity direction
-                    shouldOpen = velocity < 0;
+                if (Math.abs(velocityX) > VELOCITY_THRESHOLD) {
+                    // Fast swipe - use velocity
+                    shouldOpen = velocityX < 0;
                 } else {
-                    // Slow drag - use position threshold (40% of open amount)
-                    const threshold = SWIPE_OPEN_AMOUNT * 0.4;
-                    shouldOpen = currentX < -threshold;
+                    // Slow drag - use position (40% threshold)
+                    shouldOpen = currentX < -SWIPE_OPEN_AMOUNT * 0.4;
                 }
 
-                // GSAP: Smooth spring snap animation
-                const targetX = shouldOpen ? -SWIPE_OPEN_AMOUNT : 0;
+                const finalX = shouldOpen ? -SWIPE_OPEN_AMOUNT : 0;
 
+                // GSAP spring animation from CURRENT position (no jump)
                 gsap.to(card, {
-                    x: targetX,
-                    duration: 0.4,
-                    ease: 'back.out(1.2)', // Slight overshoot like iOS
-                    onComplete: () => {
-                        // Clean up transform for CSS to take over
-                        if (!shouldOpen) {
-                            gsap.set(card, { clearProps: 'transform' });
-                        }
-                    }
+                    x: finalX,
+                    duration: 0.35,
+                    ease: shouldOpen ? 'back.out(1.4)' : 'power3.out',
+                    overwrite: true
                 });
 
-                if (shouldOpen && !isSwiped) {
+                // Update state
+                if (shouldOpen) {
                     card.classList.add('swiped');
                     currentSwipedCard = card;
-                } else if (!shouldOpen && isSwiped) {
+                } else {
                     card.classList.remove('swiped');
-                    currentSwipedCard = null;
-                } else if (!shouldOpen && !isSwiped) {
-                    // Snap back to closed
-                    currentSwipedCard = null;
+                    if (currentSwipedCard === card) currentSwipedCard = null;
                 }
             });
 
-            // Cancel on touch cancel
             card.addEventListener('touchcancel', () => {
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
                 isTracking = false;
                 directionLocked = null;
                 card.classList.remove('swiping');
-                // GSAP: Smooth cancel animation
+
+                // Animate back to proper state
+                const isSwiped = card.classList.contains('swiped');
                 gsap.to(card, {
-                    x: 0,
-                    duration: 0.3,
+                    x: isSwiped ? -SWIPE_OPEN_AMOUNT : 0,
+                    duration: 0.25,
                     ease: 'power2.out',
-                    onComplete: () => gsap.set(card, { clearProps: 'transform' })
+                    overwrite: true
                 });
             });
         }
@@ -2507,12 +2545,11 @@
                 card.classList.remove('swiped');
                 currentSwipedCard = null;
 
-                // GSAP: Smooth close animation
                 gsap.to(card, {
                     x: 0,
-                    duration: 0.35,
+                    duration: 0.3,
                     ease: 'power3.out',
-                    onComplete: () => gsap.set(card, { clearProps: 'transform' })
+                    overwrite: true
                 });
             }
         }
