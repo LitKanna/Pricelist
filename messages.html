@@ -679,6 +679,81 @@
             margin: 0;
         }
 
+        /* Media Grid - Multiple images in one message */
+        .message-media-grid {
+            display: grid;
+            gap: 3px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            max-width: 280px;
+        }
+
+        .message-media-grid.grid-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .message-media-grid.grid-3 {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+
+        .message-media-grid.grid-3 .media-item:first-child {
+            grid-row: span 2;
+        }
+
+        .message-media-grid.grid-4 {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+
+        .message-media-grid.grid-5,
+        .message-media-grid.grid-6 {
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+
+        .message-media-grid.grid-many {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .media-item {
+            position: relative;
+            overflow: hidden;
+            background: var(--slate-200);
+            aspect-ratio: 1;
+        }
+
+        .message-media-grid.grid-2 .media-item,
+        .message-media-grid.grid-3 .media-item:first-child {
+            aspect-ratio: auto;
+            min-height: 140px;
+            max-height: 200px;
+        }
+
+        .media-item img,
+        .media-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            cursor: pointer;
+        }
+
+        /* More indicator for 6+ images */
+        .media-more-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
         /* File Message */
         .message-file {
             display: flex;
@@ -1976,26 +2051,78 @@
                 bubble.className = 'message-bubble' + (isMediaOnly ? ' media-only' : '');
 
                 if (m.media) {
-                    const mediaDiv = document.createElement('div');
-                    mediaDiv.className = 'message-media';
+                    // Handle both old format (string) and new format (array)
+                    const mediaArray = Array.isArray(m.media) ? m.media : [{ url: m.media, type: 'image' }];
+                    const count = mediaArray.length;
 
-                    // Check if it's a video
-                    const isVideo = m.media.includes('video') || m.media.endsWith('.mp4') || m.media.endsWith('.mov');
-                    if (isVideo) {
-                        const video = document.createElement('video');
-                        video.src = m.media;
-                        video.controls = true;
-                        video.playsInline = true;
-                        video.preload = 'metadata';
-                        mediaDiv.appendChild(video);
+                    if (count === 1) {
+                        // Single media - original style
+                        const mediaDiv = document.createElement('div');
+                        mediaDiv.className = 'message-media';
+                        const item = mediaArray[0];
+                        if (item.type === 'video') {
+                            const video = document.createElement('video');
+                            video.src = item.url;
+                            video.controls = true;
+                            video.playsInline = true;
+                            video.preload = 'metadata';
+                            mediaDiv.appendChild(video);
+                        } else {
+                            const img = document.createElement('img');
+                            img.src = item.url;
+                            img.loading = 'lazy';
+                            img.onclick = () => window.open(item.url, '_blank');
+                            mediaDiv.appendChild(img);
+                        }
+                        bubble.appendChild(mediaDiv);
                     } else {
-                        const img = document.createElement('img');
-                        img.src = m.media;
-                        img.loading = 'lazy';
-                        img.onclick = () => window.open(m.media, '_blank');
-                        mediaDiv.appendChild(img);
+                        // Multiple media - grid layout
+                        const gridDiv = document.createElement('div');
+                        const gridClass = count === 2 ? 'grid-2' :
+                                          count === 3 ? 'grid-3' :
+                                          count === 4 ? 'grid-4' :
+                                          count <= 6 ? 'grid-' + count : 'grid-many';
+                        gridDiv.className = 'message-media-grid ' + gridClass;
+
+                        // Show max 6 items in grid
+                        const visibleItems = mediaArray.slice(0, 6);
+                        const hiddenCount = count - 6;
+
+                        visibleItems.forEach((item, idx) => {
+                            const mediaItem = document.createElement('div');
+                            mediaItem.className = 'media-item';
+
+                            if (item.type === 'video') {
+                                const video = document.createElement('video');
+                                video.src = item.url;
+                                video.playsInline = true;
+                                video.preload = 'metadata';
+                                video.onclick = () => {
+                                    if (video.paused) video.play();
+                                    else video.pause();
+                                };
+                                mediaItem.appendChild(video);
+                            } else {
+                                const img = document.createElement('img');
+                                img.src = item.url;
+                                img.loading = 'lazy';
+                                img.onclick = () => window.open(item.url, '_blank');
+                                mediaItem.appendChild(img);
+                            }
+
+                            // Show "+X" overlay on last visible item if there are hidden items
+                            if (idx === 5 && hiddenCount > 0) {
+                                const overlay = document.createElement('div');
+                                overlay.className = 'media-more-overlay';
+                                overlay.textContent = '+' + hiddenCount;
+                                mediaItem.appendChild(overlay);
+                            }
+
+                            gridDiv.appendChild(mediaItem);
+                        });
+
+                        bubble.appendChild(gridDiv);
                     }
-                    bubble.appendChild(mediaDiv);
                 }
 
                 if (m.text) {
@@ -2003,6 +2130,24 @@
                     text.className = 'message-text';
                     text.textContent = m.text;
                     bubble.appendChild(text);
+                }
+
+                if (m.file) {
+                    const fileDiv = document.createElement('div');
+                    fileDiv.className = 'message-file';
+                    const ext = m.file.name.split('.').pop().toLowerCase();
+                    const iconClass = ['pdf'].includes(ext) ? 'pdf' :
+                                     ['doc', 'docx'].includes(ext) ? 'doc' :
+                                     ['xls', 'xlsx'].includes(ext) ? 'xls' :
+                                     ['ppt', 'pptx'].includes(ext) ? 'ppt' : 'other';
+                    fileDiv.innerHTML = `
+                        <div class="file-icon ${iconClass}">${ext.toUpperCase().slice(0, 4)}</div>
+                        <div class="file-details">
+                            <div class="file-name">${m.file.name}</div>
+                            <div class="file-size">${formatFileSize(m.file.size)}</div>
+                        </div>
+                    `;
+                    bubble.appendChild(fileDiv);
                 }
 
                 const meta = document.createElement('div');
@@ -2015,6 +2160,12 @@
             });
 
             messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
 
         // ============================================
@@ -2092,16 +2243,50 @@
 
         function handleFiles(files) {
             closeAttach();
-            Array.from(files).forEach(f => {
-                const isMedia = f.type.startsWith('image/') || f.type.startsWith('video/');
-                const msg = { id: 'm' + Date.now(), dir: 'out', text: '', time: Date.now(), status: 'sent' };
-                if (isMedia) msg.media = URL.createObjectURL(f);
-                else msg.file = { name: f.name, size: f.size };
-                if (!messages[currentConversationId]) messages[currentConversationId] = [];
+            const fileArray = Array.from(files);
+            const mediaFiles = fileArray.filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'));
+            const otherFiles = fileArray.filter(f => !f.type.startsWith('image/') && !f.type.startsWith('video/'));
+
+            if (!messages[currentConversationId]) messages[currentConversationId] = [];
+            const conv = conversations.find(c => c.id === currentConversationId);
+
+            // Group all media files into one message
+            if (mediaFiles.length > 0) {
+                const mediaUrls = mediaFiles.map(f => ({
+                    url: URL.createObjectURL(f),
+                    type: f.type.startsWith('video/') ? 'video' : 'image'
+                }));
+
+                const msg = {
+                    id: 'm' + Date.now(),
+                    dir: 'out',
+                    text: '',
+                    time: Date.now(),
+                    status: 'sent',
+                    media: mediaUrls  // Array of {url, type}
+                };
                 messages[currentConversationId].push(msg);
-                const conv = conversations.find(c => c.id === currentConversationId);
-                if (conv) { conv.lastMessage = isMedia ? 'Photo' : f.name; conv.time = Date.now(); }
+
+                if (conv) {
+                    conv.lastMessage = mediaFiles.length > 1 ? `${mediaFiles.length} Photos` : 'Photo';
+                    conv.time = Date.now();
+                }
+            }
+
+            // Each non-media file is a separate message
+            otherFiles.forEach(f => {
+                const msg = {
+                    id: 'm' + Date.now() + Math.random(),
+                    dir: 'out',
+                    text: '',
+                    time: Date.now(),
+                    status: 'sent',
+                    file: { name: f.name, size: f.size }
+                };
+                messages[currentConversationId].push(msg);
+                if (conv) { conv.lastMessage = f.name; conv.time = Date.now(); }
             });
+
             renderMessages(currentConversationId);
             renderConversations();
         }
