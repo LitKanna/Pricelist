@@ -837,6 +837,137 @@
             transform: scale(1.2);
         }
 
+        /* ============================================
+           NEW CHAT MODAL
+           ============================================ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 400;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.25s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .new-chat-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            background: white;
+            border-radius: 20px;
+            width: calc(100% - 40px);
+            max-width: 400px;
+            z-index: 401;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.25s;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .new-chat-modal.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            border-bottom: 1px solid var(--slate-200);
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--slate-900);
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--slate-100);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .modal-close svg {
+            width: 18px;
+            height: 18px;
+            color: var(--slate-500);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--slate-600);
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--slate-300);
+            border-radius: 12px;
+            font-size: 16px;
+            background: var(--slate-50);
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--green-500);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+
+        .modal-footer {
+            padding: 16px 20px 20px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: var(--gradient-green);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         /* File Message */
         .message-file {
             display: flex;
@@ -1696,6 +1827,32 @@
                     <div class="contact-value" id="contactBusiness">John's Restaurant</div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- NEW CHAT MODAL -->
+    <div class="modal-overlay" id="newChatOverlay"></div>
+    <div class="new-chat-modal" id="newChatModal">
+        <div class="modal-header">
+            <h3>New Conversation</h3>
+            <button class="modal-close" id="closeNewChat">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Customer Name</label>
+                <input type="text" id="newChatName" placeholder="e.g. John's Restaurant">
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" id="newChatPhone" placeholder="+61 400 000 000">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-primary" id="createChatBtn">Start Chat</button>
         </div>
     </div>
 
@@ -3191,6 +3348,56 @@
         document.getElementById('chatBackBtn').addEventListener('click', closeChat);
         document.getElementById('attachBtn').addEventListener('click', openAttach);
         attachOverlay.addEventListener('click', closeAttach);
+
+        // New Chat Modal
+        const newChatModal = document.getElementById('newChatModal');
+        const newChatOverlay = document.getElementById('newChatOverlay');
+
+        document.getElementById('composeBtn').addEventListener('click', () => {
+            newChatModal.classList.add('active');
+            newChatOverlay.classList.add('active');
+            document.getElementById('newChatName').focus();
+        });
+
+        document.getElementById('closeNewChat').addEventListener('click', closeNewChatModal);
+        newChatOverlay.addEventListener('click', closeNewChatModal);
+
+        function closeNewChatModal() {
+            newChatModal.classList.remove('active');
+            newChatOverlay.classList.remove('active');
+            document.getElementById('newChatName').value = '';
+            document.getElementById('newChatPhone').value = '';
+        }
+
+        document.getElementById('createChatBtn').addEventListener('click', async () => {
+            const name = document.getElementById('newChatName').value.trim();
+            const phone = document.getElementById('newChatPhone').value.trim();
+
+            if (!name || !phone) {
+                alert('Please enter both name and phone number');
+                return;
+            }
+
+            // Format phone number
+            const formattedPhone = phone.startsWith('+') ? phone : '+61' + phone.replace(/^0/, '');
+
+            const btn = document.getElementById('createChatBtn');
+            btn.disabled = true;
+            btn.textContent = 'Creating...';
+
+            const result = await startNewConversation(formattedPhone, name);
+
+            btn.disabled = false;
+            btn.textContent = 'Start Chat';
+
+            if (result) {
+                closeNewChatModal();
+                // Reload conversations and open the new one
+                await loadConversations();
+            } else {
+                alert('Failed to create conversation. Please try again.');
+            }
+        });
 
         document.getElementById('attachCamera').addEventListener('click', () => document.getElementById('cameraInput').click());
         document.getElementById('attachPhotos').addEventListener('click', () => document.getElementById('photoInput').click());
