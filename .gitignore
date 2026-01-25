@@ -19,3 +19,8 @@ tmpclaude-*
 
 # Python scripts (development only)
 *.py
+
+# Credentials (NEVER commit these!)
+config.js
+.env
+.env.local
