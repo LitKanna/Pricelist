@@ -1901,12 +1901,12 @@
         // ============================================
         // SUPABASE INITIALIZATION
         // ============================================
-        const supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        const db = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
         // Initialize current user (salesman) - for demo, using a fixed user
         // In production, this would come from auth
         async function initCurrentUser() {
-            const { data, error } = await supabase
+            const { data, error } = await db
                 .from('contacts')
                 .upsert({
                     phone: '+61400000001',
@@ -1955,7 +1955,7 @@
         async function loadConversations() {
             if (!currentUser) return;
 
-            const { data, error } = await supabase
+            const { data, error } = await db
                 .from('conversations')
                 .select(`
                     id,
@@ -1974,7 +1974,7 @@
 
             // Get last message for each conversation
             for (const conv of data) {
-                const { data: lastMsg } = await supabase
+                const { data: lastMsg } = await db
                     .from('messages')
                     .select('content, media, created_at')
                     .eq('conversation_id', conv.id)
@@ -2008,7 +2008,7 @@
 
         // Load messages for a conversation
         async function loadMessages(conversationId) {
-            const { data, error } = await supabase
+            const { data, error } = await db
                 .from('messages')
                 .select(`
                     id,
@@ -2044,7 +2044,7 @@
         function subscribeToMessages(conversationId) {
             // Unsubscribe from previous
             if (messageSubscription) {
-                supabase.removeChannel(messageSubscription);
+                db.removeChannel(messageSubscription);
             }
 
             messageSubscription = supabase
@@ -2099,7 +2099,7 @@
         async function sendMessageToSupabase(conversationId, content, media = [], files = []) {
             if (!currentUser) return null;
 
-            const { data, error } = await supabase
+            const { data, error } = await db
                 .from('messages')
                 .insert({
                     conversation_id: conversationId,
@@ -2125,7 +2125,7 @@
             const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
             const filePath = `messages/${fileName}`;
 
-            const { data, error } = await supabase.storage
+            const { data, error } = await db.storage
                 .from('everfresh-media')
                 .upload(filePath, file);
 
@@ -2134,7 +2134,7 @@
                 return null;
             }
 
-            const { data: urlData } = supabase.storage
+            const { data: urlData } = db.storage
                 .from('everfresh-media')
                 .getPublicUrl(filePath);
 
@@ -2152,7 +2152,7 @@
             if (!currentUser) return null;
 
             // Create or get contact
-            const { data: contact, error: contactError } = await supabase
+            const { data: contact, error: contactError } = await db
                 .from('contacts')
                 .upsert({ phone, name, role: 'customer' }, { onConflict: 'phone' })
                 .select()
@@ -2164,7 +2164,7 @@
             }
 
             // Create conversation
-            const { data: conv, error: convError } = await supabase
+            const { data: conv, error: convError } = await db
                 .from('conversations')
                 .insert({
                     participant_1: currentUser.id,
