@@ -13,6 +13,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- GSAP Animation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
     <style>
         :root {
             /* Everfresh Brand Colors */
@@ -276,14 +279,13 @@
             border: 1px solid var(--slate-200);
             position: relative;
             z-index: 2;
-            /* GPU acceleration - use translate3d for 60fps */
+            /* GPU acceleration - GSAP handles all transforms */
             transform: translate3d(0, 0, 0);
-            /* Smooth spring-like snap back animation */
-            transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+            /* Background transition for tap feedback */
+            transition: background 0.15s;
         }
 
         .conversation-card:active:not(.swiping) {
-            transform: translate3d(0, 0, 0) scale(0.98);
             background: var(--slate-50);
         }
 
@@ -291,21 +293,14 @@
             border-left: 3px solid var(--green-500);
         }
 
-        /* During active swipe - disable transition for realtime tracking */
+        /* During active swipe - hint to browser */
         .conversation-card.swiping {
-            transition: none;
-            /* Hint to browser this will change */
             will-change: transform;
         }
 
-        /* Swiped open state */
+        /* Swiped state marker - GSAP handles the actual transform */
         .conversation-card.swiped {
-            transform: translate3d(-160px, 0, 0);
-        }
-
-        /* Overshoot animation on snap */
-        .conversation-card.snapping {
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* Transform is managed by GSAP */
         }
 
         .conversation-avatar {
@@ -421,10 +416,11 @@
             display: flex;
             flex-direction: column;
             transform: translateX(100%);
-            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            /* GSAP handles animations, no CSS transition */
         }
 
         .chat-view.active {
+            /* Fallback for non-GSAP; GSAP overrides this during animation */
             transform: translateX(0);
         }
 
@@ -1392,6 +1388,24 @@
 
     <script>
         // ============================================
+        // GSAP CONFIGURATION
+        // Best practices for 120Hz+ displays (ProMotion)
+        // ============================================
+
+        // Smooth out lag spikes (threshold: 500ms, adjustedLag: 33ms)
+        // This prevents animations from jumping when CPU is busy
+        gsap.ticker.lagSmoothing(500, 33);
+
+        // Respect user's reduced motion preference
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // Default easing - iOS-like smooth deceleration
+        gsap.defaults({
+            ease: 'power2.out',
+            duration: 0.35
+        });
+
+        // ============================================
         // STATE
         // ============================================
         let currentConversationId = null;
@@ -1447,8 +1461,256 @@
         function showToast(msg, type = 'success') {
             document.getElementById('toastMessage').textContent = msg;
             toast.querySelector('.toast-icon').className = 'toast-icon ' + type;
+
+            // GSAP toast animation
+            if (!prefersReducedMotion) {
+                gsap.fromTo(toast,
+                    { y: 100, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.7)' }
+                );
+                gsap.to(toast, {
+                    y: 100,
+                    opacity: 0,
+                    duration: 0.3,
+                    delay: 2.7,
+                    ease: 'power2.in'
+                });
+            }
             toast.classList.add('active');
             setTimeout(() => toast.classList.remove('active'), 3000);
+        }
+
+        // ============================================
+        // GSAP ANIMATIONS
+        // GPU-accelerated, 120fps-ready animations
+        // Only use transform & opacity (GPU properties)
+        // ============================================
+
+        /**
+         * Animate conversation list items with stagger
+         * Creates cascading fade-in effect on load/refresh
+         */
+        function animateConversationList() {
+            if (prefersReducedMotion) return;
+
+            const cards = conversationList.querySelectorAll('.swipe-container');
+            if (cards.length === 0) return;
+
+            // Set initial state (invisible, shifted down)
+            gsap.set(cards, {
+                opacity: 0,
+                y: 20
+            });
+
+            // Animate in with stagger
+            gsap.to(cards, {
+                opacity: 1,
+                y: 0,
+                duration: 0.4,
+                stagger: {
+                    each: 0.08,      // 80ms between each card
+                    from: 'start'    // Top to bottom
+                },
+                ease: 'power2.out',
+                clearProps: 'transform' // Clean up after animation for swipe to work
+            });
+        }
+
+        /**
+         * Animate a single new conversation card
+         * Used when a new message comes in
+         */
+        function animateNewConversation(container) {
+            if (prefersReducedMotion) return;
+
+            gsap.fromTo(container,
+                { opacity: 0, y: -20, scale: 0.95 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.4,
+                    ease: 'back.out(1.4)',
+                    clearProps: 'transform'
+                }
+            );
+        }
+
+        /**
+         * Animate chat view opening (mobile)
+         * Smooth slide from right
+         */
+        function animateChatOpen() {
+            if (prefersReducedMotion || isDesktop) return;
+
+            gsap.fromTo(chatView,
+                { x: '100%' },
+                {
+                    x: '0%',
+                    duration: 0.35,
+                    ease: 'power3.out'
+                }
+            );
+        }
+
+        /**
+         * Animate chat view closing (mobile)
+         * Returns a promise so we can wait for completion
+         */
+        function animateChatClose() {
+            return new Promise(resolve => {
+                if (prefersReducedMotion || isDesktop) {
+                    resolve();
+                    return;
+                }
+
+                gsap.to(chatView, {
+                    x: '100%',
+                    duration: 0.3,
+                    ease: 'power2.in',
+                    onComplete: resolve
+                });
+            });
+        }
+
+        /**
+         * Animate message bubbles appearing
+         * Staggered reveal for message history
+         */
+        function animateMessages() {
+            if (prefersReducedMotion) return;
+
+            const bubbles = messagesList.querySelectorAll('.message-row');
+            if (bubbles.length === 0) return;
+
+            gsap.fromTo(bubbles,
+                { opacity: 0, y: 15 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.3,
+                    stagger: 0.05,
+                    ease: 'power2.out'
+                }
+            );
+        }
+
+        /**
+         * Animate a new sent message
+         * Pop-in effect with scale
+         */
+        function animateNewMessage(messageRow) {
+            if (prefersReducedMotion) return;
+
+            gsap.fromTo(messageRow,
+                { opacity: 0, scale: 0.8, y: 20 },
+                {
+                    opacity: 1,
+                    scale: 1,
+                    y: 0,
+                    duration: 0.35,
+                    ease: 'back.out(1.7)'
+                }
+            );
+        }
+
+        /**
+         * Animate delete/archive slide out
+         * Smooth removal with collapse
+         */
+        function animateRemoveConversation(container, direction = 'left') {
+            return new Promise(resolve => {
+                if (prefersReducedMotion) {
+                    resolve();
+                    return;
+                }
+
+                const xTarget = direction === 'left' ? '-100%' : '100%';
+
+                // Slide out
+                gsap.to(container, {
+                    x: xTarget,
+                    opacity: 0,
+                    duration: 0.3,
+                    ease: 'power2.in'
+                });
+
+                // Collapse height
+                gsap.to(container, {
+                    height: 0,
+                    marginBottom: 0,
+                    paddingTop: 0,
+                    paddingBottom: 0,
+                    duration: 0.25,
+                    delay: 0.15,
+                    ease: 'power2.inOut',
+                    onComplete: resolve
+                });
+            });
+        }
+
+        /**
+         * Animate contact sheet opening
+         * Slide up from bottom with slight overshoot
+         */
+        function animateContactSheetOpen() {
+            if (prefersReducedMotion) return;
+
+            gsap.fromTo(contactSheet,
+                { y: '100%' },
+                {
+                    y: '0%',
+                    duration: 0.4,
+                    ease: 'power3.out'
+                }
+            );
+        }
+
+        /**
+         * Animate contact sheet closing
+         */
+        function animateContactSheetClose() {
+            return new Promise(resolve => {
+                if (prefersReducedMotion) {
+                    resolve();
+                    return;
+                }
+
+                gsap.to(contactSheet, {
+                    y: '100%',
+                    duration: 0.3,
+                    ease: 'power2.in',
+                    onComplete: resolve
+                });
+            });
+        }
+
+        /**
+         * Animate attachment menu opening
+         */
+        function animateAttachMenuOpen() {
+            if (prefersReducedMotion) return;
+
+            const options = attachMenu.querySelectorAll('.attach-option');
+
+            gsap.fromTo(attachMenu,
+                { y: '100%' },
+                { y: '0%', duration: 0.35, ease: 'power3.out' }
+            );
+
+            // Stagger the icons
+            gsap.fromTo(options,
+                { opacity: 0, y: 20, scale: 0.8 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.3,
+                    stagger: 0.05,
+                    delay: 0.1,
+                    ease: 'back.out(1.4)'
+                }
+            );
         }
 
         // ============================================
@@ -1613,10 +1875,17 @@
             if (!isDesktop) {
                 chatView.classList.add('active');
                 emptyState.style.display = 'none';
+                // GSAP: Animate chat opening
+                animateChatOpen();
             } else {
                 emptyState.style.display = 'none';
                 chatView.style.display = 'flex';
             }
+
+            // GSAP: Animate messages appearing
+            requestAnimationFrame(() => {
+                animateMessages();
+            });
 
             conv.unread = 0;
             renderConversations();
@@ -1624,7 +1893,10 @@
 
         function closeChat() {
             if (!isDesktop) {
-                chatView.classList.remove('active');
+                // GSAP: Animate chat closing, then remove class
+                animateChatClose().then(() => {
+                    chatView.classList.remove('active');
+                });
             }
         }
 
@@ -1641,6 +1913,12 @@
 
             renderMessages(currentConversationId);
             renderConversations();
+
+            // GSAP: Animate the new message (last one in list)
+            const lastMessage = messagesList.querySelector('.message-row:last-child');
+            if (lastMessage) {
+                animateNewMessage(lastMessage);
+            }
 
             messageInput.value = '';
             messageInput.style.height = 'auto';
@@ -1664,8 +1942,31 @@
             showToast('Sent');
         }
 
-        function openAttach() { attachMenu.classList.add('active'); attachOverlay.classList.add('active'); }
-        function closeAttach() { attachMenu.classList.remove('active'); attachOverlay.classList.remove('active'); }
+        function openAttach() {
+            attachMenu.classList.add('active');
+            attachOverlay.classList.add('active');
+            // GSAP: Animate menu and icons
+            animateAttachMenuOpen();
+        }
+
+        function closeAttach() {
+            // GSAP: Animate closing
+            if (!prefersReducedMotion) {
+                gsap.to(attachMenu, {
+                    y: '100%',
+                    duration: 0.25,
+                    ease: 'power2.in',
+                    onComplete: () => {
+                        attachMenu.classList.remove('active');
+                        attachOverlay.classList.remove('active');
+                        gsap.set(attachMenu, { clearProps: 'transform' });
+                    }
+                });
+            } else {
+                attachMenu.classList.remove('active');
+                attachOverlay.classList.remove('active');
+            }
+        }
 
         // ============================================
         // SWIPE HANDLERS (Smooth iOS-style)
@@ -1696,12 +1997,18 @@
                 isTracking = true;
                 directionLocked = null;
 
-                // Close any other open swipe
+                // Close any other open swipe with GSAP
                 if (currentSwipedCard && currentSwipedCard !== card) {
-                    currentSwipedCard.classList.remove('swiped');
-                    currentSwipedCard.classList.add('snapping');
-                    setTimeout(() => currentSwipedCard?.classList.remove('snapping'), 400);
+                    const otherCard = currentSwipedCard;
+                    otherCard.classList.remove('swiped');
                     currentSwipedCard = null;
+
+                    gsap.to(otherCard, {
+                        x: 0,
+                        duration: 0.3,
+                        ease: 'power2.out',
+                        onComplete: () => gsap.set(otherCard, { clearProps: 'transform' })
+                    });
                 }
             }, { passive: true });
 
@@ -1789,9 +2096,20 @@
                     shouldOpen = currentX < -threshold;
                 }
 
-                // Add spring animation class
-                card.classList.add('snapping');
-                setTimeout(() => card.classList.remove('snapping'), 400);
+                // GSAP: Smooth spring snap animation
+                const targetX = shouldOpen ? -SWIPE_OPEN_AMOUNT : 0;
+
+                gsap.to(card, {
+                    x: targetX,
+                    duration: 0.4,
+                    ease: 'back.out(1.2)', // Slight overshoot like iOS
+                    onComplete: () => {
+                        // Clean up transform for CSS to take over
+                        if (!shouldOpen) {
+                            gsap.set(card, { clearProps: 'transform' });
+                        }
+                    }
+                });
 
                 if (shouldOpen && !isSwiped) {
                     card.classList.add('swiped');
@@ -1810,81 +2128,84 @@
                 isTracking = false;
                 directionLocked = null;
                 card.classList.remove('swiping');
-                card.style.transform = '';
+                // GSAP: Smooth cancel animation
+                gsap.to(card, {
+                    x: 0,
+                    duration: 0.3,
+                    ease: 'power2.out',
+                    onComplete: () => gsap.set(card, { clearProps: 'transform' })
+                });
             });
         }
 
         function closeAllSwipes() {
             if (currentSwipedCard) {
-                currentSwipedCard.classList.add('snapping');
-                currentSwipedCard.classList.remove('swiped');
                 const card = currentSwipedCard;
-                setTimeout(() => card.classList.remove('snapping'), 400);
+                card.classList.remove('swiped');
                 currentSwipedCard = null;
+
+                // GSAP: Smooth close animation
+                gsap.to(card, {
+                    x: 0,
+                    duration: 0.35,
+                    ease: 'power3.out',
+                    onComplete: () => gsap.set(card, { clearProps: 'transform' })
+                });
             }
         }
 
         function archiveConversation(convId) {
-            // Find the container and animate it out
             const container = document.querySelector(`.swipe-container[data-conv-id="${convId}"]`);
-            if (container) {
-                container.style.transition = 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-                container.style.transform = 'translateX(-100%)';
-                container.style.opacity = '0';
-                container.style.maxHeight = container.offsetHeight + 'px';
+            if (!container) return;
 
-                setTimeout(() => {
-                    container.style.maxHeight = '0';
-                    container.style.marginBottom = '0';
-                    container.style.padding = '0';
-                }, 150);
-
-                setTimeout(() => {
-                    const idx = conversations.findIndex(c => c.id === convId);
-                    if (idx !== -1) {
-                        const conv = conversations.splice(idx, 1)[0];
-                        showToast(`${conv.name} archived`);
-                        renderConversations();
-                    }
-                }, 350);
-            }
             currentSwipedCard = null;
+
+            // Store height before animation
+            const height = container.offsetHeight;
+            container.style.height = height + 'px';
+            container.style.overflow = 'hidden';
+
+            // GSAP: Animate slide out and collapse
+            animateRemoveConversation(container, 'left').then(() => {
+                const idx = conversations.findIndex(c => c.id === convId);
+                if (idx !== -1) {
+                    const conv = conversations.splice(idx, 1)[0];
+                    showToast(`${conv.name} archived`);
+                    renderConversations();
+                }
+            });
         }
 
         function deleteConversation(convId) {
-            // Find the container and animate it out
             const container = document.querySelector(`.swipe-container[data-conv-id="${convId}"]`);
-            if (container) {
-                container.style.transition = 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-                container.style.transform = 'translateX(100%)';
-                container.style.opacity = '0';
-                container.style.maxHeight = container.offsetHeight + 'px';
+            if (!container) return;
 
-                setTimeout(() => {
-                    container.style.maxHeight = '0';
-                    container.style.marginBottom = '0';
-                }, 150);
+            currentSwipedCard = null;
 
-                setTimeout(() => {
-                    const idx = conversations.findIndex(c => c.id === convId);
-                    if (idx !== -1) {
-                        const conv = conversations.splice(idx, 1)[0];
-                        delete messages[convId];
-                        showToast(`${conv.name} deleted`);
-                        renderConversations();
-                        // If deleted chat was open, close it
-                        if (currentConversationId === convId) {
-                            currentConversationId = null;
-                            closeChat();
-                            if (isDesktop) {
-                                emptyState.style.display = 'flex';
-                                chatView.style.display = 'none';
-                            }
+            // Store height before animation
+            const height = container.offsetHeight;
+            container.style.height = height + 'px';
+            container.style.overflow = 'hidden';
+
+            // GSAP: Animate slide out and collapse
+            animateRemoveConversation(container, 'right').then(() => {
+                const idx = conversations.findIndex(c => c.id === convId);
+                if (idx !== -1) {
+                    const conv = conversations.splice(idx, 1)[0];
+                    delete messages[convId];
+                    showToast(`${conv.name} deleted`);
+                    renderConversations();
+                    // If deleted chat was open, close it
+                    if (currentConversationId === convId) {
+                        currentConversationId = null;
+                        closeChat();
+                        if (isDesktop) {
+                            emptyState.style.display = 'flex';
+                            chatView.style.display = 'none';
                         }
                     }
-                }, 350);
-            }
-            currentSwipedCard = null;
+                }
+            });
         }
 
         // ============================================
@@ -1911,9 +2232,20 @@
         document.getElementById('fileInput').addEventListener('change', e => { if (e.target.files.length) handleFiles(e.target.files); e.target.value = ''; });
         document.getElementById('cameraInput').addEventListener('change', e => { if (e.target.files.length) handleFiles(e.target.files); e.target.value = ''; });
 
-        document.getElementById('infoBtn').addEventListener('click', () => contactSheet.classList.add('active'));
-        document.getElementById('chatContact').addEventListener('click', () => contactSheet.classList.add('active'));
-        document.getElementById('closeContact').addEventListener('click', () => contactSheet.classList.remove('active'));
+        document.getElementById('infoBtn').addEventListener('click', () => {
+            contactSheet.classList.add('active');
+            animateContactSheetOpen();
+        });
+        document.getElementById('chatContact').addEventListener('click', () => {
+            contactSheet.classList.add('active');
+            animateContactSheetOpen();
+        });
+        document.getElementById('closeContact').addEventListener('click', () => {
+            animateContactSheetClose().then(() => {
+                contactSheet.classList.remove('active');
+                gsap.set(contactSheet, { clearProps: 'transform' });
+            });
+        });
 
         document.getElementById('callBtn').addEventListener('click', () => {
             const conv = conversations.find(c => c.id === currentConversationId);
@@ -1945,6 +2277,13 @@
         // INIT
         // ============================================
         renderConversations();
+
+        // Animate conversation list on initial load
+        // Small delay ensures DOM is ready
+        requestAnimationFrame(() => {
+            animateConversationList();
+        });
+
         if (isDesktop) { emptyState.style.display = 'flex'; chatView.style.display = 'none'; }
     </script>
 </body>
