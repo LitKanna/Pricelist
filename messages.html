@@ -204,39 +204,16 @@
             gap: 8px;
         }
 
-        .conversation-card {
-            background: white;
-            border-radius: 16px;
-            padding: 14px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--slate-200);
-        }
-
-        .conversation-card:active {
-            transform: scale(0.98);
-            background: var(--slate-50);
-        }
-
-        .conversation-card.swiping:active {
-            transform: none;
-        }
-
-        .conversation-card.unread {
-            border-left: 3px solid var(--green-500);
-        }
-
         /* ============================================
            SWIPE TO REVEAL ACTIONS (iOS Style)
+           GPU-accelerated, smooth 60fps
            ============================================ */
         .swipe-container {
             position: relative;
             overflow: hidden;
             border-radius: 16px;
+            /* Let browser handle vertical scroll, we handle horizontal */
+            touch-action: pan-y;
         }
 
         .swipe-actions {
@@ -246,6 +223,8 @@
             bottom: 0;
             display: flex;
             align-items: stretch;
+            /* GPU layer for smooth reveal */
+            transform: translateZ(0);
         }
 
         .swipe-action {
@@ -257,7 +236,8 @@
             border: none;
             cursor: pointer;
             gap: 4px;
-            transition: width 0.15s;
+            /* Smooth width transitions for overshoot effect */
+            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         .swipe-action svg {
@@ -271,31 +251,61 @@
         }
 
         .swipe-action.archive {
-            background: var(--slate-500);
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
             color: white;
         }
 
         .swipe-action.delete {
-            background: #ef4444;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             color: white;
         }
 
         .swipe-action:active {
-            opacity: 0.8;
+            transform: scale(0.95);
         }
 
         .conversation-card {
+            background: white;
+            border-radius: 16px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--slate-200);
             position: relative;
-            z-index: 1;
-            transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            z-index: 2;
+            /* GPU acceleration - use translate3d for 60fps */
+            transform: translate3d(0, 0, 0);
+            /* Smooth spring-like snap back animation */
+            transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
         }
 
-        .conversation-card.swiped {
-            transform: translateX(-160px);
+        .conversation-card:active:not(.swiping) {
+            transform: translate3d(0, 0, 0) scale(0.98);
+            background: var(--slate-50);
         }
 
+        .conversation-card.unread {
+            border-left: 3px solid var(--green-500);
+        }
+
+        /* During active swipe - disable transition for realtime tracking */
         .conversation-card.swiping {
             transition: none;
+            /* Hint to browser this will change */
+            will-change: transform;
+        }
+
+        /* Swiped open state */
+        .conversation-card.swiped {
+            transform: translate3d(-160px, 0, 0);
+        }
+
+        /* Overshoot animation on snap */
+        .conversation-card.snapping {
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .conversation-avatar {
@@ -1658,119 +1668,223 @@
         function closeAttach() { attachMenu.classList.remove('active'); attachOverlay.classList.remove('active'); }
 
         // ============================================
-        // SWIPE HANDLERS
+        // SWIPE HANDLERS (Smooth iOS-style)
+        // Uses direction detection + GPU acceleration
         // ============================================
         let currentSwipedCard = null;
-        const SWIPE_THRESHOLD = 60;
         const SWIPE_OPEN_AMOUNT = 160;
+        const DIRECTION_THRESHOLD = 10;  // Pixels to determine direction
+        const VELOCITY_THRESHOLD = 0.3;  // Pixels per ms for fast swipe
 
         function setupSwipeHandlers(card, container) {
             let startX = 0;
+            let startY = 0;
+            let startTime = 0;
             let currentX = 0;
-            let isDragging = false;
+            let lastX = 0;
+            let lastTime = 0;
+            let isTracking = false;
+            let directionLocked = null; // 'horizontal' | 'vertical' | null
 
             card.addEventListener('touchstart', (e) => {
+                const touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
+                startTime = Date.now();
+                lastX = startX;
+                lastTime = startTime;
+                isTracking = true;
+                directionLocked = null;
+
                 // Close any other open swipe
                 if (currentSwipedCard && currentSwipedCard !== card) {
                     currentSwipedCard.classList.remove('swiped');
+                    currentSwipedCard.classList.add('snapping');
+                    setTimeout(() => currentSwipedCard?.classList.remove('snapping'), 400);
                     currentSwipedCard = null;
                 }
-
-                startX = e.touches[0].clientX;
-                currentX = 0;
-                isDragging = true;
-                card.classList.add('swiping');
             }, { passive: true });
 
             card.addEventListener('touchmove', (e) => {
-                if (!isDragging) return;
+                if (!isTracking) return;
 
                 const touch = e.touches[0];
-                const diff = touch.clientX - startX;
+                const diffX = touch.clientX - startX;
+                const diffY = touch.clientY - startY;
 
-                // If card is already swiped open, calculate from that position
+                // Determine direction on first significant movement
+                if (!directionLocked) {
+                    const absDiffX = Math.abs(diffX);
+                    const absDiffY = Math.abs(diffY);
+
+                    if (absDiffX > DIRECTION_THRESHOLD || absDiffY > DIRECTION_THRESHOLD) {
+                        if (absDiffX > absDiffY * 1.2) {
+                            // Horizontal swipe detected
+                            directionLocked = 'horizontal';
+                            card.classList.add('swiping');
+                        } else {
+                            // Vertical scroll - let browser handle it
+                            directionLocked = 'vertical';
+                            isTracking = false;
+                            return;
+                        }
+                    } else {
+                        // Not enough movement yet
+                        return;
+                    }
+                }
+
+                if (directionLocked !== 'horizontal') return;
+
+                // Track velocity
+                lastX = touch.clientX;
+                lastTime = Date.now();
+
+                // Calculate position
                 const isSwiped = card.classList.contains('swiped');
-                let translateX;
+                const baseOffset = isSwiped ? -SWIPE_OPEN_AMOUNT : 0;
+                let translateX = baseOffset + diffX;
 
-                if (isSwiped) {
-                    // Starting from open position
-                    translateX = Math.min(0, Math.max(-SWIPE_OPEN_AMOUNT, -SWIPE_OPEN_AMOUNT + diff));
-                } else {
-                    // Starting from closed position
-                    translateX = Math.min(0, Math.max(-SWIPE_OPEN_AMOUNT - 20, diff));
+                // Clamp with rubber band effect on edges
+                if (translateX > 0) {
+                    // Rubber band when swiping right past origin
+                    translateX = translateX * 0.3;
+                } else if (translateX < -SWIPE_OPEN_AMOUNT) {
+                    // Rubber band when overswiping left
+                    const overshoot = translateX + SWIPE_OPEN_AMOUNT;
+                    translateX = -SWIPE_OPEN_AMOUNT + (overshoot * 0.3);
                 }
 
                 currentX = translateX;
-                card.style.transform = `translateX(${translateX}px)`;
+                // Use translate3d for GPU acceleration
+                card.style.transform = `translate3d(${translateX}px, 0, 0)`;
             }, { passive: true });
 
-            card.addEventListener('touchend', () => {
-                if (!isDragging) return;
-                isDragging = false;
+            card.addEventListener('touchend', (e) => {
+                if (!isTracking) return;
+                isTracking = false;
+
+                // If we never locked to horizontal, nothing to do
+                if (directionLocked !== 'horizontal') {
+                    card.classList.remove('swiping');
+                    return;
+                }
+
                 card.classList.remove('swiping');
                 card.style.transform = '';
 
+                // Calculate velocity
+                const endTime = Date.now();
+                const velocity = (lastX - startX) / (endTime - startTime);
                 const isSwiped = card.classList.contains('swiped');
 
-                if (isSwiped) {
-                    // Was open, check if should close
-                    if (currentX > -SWIPE_OPEN_AMOUNT + SWIPE_THRESHOLD) {
-                        card.classList.remove('swiped');
-                        currentSwipedCard = null;
-                    }
+                // Decide based on position and velocity
+                let shouldOpen;
+                if (Math.abs(velocity) > VELOCITY_THRESHOLD) {
+                    // Fast swipe - use velocity direction
+                    shouldOpen = velocity < 0;
                 } else {
-                    // Was closed, check if should open
-                    if (currentX < -SWIPE_THRESHOLD) {
-                        card.classList.add('swiped');
-                        currentSwipedCard = card;
-                    }
+                    // Slow drag - use position threshold (40% of open amount)
+                    const threshold = SWIPE_OPEN_AMOUNT * 0.4;
+                    shouldOpen = currentX < -threshold;
+                }
+
+                // Add spring animation class
+                card.classList.add('snapping');
+                setTimeout(() => card.classList.remove('snapping'), 400);
+
+                if (shouldOpen && !isSwiped) {
+                    card.classList.add('swiped');
+                    currentSwipedCard = card;
+                } else if (!shouldOpen && isSwiped) {
+                    card.classList.remove('swiped');
+                    currentSwipedCard = null;
+                } else if (!shouldOpen && !isSwiped) {
+                    // Snap back to closed
+                    currentSwipedCard = null;
                 }
             });
 
-            // Close swipe on scroll
-            container.addEventListener('scroll', () => {
-                if (card.classList.contains('swiped')) {
-                    card.classList.remove('swiped');
-                    currentSwipedCard = null;
-                }
+            // Cancel on touch cancel
+            card.addEventListener('touchcancel', () => {
+                isTracking = false;
+                directionLocked = null;
+                card.classList.remove('swiping');
+                card.style.transform = '';
             });
         }
 
         function closeAllSwipes() {
             if (currentSwipedCard) {
+                currentSwipedCard.classList.add('snapping');
                 currentSwipedCard.classList.remove('swiped');
+                const card = currentSwipedCard;
+                setTimeout(() => card.classList.remove('snapping'), 400);
                 currentSwipedCard = null;
             }
         }
 
         function archiveConversation(convId) {
-            closeAllSwipes();
-            const idx = conversations.findIndex(c => c.id === convId);
-            if (idx !== -1) {
-                const conv = conversations.splice(idx, 1)[0];
-                showToast(`${conv.name} archived`);
-                renderConversations();
+            // Find the container and animate it out
+            const container = document.querySelector(`.swipe-container[data-conv-id="${convId}"]`);
+            if (container) {
+                container.style.transition = 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                container.style.transform = 'translateX(-100%)';
+                container.style.opacity = '0';
+                container.style.maxHeight = container.offsetHeight + 'px';
+
+                setTimeout(() => {
+                    container.style.maxHeight = '0';
+                    container.style.marginBottom = '0';
+                    container.style.padding = '0';
+                }, 150);
+
+                setTimeout(() => {
+                    const idx = conversations.findIndex(c => c.id === convId);
+                    if (idx !== -1) {
+                        const conv = conversations.splice(idx, 1)[0];
+                        showToast(`${conv.name} archived`);
+                        renderConversations();
+                    }
+                }, 350);
             }
+            currentSwipedCard = null;
         }
 
         function deleteConversation(convId) {
-            closeAllSwipes();
-            const idx = conversations.findIndex(c => c.id === convId);
-            if (idx !== -1) {
-                const conv = conversations.splice(idx, 1)[0];
-                delete messages[convId];
-                showToast(`${conv.name} deleted`);
-                renderConversations();
-                // If deleted chat was open, close it
-                if (currentConversationId === convId) {
-                    currentConversationId = null;
-                    closeChat();
-                    if (isDesktop) {
-                        emptyState.style.display = 'flex';
-                        chatView.style.display = 'none';
+            // Find the container and animate it out
+            const container = document.querySelector(`.swipe-container[data-conv-id="${convId}"]`);
+            if (container) {
+                container.style.transition = 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                container.style.transform = 'translateX(100%)';
+                container.style.opacity = '0';
+                container.style.maxHeight = container.offsetHeight + 'px';
+
+                setTimeout(() => {
+                    container.style.maxHeight = '0';
+                    container.style.marginBottom = '0';
+                }, 150);
+
+                setTimeout(() => {
+                    const idx = conversations.findIndex(c => c.id === convId);
+                    if (idx !== -1) {
+                        const conv = conversations.splice(idx, 1)[0];
+                        delete messages[convId];
+                        showToast(`${conv.name} deleted`);
+                        renderConversations();
+                        // If deleted chat was open, close it
+                        if (currentConversationId === convId) {
+                            currentConversationId = null;
+                            closeChat();
+                            if (isDesktop) {
+                                emptyState.style.display = 'flex';
+                                chatView.style.display = 'none';
+                            }
+                        }
                     }
-                }
+                }, 350);
             }
+            currentSwipedCard = null;
         }
 
         // ============================================
