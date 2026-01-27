@@ -3093,6 +3093,23 @@
                             <span id="sendFilteredText">Send All (0)</span>
                         </button>
                     </div>
+
+                    <!-- Twilio SMS Button -->
+                    <button id="sendViaSMSBtn" onclick="sendPricelistViaTwilio()" style="background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); color: white; padding: 12px; font-size: 14px; font-weight: 600; border: none; border-radius: 10px; cursor: pointer; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        <span id="smsButtonText">SMS All Customers</span>
+                    </button>
+
+                    <!-- SMS Progress -->
+                    <div id="smsProgress" style="display: none; margin-top: 8px; padding: 12px; background: #f5f3ff; border-radius: 10px; border: 1px solid #ddd6fe;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                            <div class="spinner" style="width: 14px; height: 14px; border: 2px solid #7c3aed; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            <span id="smsStatus" style="color: #6d28d9; font-weight: 600; font-size: 12px;">Preparing...</span>
+                        </div>
+                        <div style="background: #ddd6fe; border-radius: 3px; height: 4px; overflow: hidden;">
+                            <div id="smsProgressBar" style="background: linear-gradient(90deg, #7c3aed, #a855f7); height: 100%; width: 0%; transition: width 0.3s; border-radius: 3px;"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Progress -->
@@ -5510,16 +5527,15 @@
                 if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({ files: [file] });
-                        showTeamMemberSelector(mode);
                     } catch (shareError) {
-                        if (shareError.name === 'AbortError') {
-                            return;
+                        // Even if cancelled, continue to team selector
+                        if (shareError.name !== 'AbortError') {
+                            console.error('Share error:', shareError);
                         }
-                        showTeamMemberSelector(mode);
                     }
-                } else {
-                    showTeamMemberSelector(mode);
                 }
+                // Always show team selector after share attempt
+                showTeamMemberSelector(mode);
             } catch (err) {
                 console.error(err);
                 showToast('Error generating image');
@@ -5561,18 +5577,15 @@
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
                             await navigator.share({ files: [file] });
-                            // Image saved! Now show team selector
-                            showTeamMemberSelector(mode);
                         } catch (shareError) {
-                            if (shareError.name === 'AbortError') {
-                                return; // User cancelled
+                            // Even if cancelled, continue to team selector
+                            if (shareError.name !== 'AbortError') {
+                                console.error('Share error:', shareError);
                             }
-                            // Other error, still show selector
-                            showTeamMemberSelector(mode);
                         }
-                    } else {
-                        showTeamMemberSelector(mode);
                     }
+                    // Always show team selector after share attempt (whether saved, cancelled, or failed)
+                    showTeamMemberSelector(mode);
                 } catch (err) {
                     console.error(err);
                     showToast('Error generating image');
@@ -11442,6 +11455,7 @@ Response format (JSON only, no markdown):
             // Update send button text
             const dayLabel = day === 'all' ? 'All' : getDayDisplayName(day);
             document.getElementById('sendFilteredText').textContent = `Send to ${dayLabel} (${customers.length})`;
+            document.getElementById('smsButtonText').textContent = `SMS ${dayLabel} (${customers.length})`;
 
             if (customers.length === 0) {
                 container.innerHTML = '<p style="color: #64748b; text-align: center; padding: 20px;">No customers for this day</p>';
@@ -11462,9 +11476,10 @@ Response format (JSON only, no markdown):
                 html += `
                     <div style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between;">
                         <span style="font-weight: 500; font-size: 14px; color: #1e293b;">${customer.name}</span>
-                        <div style="display: flex; gap: 8px;">
-                            <button onclick="sendToCustomerVia(${originalIndex}, 'imessage')" style="background: linear-gradient(135deg, #34C759 0%, #30D158 100%); border: none; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/></svg></button>
-                            <button onclick="sendToCustomerVia(${originalIndex}, 'whatsapp')" style="background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); border: none; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></button>
+                        <div style="display: flex; gap: 6px;">
+                            <button onclick="sendToCustomerViaSMS(${originalIndex})" title="Send via SMS" style="background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); border: none; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></button>
+                            <button onclick="sendToCustomerVia(${originalIndex}, 'imessage')" title="Send via iMessage" style="background: linear-gradient(135deg, #34C759 0%, #30D158 100%); border: none; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/></svg></button>
+                            <button onclick="sendToCustomerVia(${originalIndex}, 'whatsapp')" title="Send via WhatsApp" style="background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); border: none; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></button>
                         </div>
                     </div>
                 `;
@@ -11627,6 +11642,261 @@ Response format (JSON only, no markdown):
                 const returnUrl = encodeURIComponent(window.location.href);
                 const shortcutUrl = `shortcuts://x-callback-url/run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}&x-success=${returnUrl}&x-cancel=${returnUrl}`;
                 window.location.href = shortcutUrl;
+            }
+        }
+
+        // ============================================
+        // TWILIO SMS INTEGRATION
+        // Send pricelist to all customers via SMS/MMS
+        // ============================================
+
+        async function sendPricelistViaTwilio() {
+            // Get filtered customers or all customers
+            const customersToSend = getFilteredCustomers();
+
+            if (customersToSend.length === 0) {
+                alert('No customers to send to. Add customers first.');
+                return;
+            }
+
+            // Confirm with user
+            const confirmSend = confirm(
+                `📱 Send via SMS\n\n` +
+                `This will send the price list to ${customersToSend.length} customer(s) via SMS:\n\n` +
+                customersToSend.slice(0, 5).map(c => `• ${c.name} (${c.phone})`).join('\n') +
+                (customersToSend.length > 5 ? `\n...and ${customersToSend.length - 5} more` : '') +
+                `\n\nMessages will be sent automatically from +61485039999.\n\n` +
+                `Continue?`
+            );
+
+            if (!confirmSend) return;
+
+            const progressDiv = document.getElementById('smsProgress');
+            const statusText = document.getElementById('smsStatus');
+            const progressBar = document.getElementById('smsProgressBar');
+            const smsBtn = document.getElementById('sendViaSMSBtn');
+
+            // Show progress
+            progressDiv.style.display = 'block';
+            smsBtn.style.opacity = '0.7';
+            smsBtn.disabled = true;
+
+            try {
+                // Step 1: Generate image
+                statusText.textContent = 'Generating price list image...';
+                progressBar.style.width = '10%';
+
+                const blob = await generateImageBlob();
+                if (!blob) {
+                    throw new Error('Failed to generate image');
+                }
+
+                // Step 2: Upload to Supabase Storage
+                statusText.textContent = 'Uploading image...';
+                progressBar.style.width = '30%';
+
+                const imageUrl = await uploadPricelistToStorage(blob);
+                if (!imageUrl) {
+                    throw new Error('Failed to upload image. Check storage permissions.');
+                }
+
+                // Step 3: Call Twilio Edge Function
+                statusText.textContent = `Sending to ${customersToSend.length} customers...`;
+                progressBar.style.width = '50%';
+
+                const result = await callTwilioFunction(customersToSend, imageUrl);
+
+                // Step 4: Show results
+                progressBar.style.width = '100%';
+
+                if (result.success) {
+                    const { summary } = result;
+                    statusText.textContent = `Done! Sent: ${summary.sent}, Failed: ${summary.failed}`;
+
+                    // Mark customers as sent in UI
+                    customersToSend.forEach((customer, idx) => {
+                        const customerResult = result.results?.find(r => r.phone === customer.phone);
+                        if (customerResult?.success) {
+                            saveCustomerSentPrices(customer.name);
+                        }
+                    });
+
+                    // Refresh customer list UI
+                    renderCustomersInShareMenu(customersToSend);
+
+                    showToast(`Sent to ${summary.sent} customers via SMS!`);
+
+                    // Show detailed results if any failures
+                    if (summary.failed > 0) {
+                        const failedCustomers = result.results.filter(r => !r.success);
+                        setTimeout(() => {
+                            alert(
+                                `Some messages failed to send:\n\n` +
+                                failedCustomers.map(f => `• ${f.name}: ${f.error}`).join('\n')
+                            );
+                        }, 500);
+                    }
+                } else {
+                    throw new Error(result.error || 'Failed to send messages');
+                }
+
+            } catch (error) {
+                console.error('SMS send error:', error);
+                statusText.textContent = 'Error: ' + error.message;
+                progressBar.style.background = '#ef4444';
+                showToast('Error sending SMS: ' + error.message);
+            } finally {
+                // Reset button after delay
+                setTimeout(() => {
+                    progressDiv.style.display = 'none';
+                    smsBtn.style.opacity = '1';
+                    smsBtn.disabled = false;
+                    progressBar.style.width = '0%';
+                    progressBar.style.background = 'linear-gradient(90deg, #7c3aed, #a855f7)';
+                }, 3000);
+            }
+        }
+
+        // Get filtered customers based on current filter state
+        function getFilteredCustomers() {
+            const activeDay = document.querySelector('.day-pill.active');
+            const dayFilter = activeDay?.dataset?.day;
+            const tomorrowFilter = localStorage.getItem('everfresh_tomorrowFilter') === 'true';
+
+            let filtered = [...customerContacts];
+
+            if (tomorrowFilter) {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowDay = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][tomorrow.getDay()];
+                filtered = filtered.filter(c => c.days?.includes(tomorrowDay));
+            } else if (dayFilter) {
+                filtered = filtered.filter(c => c.days?.includes(dayFilter));
+            }
+
+            return filtered;
+        }
+
+        // Upload pricelist image to Supabase Storage
+        async function uploadPricelistToStorage(blob) {
+            try {
+                if (!supabase) {
+                    initSupabase(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+                }
+
+                const timestamp = Date.now();
+                const fileName = `pricelists/pricelist-${timestamp}.png`;
+
+                const { data, error } = await supabase.storage
+                    .from('everfresh-media')
+                    .upload(fileName, blob, {
+                        contentType: 'image/png',
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+
+                if (error) {
+                    console.error('Storage upload error:', error);
+                    return null;
+                }
+
+                // Get public URL
+                const { data: urlData } = supabase.storage
+                    .from('everfresh-media')
+                    .getPublicUrl(fileName);
+
+                return urlData.publicUrl;
+            } catch (error) {
+                console.error('Upload error:', error);
+                return null;
+            }
+        }
+
+        // Call the Twilio Edge Function
+        async function callTwilioFunction(customers, imageUrl) {
+            try {
+                const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/send-pricelist`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        customers: customers.map(c => ({
+                            name: c.name,
+                            phone: c.phone,
+                            businessName: c.businessName
+                        })),
+                        imageUrl: imageUrl,
+                        salesmanName: salesmanInfo?.name || 'Everfresh Team'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Server error');
+                }
+
+                return result;
+            } catch (error) {
+                console.error('Twilio function error:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Render customers in share menu with sent status
+        function renderCustomersInShareMenu(customers) {
+            const listContainer = document.getElementById('customerShareList');
+            if (!listContainer) return;
+
+            // Re-render the customer list with updated sent status
+            renderCustomerShareList();
+        }
+
+        // Send to individual customer via SMS
+        async function sendToCustomerViaSMS(index) {
+            const customer = customerContacts[index];
+            if (!customer) return;
+
+            const smsBtn = document.getElementById('sendViaSMSBtn');
+            const statusText = document.getElementById('smsStatus');
+            const progressDiv = document.getElementById('smsProgress');
+            const progressBar = document.getElementById('smsProgressBar');
+
+            progressDiv.style.display = 'block';
+            smsBtn.style.opacity = '0.7';
+
+            try {
+                statusText.textContent = `Sending to ${customer.name}...`;
+                progressBar.style.width = '20%';
+
+                const blob = await generateImageBlob();
+                progressBar.style.width = '40%';
+
+                const imageUrl = await uploadPricelistToStorage(blob);
+                if (!imageUrl) throw new Error('Failed to upload image');
+                progressBar.style.width = '60%';
+
+                const result = await callTwilioFunction([customer], imageUrl);
+                progressBar.style.width = '100%';
+
+                if (result.success && result.summary?.sent > 0) {
+                    saveCustomerSentPrices(customer.name);
+                    statusText.textContent = `Sent to ${customer.name}!`;
+                    showToast(`SMS sent to ${customer.name}`);
+                } else {
+                    throw new Error(result.results?.[0]?.error || 'Failed to send');
+                }
+            } catch (error) {
+                statusText.textContent = 'Error: ' + error.message;
+                showToast('Error: ' + error.message);
+            } finally {
+                setTimeout(() => {
+                    progressDiv.style.display = 'none';
+                    smsBtn.style.opacity = '1';
+                    progressBar.style.width = '0%';
+                }, 2000);
             }
         }
 
@@ -13912,14 +14182,15 @@ Response format (JSON only, no markdown):
                 if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({ files: [file] });
-                        showPreorderTeamSelector(mode, roleMembers);
                     } catch (shareError) {
-                        if (shareError.name === 'AbortError') return;
-                        showPreorderTeamSelector(mode, roleMembers);
+                        // Even if cancelled, continue to team selector
+                        if (shareError.name !== 'AbortError') {
+                            console.error('Share error:', shareError);
+                        }
                     }
-                } else {
-                    showPreorderTeamSelector(mode, roleMembers);
                 }
+                // Always show team selector after share attempt (whether saved, cancelled, or failed)
+                showPreorderTeamSelector(mode, roleMembers);
             } catch (err) {
                 console.error(err);
                 showToast('Error generating image');
@@ -14516,29 +14787,23 @@ Response format (JSON only, no markdown):
             }
         }
 
+        // Store current order for team sharing from Bookings/Packing tabs
+        let teamTabShareOrder = null;
+        let teamTabShareMode = null;
+
         async function sendBookingImage(orderId) {
             const order = bookingOrders.find(o => o.id === orderId);
             if (!order) return;
 
-            try {
-                const blob = await generatePreorderImage(order, 'booking');
-                if (!blob) throw new Error('Failed to generate');
-
-                const file = new File([blob], 'booking-order.png', { type: 'image/png' });
-
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ files: [file] });
-                } else {
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'booking-order.png';
-                    a.click();
-                    setTimeout(() => URL.revokeObjectURL(url), 100);
-                }
-            } catch (err) {
-                if (err.name !== 'AbortError') console.error(err);
+            // Check if we have team members
+            if (teamMembers.length === 0) {
+                showToast('No team members. Add in Team settings.');
+                return;
             }
+
+            teamTabShareOrder = order;
+            teamTabShareMode = 'booking';
+            showTeamTabShareSelector('booking', order);
         }
 
         function viewBookingOrder(orderId) {
@@ -14783,24 +15048,144 @@ Response format (JSON only, no markdown):
             const order = packingOrders.find(o => o.id === orderId);
             if (!order) return;
 
-            try {
-                const blob = await generatePreorderImage(order, 'packing');
-                if (!blob) throw new Error('Failed to generate');
+            // Check if we have team members
+            if (teamMembers.length === 0) {
+                showToast('No team members. Add in Team settings.');
+                return;
+            }
 
-                const file = new File([blob], 'packing-order.png', { type: 'image/png' });
+            teamTabShareOrder = order;
+            teamTabShareMode = 'packing';
+            showTeamTabShareSelector('packing', order);
+        }
+
+        // Team member selector for Bookings/Packing tabs
+        function showTeamTabShareSelector(mode, order) {
+            const modal = document.createElement('div');
+            modal.className = 'share-menu-overlay';
+            modal.id = 'teamTabShareSelector';
+            modal.style.zIndex = '10003';
+            modal.onclick = (e) => { if (e.target === modal) closeTeamTabShareSelector(); };
+
+            const menuDiv = document.createElement('div');
+            menuDiv.className = 'share-menu';
+            menuDiv.style.maxWidth = '360px';
+
+            const isBooking = mode === 'booking';
+            const modeColor = isBooking ? '#1e40af' : '#c2410c';
+            const modeTitle = isBooking ? 'Send Booking' : 'Send to Packer';
+            const customerName = (order.customerBusiness || order.customerName || 'Customer').toUpperCase();
+            const sender = salesmanInfo.name || 'Team';
+
+            let membersHtml = '';
+            teamMembers.forEach((member, idx) => {
+                const btn = document.createElement('button');
+                btn.style.cssText = 'width: 100%; padding: 14px 16px; background: white; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; text-align: left; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;';
+                membersHtml += '<button onclick="sendToTeamFromTab(' + idx + ')" style="width: 100%; padding: 14px 16px; background: white; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; text-align: left; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;"><div><div style="font-size: 16px; font-weight: 600; color: #0f172a;">' + member.name + '</div><div style="font-size: 13px; color: #64748b;">' + member.phone + '</div></div><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>';
+            });
+
+            const previewMsg = isBooking
+                ? 'Hey [Name] - Order for ' + customerName + '! Please book when you can. Thanks! - ' + sender
+                : 'Hey [Name] - Please prepare ' + customerName + '\'s order for delivery. Thanks! - ' + sender;
+
+            menuDiv.innerHTML = '<div class="share-menu-header" style="background: linear-gradient(135deg, ' + modeColor + ' 0%, ' + modeColor + 'dd 100%); border-bottom: none; padding: 20px;"><h3 style="color: white;">' + modeTitle + '</h3><button class="share-menu-close" onclick="closeTeamTabShareSelector()" style="background: rgba(255,255,255,0.15); color: white;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div class="share-menu-body" style="padding: 20px;"><div style="margin-bottom: 16px; padding: 12px; background: #f0fdf4; border-radius: 10px; border-left: 4px solid #22c55e;"><div style="font-size: 12px; color: #166534; font-weight: 600;">MESSAGE PREVIEW</div><div style="font-size: 13px; color: #15803d; margin-top: 4px;">' + previewMsg + '</div></div><div style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 12px;">SELECT TEAM MEMBER</div>' + membersHtml + '<button onclick="closeTeamTabShareSelector()" style="width: 100%; padding: 14px; background: #f1f5f9; border: none; border-radius: 12px; color: #64748b; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 6px;">Cancel</button></div>';
+
+            modal.appendChild(menuDiv);
+            document.body.appendChild(modal);
+            requestAnimationFrame(() => modal.classList.add('show'));
+        }
+
+        function closeTeamTabShareSelector() {
+            const modal = document.getElementById('teamTabShareSelector');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.remove(), 200);
+            }
+        }
+
+        async function sendToTeamFromTab(memberIndex) {
+            const member = teamMembers[memberIndex];
+            if (!member || !teamTabShareOrder) return;
+
+            closeTeamTabShareSelector();
+
+            const order = teamTabShareOrder;
+            const mode = teamTabShareMode;
+            const isBooking = mode === 'booking';
+            const memberName = member.name.split(' ')[0];
+            const customerName = (order.customerBusiness || order.customerName || 'Customer').toUpperCase();
+            const sender = salesmanInfo.name || 'Team';
+
+            // Rotating message variations
+            const bookingMessages = [
+                'Hey ' + memberName + ' - Order for ' + customerName + '! Please book when you can. Thanks! - ' + sender,
+                'Hey ' + memberName + ' - Got an order from ' + customerName + '! Can you book this one? Cheers! - ' + sender,
+                'Hey ' + memberName + ' - Order in from ' + customerName + '! Please book this one. Thanks! - ' + sender,
+                'Hey ' + memberName + ' - ' + customerName + ' just ordered! Please book when ready. Thanks! - ' + sender
+            ];
+            const packingMessages = [
+                'Hey ' + memberName + ' - Please prepare ' + customerName + '\'s order for delivery. Thanks! - ' + sender,
+                'Hey ' + memberName + ' - Got an order for ' + customerName + '! Can you get it ready? Cheers! - ' + sender,
+                'Hey ' + memberName + ' - ' + customerName + '\'s order is in - please pack for delivery. Thanks! - ' + sender,
+                'Hey ' + memberName + ' - Order from ' + customerName + ' ready to pack! Thanks! - ' + sender
+            ];
+
+            const messagePool = isBooking ? bookingMessages : packingMessages;
+            const message = messagePool[Math.floor(Math.random() * messagePool.length)];
+            const phone = member.phone.replace(/\D/g, '');
+
+            // iOS: Generate image, show share sheet, then trigger shortcut
+            if (isIOS()) {
+                try {
+                    const blob = await generatePreorderImage(order, mode);
+                    if (!blob) throw new Error('Failed to generate image');
+
+                    const file = new File([blob], 'team-order.png', { type: 'image/png' });
+
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({ files: [file] });
+                        } catch (shareErr) {
+                            if (shareErr.name === 'AbortError') {
+                                // User cancelled - still trigger shortcut so they can send manually
+                            }
+                        }
+                    }
+
+                    // Trigger iOS shortcut with phone + message
+                    const shortcutInput = phone + ',' + message;
+                    const shortcutUrl = 'shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=' + encodeURIComponent(shortcutInput);
+                    window.location.href = shortcutUrl;
+                } catch (err) {
+                    console.error('sendToTeamFromTab error:', err);
+                    showToast('Error sharing');
+                }
+                return;
+            }
+
+            // Non-iOS: Share with image + message
+            try {
+                const blob = await generatePreorderImage(order, mode);
+                if (!blob) throw new Error('Failed to generate image');
+
+                const file = new File([blob], 'team-order.png', { type: 'image/png' });
 
                 if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ files: [file] });
+                    await navigator.share({ files: [file], text: message });
                 } else {
+                    // Fallback: Download image
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = 'packing-order.png';
+                    a.download = 'team-order.png';
                     a.click();
                     setTimeout(() => URL.revokeObjectURL(url), 100);
+                    showToast('Image downloaded');
                 }
             } catch (err) {
-                if (err.name !== 'AbortError') console.error(err);
+                if (err.name !== 'AbortError') {
+                    console.error('sendToTeamFromTab error:', err);
+                }
             }
         }
 
@@ -14811,11 +15196,7 @@ Response format (JSON only, no markdown):
             let itemsHtml = '';
             if (order.items) {
                 order.items.forEach(item => {
-                    itemsHtml += `
-                        <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
-                            <div style="flex: 1;"><div style="font-weight: 600; color: #0f172a; font-size: 15px;">${item.name}</div></div>
-                            <div style="font-weight: 700; color: #c2410c; font-size: 16px;">×${item.quantity}</div>
-                        </div>`;
+                    itemsHtml += '<div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f1f5f9;"><div style="flex: 1;"><div style="font-weight: 600; color: #0f172a; font-size: 15px;">' + item.name + '</div></div><div style="font-weight: 700; color: #c2410c; font-size: 16px;">x' + item.quantity + '</div></div>';
                 });
             }
 
