@@ -5542,7 +5542,7 @@
             }
         }
 
-        async function shareToTeam(mode) {
+        function shareToTeam(mode) {
             closeTeamShareMenu();
 
             // Auto-save order first if not already saved
@@ -5566,34 +5566,7 @@
                 return;
             }
 
-            // iOS: Save image to Photos FIRST, then show team selector
-            if (isIOS()) {
-                try {
-                    const blob = await generateTeamOrderImage(mode);
-                    if (!blob) throw new Error('Failed to generate image');
-
-                    const file = new File([blob], 'team-order.png', { type: 'image/png' });
-
-                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                        try {
-                            await navigator.share({ files: [file] });
-                        } catch (shareError) {
-                            // Even if cancelled, continue to team selector
-                            if (shareError.name !== 'AbortError') {
-                                console.error('Share error:', shareError);
-                            }
-                        }
-                    }
-                    // Always show team selector after share attempt (whether saved, cancelled, or failed)
-                    showTeamMemberSelector(mode);
-                } catch (err) {
-                    console.error(err);
-                    showToast('Error generating image');
-                }
-                return;
-            }
-
-            // Non-iOS: Just show team selector
+            // Show team selector directly - image will be generated when member is selected
             showTeamMemberSelector(mode);
         }
 
@@ -5743,15 +5716,37 @@
             const message = messagePool[Math.floor(Math.random() * messagePool.length)];
             const phone = member.phone.replace(/\D/g, '');
 
-            // iOS: Image already saved to Photos, just trigger shortcut
+            // iOS: Generate image, show share sheet, then trigger shortcut
             if (isIOS()) {
-                const shortcutInput = `${phone},${message}`;
-                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                window.location.href = shortcutUrl;
+                try {
+                    const blob = await generateTeamOrderImage(mode);
+                    if (!blob) throw new Error('Failed to generate image');
+
+                    const file = new File([blob], 'team-order.png', { type: 'image/png' });
+
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({ files: [file] });
+                        } catch (shareErr) {
+                            // Even if cancelled, continue to trigger shortcut
+                            if (shareErr.name !== 'AbortError') {
+                                console.error('Share error:', shareErr);
+                            }
+                        }
+                    }
+
+                    // Trigger iOS shortcut with phone + message
+                    const shortcutInput = `${phone},${message}`;
+                    const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+                    window.location.href = shortcutUrl;
+                } catch (err) {
+                    console.error('sendToTeamMember error:', err);
+                    showToast('Error sharing');
+                }
                 return;
             }
 
-            // Non-iOS: Generate and share
+            // Non-iOS: Generate and share with message
             try {
                 const blob = await generateTeamOrderImage(mode);
 
@@ -5759,7 +5754,6 @@
                     throw new Error('Failed to generate image');
                 }
 
-                // Non-iOS: Use Web Share with message
                 if (navigator.share && navigator.canShare) {
                     const file = new File([blob], 'team-order.png', { type: 'image/png' });
 
@@ -14149,8 +14143,8 @@ Response format (JSON only, no markdown):
             requestAnimationFrame(() => modal.classList.add('show'));
         }
 
-        // Share preorder with image generation
-        async function sharePreorderToTeam(mode) {
+        // Share preorder - show team selector first, generate image when team member is selected
+        function sharePreorderToTeam(mode) {
             closeSendToTeamModal();
 
             const order = incomingOrders.find(o => o.id === currentPreorderId);
@@ -14172,29 +14166,8 @@ Response format (JSON only, no markdown):
             const senderName = salesmanInfo.name || '';
             window.preorderShareData = { order, customerDisplay, senderName, mode };
 
-            // Generate image and show team selector
-            try {
-                const blob = await generatePreorderImage(order, mode);
-                if (!blob) throw new Error('Failed to generate image');
-
-                const file = new File([blob], 'preorder.png', { type: 'image/png' });
-
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({ files: [file] });
-                    } catch (shareError) {
-                        // Even if cancelled, continue to team selector
-                        if (shareError.name !== 'AbortError') {
-                            console.error('Share error:', shareError);
-                        }
-                    }
-                }
-                // Always show team selector after share attempt (whether saved, cancelled, or failed)
-                showPreorderTeamSelector(mode, roleMembers);
-            } catch (err) {
-                console.error(err);
-                showToast('Error generating image');
-            }
+            // Show team selector directly - image will be generated when member is selected
+            showPreorderTeamSelector(mode, roleMembers);
         }
 
         // Show team member selector for preorder
@@ -14323,14 +14296,37 @@ Response format (JSON only, no markdown):
             const message = messagePool[Math.floor(Math.random() * messagePool.length)];
             const phone = member.phone.replace(/\D/g, '');
 
+            // iOS: Generate image, show share sheet, then trigger shortcut
             if (isIOS()) {
-                const shortcutInput = `${phone},${message}`;
-                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                window.location.href = shortcutUrl;
+                try {
+                    const blob = await generatePreorderImage(order, mode);
+                    if (!blob) throw new Error('Failed to generate image');
+
+                    const file = new File([blob], 'preorder.png', { type: 'image/png' });
+
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({ files: [file] });
+                        } catch (shareErr) {
+                            // Even if cancelled, continue to trigger shortcut
+                            if (shareErr.name !== 'AbortError') {
+                                console.error('Share error:', shareErr);
+                            }
+                        }
+                    }
+
+                    // Trigger iOS shortcut with phone + message
+                    const shortcutInput = `${phone},${message}`;
+                    const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+                    window.location.href = shortcutUrl;
+                } catch (err) {
+                    console.error('sendPreorderToMember error:', err);
+                    showToast('Error sharing');
+                }
                 return;
             }
 
-            // Non-iOS: Generate and share
+            // Non-iOS: Generate and share with message
             try {
                 const blob = await generatePreorderImage(order, mode);
 
