@@ -5695,9 +5695,6 @@
             const customerName = (data.customerDisplay || 'customer').toUpperCase();
             const sender = data.senderName || 'Team';
 
-            // Push order to Bookings/Packing tab based on mode
-            await pushOrderToTeamTab(mode, customerName);
-
             // Rotating message variations with rotating emojis
             const bookingMessages = [
                 `Hey ${memberName} 👋 New order from ${customerName}! Please book it when you can. Thanks! - ${sender}`,
@@ -5737,13 +5734,20 @@
             const message = messagePool[Math.floor(Math.random() * messagePool.length)];
             const phone = member.phone.replace(/\D/g, '');
 
-            // iOS: Image already saved, just trigger shortcut
+            // iOS: Trigger shortcut IMMEDIATELY (before any async), then push to Firebase in background
             if (isIOS()) {
+                // Push to Firebase in background (don't await - let it happen after navigation)
+                pushOrderToTeamTab(mode, customerName);
+
+                // Trigger shortcut immediately on user tap - no await before this!
                 const shortcutInput = `${phone},${message}`;
                 const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
                 window.location.href = shortcutUrl;
                 return;
             }
+
+            // Non-iOS: Push to Firebase first
+            await pushOrderToTeamTab(mode, customerName);
 
             // Non-iOS: Generate and share with message
             try {
@@ -14275,7 +14279,52 @@ Response format (JSON only, no markdown):
             const sender = data.senderName || 'Team';
             const order = data.order;
 
-            // Push preorder to appropriate Firebase queue (Bookings or Packing)
+            const bookingMessages = [
+                `Hey ${memberName} 👋 Pre-order from ${customerName}! Please book it. Thanks! - ${sender}`,
+                `Hey ${memberName} 😊 Got a pre-order from ${customerName}! Can you book this? Cheers! - ${sender}`
+            ];
+            const packingMessages = [
+                `Hey ${memberName} 👋 Please prepare ${customerName}'s pre-order. Thanks! - ${sender}`,
+                `Hey ${memberName} 😊 Pre-order for ${customerName}! Can you get it ready? Cheers! - ${sender}`
+            ];
+
+            const messagePool = mode === 'booking' ? bookingMessages : packingMessages;
+            const message = messagePool[Math.floor(Math.random() * messagePool.length)];
+            const phone = member.phone.replace(/\D/g, '');
+
+            // iOS: Trigger shortcut IMMEDIATELY, then push to Firebase in background
+            if (isIOS()) {
+                // Push to Firebase in background (don't await)
+                if (order) {
+                    const teamOrder = {
+                        orderReference: order.orderReference || null,
+                        customerName: order.customerName,
+                        customerBusiness: order.customerBusiness || order.customerName,
+                        customerPhone: order.customerPhone,
+                        items: order.items,
+                        totalAmount: order.totalAmount,
+                        specialRequests: order.specialRequests || '',
+                        orderType: 'preorder',
+                        status: 'pending',
+                        acceptedAt: Date.now(),
+                        acceptedAtFormatted: new Date().toLocaleString('en-AU'),
+                        sentBy: salesmanInfo.name || 'Salesman'
+                    };
+                    if (mode === 'booking') {
+                        database.ref('bookingOrders').push(teamOrder).catch(err => console.error('Error pushing preorder:', err));
+                    } else {
+                        database.ref('packingOrders').push(teamOrder).catch(err => console.error('Error pushing preorder:', err));
+                    }
+                }
+
+                // Trigger shortcut immediately - no await before this!
+                const shortcutInput = `${phone},${message}`;
+                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
+                window.location.href = shortcutUrl;
+                return;
+            }
+
+            // Non-iOS: Push to Firebase first
             if (order) {
                 const teamOrder = {
                     orderReference: order.orderReference || null,
@@ -14291,7 +14340,6 @@ Response format (JSON only, no markdown):
                     acceptedAtFormatted: new Date().toLocaleString('en-AU'),
                     sentBy: salesmanInfo.name || 'Salesman'
                 };
-
                 try {
                     if (mode === 'booking') {
                         await database.ref('bookingOrders').push(teamOrder);
@@ -14301,27 +14349,6 @@ Response format (JSON only, no markdown):
                 } catch (err) {
                     console.error('Error pushing preorder to team tab:', err);
                 }
-            }
-
-            const bookingMessages = [
-                `Hey ${memberName} 👋 Pre-order from ${customerName}! Please book it. Thanks! - ${sender}`,
-                `Hey ${memberName} 😊 Got a pre-order from ${customerName}! Can you book this? Cheers! - ${sender}`
-            ];
-            const packingMessages = [
-                `Hey ${memberName} 👋 Please prepare ${customerName}'s pre-order. Thanks! - ${sender}`,
-                `Hey ${memberName} 😊 Pre-order for ${customerName}! Can you get it ready? Cheers! - ${sender}`
-            ];
-
-            const messagePool = mode === 'booking' ? bookingMessages : packingMessages;
-            const message = messagePool[Math.floor(Math.random() * messagePool.length)];
-            const phone = member.phone.replace(/\D/g, '');
-
-            // iOS: Image already saved, just trigger shortcut
-            if (isIOS()) {
-                const shortcutInput = `${phone},${message}`;
-                const shortcutUrl = `shortcuts://run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}`;
-                window.location.href = shortcutUrl;
-                return;
             }
 
             // Non-iOS: Generate and share with message
