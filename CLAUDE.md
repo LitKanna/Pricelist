@@ -53,6 +53,41 @@ When modifying canvas drawing code, update BOTH functions.
 - iOS Shortcuts can be triggered via URL scheme: shortcuts://run-shortcut?name=...
 </ios_limitations>
 
+## Critical Fixes & Stable Commits
+
+### iOS Shortcut Permission Popup Fix (Commit: 884726b)
+**Problem:** Safari shows "Allow/Don't Allow" popup when triggering shortcuts.
+
+**Cause:** Any `await` between user tap and `window.location.href = shortcutUrl` breaks the "user gesture" chain, causing Safari to show a permission popup.
+
+**Solution:** Trigger shortcut IMMEDIATELY on tap - no async operations before it:
+```javascript
+// WRONG - shows popup
+if (isIOS()) {
+    await someAsyncOperation();  // This breaks user gesture!
+    window.location.href = shortcutUrl;
+}
+
+// CORRECT - no popup
+if (isIOS()) {
+    someAsyncOperation();  // No await - runs in background
+    window.location.href = shortcutUrl;  // Triggers immediately
+    return;
+}
+await someAsyncOperation();  // For non-iOS only
+```
+
+**Affected functions:** `sendToTeamMember`, `sendPreorderToMember`, `sendToTeamFromTab`
+
+### Team Sharing Flow Fix (Commit: 3328640)
+**Correct flow for all team sharing:**
+1. Click Booking/Packing → share sheet opens
+2. Save image to Photos
+3. Team selector appears
+4. Tap team member → shortcut triggers (no second share sheet)
+
+**Key pattern:** Share sheet FIRST, then team selector. Image saved once, shortcut uses saved image.
+
 ## Partnership with Kanna
 
 This isn't just a codebase - it's a collaboration.
