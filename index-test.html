@@ -4845,6 +4845,7 @@
             }
 
             setImageSavedThisSession(false);
+            setPdfSavedThisSession(false);
             renderCustomerTiersList();
             renderCategories();
 
@@ -7878,8 +7879,9 @@
                 showToast(`${selectedCustomer.name} pricing`);
             }
 
-            // Reset image cache so new image is generated with new prices
+            // Reset image/PDF cache so new files are generated with new prices
             setImageSavedThisSession(false);
+            setPdfSavedThisSession(false);
 
             renderCustomerTiersList();
             renderCategories();
@@ -9038,8 +9040,9 @@
             
             // Handle margin select change
             container.addEventListener('change', function(e) {
-                // Reset image saved flag when any data changes
+                // Reset image/PDF saved flag when any data changes
                 setImageSavedThisSession(false);
+                setPdfSavedThisSession(false);
 
                 if (e.target.classList.contains('margin-select')) {
                     const encodedCat = e.target.dataset.categoryEncoded;
@@ -9066,6 +9069,7 @@
             container.addEventListener('input', function(e) {
                 if (e.target.tagName === 'INPUT') {
                     setImageSavedThisSession(false);
+                    setPdfSavedThisSession(false);
 
                     // Auto-save with debounce (shorter on iOS since keyboard dismissal is common)
                     const debounceTime = isIOS() ? 800 : 1500;
