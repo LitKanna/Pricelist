@@ -3915,8 +3915,8 @@
             }
         }
 
-        // Share format: 'image' or 'pdf'
-        let currentShareFormat = 'image';
+        // Share format: 'image' or 'pdf' - persisted so it stays after returning from shortcut
+        let currentShareFormat = localStorage.getItem('everfresh_shareFormat') || 'image';
         let pdfSavedThisSession = localStorage.getItem('everfresh_pdfSaved') === 'true';
 
         function setPdfSavedThisSession(value) {
@@ -3930,6 +3930,7 @@
 
         function setShareFormat(format) {
             currentShareFormat = format;
+            localStorage.setItem('everfresh_shareFormat', format);
             const imageBtn = document.getElementById('formatImageBtn');
             const pdfBtn = document.getElementById('formatPdfBtn');
             const prepareLabel = document.getElementById('prepareLabel');
