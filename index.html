@@ -12248,6 +12248,9 @@ Response format (JSON only, no markdown):
 
             collectData();
 
+            // Sync format toggle UI with current format state
+            setShareFormat(currentShareFormat);
+
             // Check for empty prices
             let hasEmptyPrices = false;
             for (const categoryName in priceData) {
