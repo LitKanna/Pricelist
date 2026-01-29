@@ -3071,16 +3071,28 @@
             </div>
 
             <div class="share-menu-body" style="flex: 1; overflow-y: auto; padding: 16px; scrollbar-width: none; -ms-overflow-style: none;">
-                <!-- Prepare Section - Compact -->
+                <!-- Format Toggle: Image vs PDF -->
+                <div id="formatToggle" style="margin-bottom: 12px; display: flex; background: #f1f5f9; border-radius: 10px; padding: 4px;">
+                    <button id="formatImageBtn" onclick="setShareFormat('image')" style="flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: white; color: #0f172a; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        Image
+                    </button>
+                    <button id="formatPdfBtn" onclick="setShareFormat('pdf')" style="flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: transparent; color: #64748b;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        PDF
+                    </button>
+                </div>
+
+                <!-- Prepare Section - Image -->
                 <div id="prepareSection" style="margin-bottom: 12px;">
                     <div id="prepareNeeded" style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        <span style="flex: 1; font-size: 13px; font-weight: 500; color: #92400e;">Save image first</span>
-                        <button onclick="prepareImageForSending()" style="background: #d97706; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer;">Prepare</button>
+                        <span id="prepareLabel" style="flex: 1; font-size: 13px; font-weight: 500; color: #92400e;">Save image first</span>
+                        <button id="prepareBtn" onclick="prepareForSending()" style="background: #d97706; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer;">Prepare</button>
                     </div>
                     <div id="prepareReady" style="display: none; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 10px 12px; align-items: center; gap: 10px;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                        <span style="flex: 1; font-size: 13px; font-weight: 500; color: #166534;">Ready to send</span>
+                        <span id="readyLabel" style="flex: 1; font-size: 13px; font-weight: 500; color: #166534;">Ready to send</span>
                     </div>
                 </div>
 
@@ -3900,6 +3912,260 @@
                 localStorage.setItem('everfresh_imageSaved', 'true');
             } else {
                 localStorage.removeItem('everfresh_imageSaved');
+            }
+        }
+
+        // Share format: 'image' or 'pdf'
+        let currentShareFormat = 'image';
+        let pdfSavedThisSession = localStorage.getItem('everfresh_pdfSaved') === 'true';
+
+        function setPdfSavedThisSession(value) {
+            pdfSavedThisSession = value;
+            if (value) {
+                localStorage.setItem('everfresh_pdfSaved', 'true');
+            } else {
+                localStorage.removeItem('everfresh_pdfSaved');
+            }
+        }
+
+        function setShareFormat(format) {
+            currentShareFormat = format;
+            const imageBtn = document.getElementById('formatImageBtn');
+            const pdfBtn = document.getElementById('formatPdfBtn');
+            const prepareLabel = document.getElementById('prepareLabel');
+            const readyLabel = document.getElementById('readyLabel');
+
+            if (format === 'image') {
+                imageBtn.style.background = 'white';
+                imageBtn.style.color = '#0f172a';
+                imageBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                pdfBtn.style.background = 'transparent';
+                pdfBtn.style.color = '#64748b';
+                pdfBtn.style.boxShadow = 'none';
+                prepareLabel.textContent = 'Save image first';
+                readyLabel.textContent = 'Image ready to send';
+            } else {
+                pdfBtn.style.background = 'white';
+                pdfBtn.style.color = '#0f172a';
+                pdfBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                imageBtn.style.background = 'transparent';
+                imageBtn.style.color = '#64748b';
+                imageBtn.style.boxShadow = 'none';
+                prepareLabel.textContent = 'Save PDF to Everfresh folder';
+                readyLabel.textContent = 'PDF ready to send';
+            }
+
+            updatePrepareSection();
+        }
+
+        // Prepare for sending (image or PDF based on format)
+        async function prepareForSending() {
+            if (currentShareFormat === 'image') {
+                await prepareImageForSending();
+            } else {
+                await preparePDFForSending();
+            }
+        }
+
+        // Prepare PDF for sending
+        async function preparePDFForSending() {
+            const prepareBtn = document.getElementById('prepareBtn');
+            const originalText = prepareBtn.textContent;
+            prepareBtn.textContent = 'Preparing...';
+            prepareBtn.disabled = true;
+
+            try {
+                await publishPriceList();
+                await sharePDFForCustomers();
+                setPdfSavedThisSession(true);
+                updatePrepareSection();
+                showToast('PDF saved! Ready to send.');
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Prepare PDF error:', error);
+                    showToast('Failed to prepare. Try again.');
+                }
+                prepareBtn.textContent = originalText;
+                prepareBtn.disabled = false;
+            }
+        }
+
+        // Share PDF for customer flow (no popup after, just save)
+        async function sharePDFForCustomers() {
+            collectData();
+
+            const { jsPDF } = window.jspdf;
+            const pageWidth = 210;
+            const pageHeight = 297;
+            const margin = 15;
+            const contentWidth = pageWidth - 2 * margin;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+            let y = 15;
+            function checkPageBreak(neededHeight) {
+                if (y + neededHeight > pageHeight - 15) { doc.addPage(); y = 15; return true; }
+                return false;
+            }
+            function hexToRgb(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 0, g: 0, b: 0 };
+            }
+
+            const headerBg = hexToRgb('#fafdf7');
+            doc.setFillColor(headerBg.r, headerBg.g, headerBg.b);
+            const headerHeight = (salesmanInfo.name || salesmanInfo.phone) ? 55 : 45;
+            doc.rect(0, 0, pageWidth, headerHeight, 'F');
+
+            const companyColor = hexToRgb('#2d6a4f');
+            doc.setTextColor(companyColor.r, companyColor.g, companyColor.b);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(18);
+            doc.text('EVERFRESH PRODUCE GROUP', pageWidth / 2, y, { align: 'center' });
+            y += 8;
+
+            const titleColor = hexToRgb('#52b788');
+            doc.setTextColor(titleColor.r, titleColor.g, titleColor.b);
+            doc.setFontSize(14);
+            doc.text('WHOLESALE PRICE LIST', pageWidth / 2, y, { align: 'center' });
+            y += 8;
+
+            doc.setTextColor(companyColor.r, companyColor.g, companyColor.b);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Stand 275, Shed C, Sydney Markets', margin, y);
+            const effectiveDate = getEffectiveDate();
+            const formattedDate = effectiveDate.toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
+            doc.text('Effective: ' + formattedDate, pageWidth - margin, y, { align: 'right' });
+            y += 6;
+
+            if (salesmanInfo.name || salesmanInfo.phone) {
+                const boxBg = hexToRgb('#d8f3dc');
+                const boxBorder = hexToRgb('#52b788');
+                doc.setFillColor(boxBg.r, boxBg.g, boxBg.b);
+                doc.setDrawColor(boxBorder.r, boxBorder.g, boxBorder.b);
+                doc.setLineWidth(0.3);
+                doc.rect(margin, y, contentWidth, 8, 'FD');
+                const contactColor = hexToRgb('#1b4332');
+                doc.setTextColor(contactColor.r, contactColor.g, contactColor.b);
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'bold');
+                if (salesmanInfo.name && salesmanInfo.phone) {
+                    doc.text('Sales Contact: ' + salesmanInfo.name, margin + 3, y + 5.5);
+                    doc.text(salesmanInfo.phone, pageWidth - margin - 3, y + 5.5, { align: 'right' });
+                } else if (salesmanInfo.name) {
+                    doc.text('Sales Contact: ' + salesmanInfo.name, margin + 3, y + 5.5);
+                } else {
+                    doc.text('Sales Contact: ' + salesmanInfo.phone, margin + 3, y + 5.5);
+                }
+                y += 12;
+            } else {
+                y += 4;
+            }
+
+            const sepColor = hexToRgb('#b7e4c7');
+            doc.setDrawColor(sepColor.r, sepColor.g, sepColor.b);
+            doc.setLineWidth(0.3);
+            doc.line(margin, y, pageWidth - margin, y);
+            y += 5;
+
+            const col1 = margin;
+            const col2 = margin + contentWidth * 0.45;
+            const col3 = margin + contentWidth * 0.80;
+            const rowHeight = 6;
+
+            for (const categoryName in priceData) {
+                const items = priceData[categoryName];
+                const availableItems = items.filter(item => {
+                    const price = (item[2] || '').toString().trim();
+                    if (price === '') return false;
+                    const cleanedPrice = price.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                    return cleanedPrice !== 'na' && cleanedPrice !== 'notavailable';
+                });
+                if (availableItems.length === 0) continue;
+
+                const categoryHeight = 12 + (availableItems.length * rowHeight) + 5;
+                checkPageBreak(categoryHeight);
+
+                const catBg = hexToRgb('#40916c');
+                const catBorder = hexToRgb('#2d6a4f');
+                doc.setFillColor(catBg.r, catBg.g, catBg.b);
+                doc.setDrawColor(catBorder.r, catBorder.g, catBorder.b);
+                doc.setLineWidth(0.2);
+                doc.rect(margin, y, contentWidth, 8, 'FD');
+                doc.setTextColor(255, 255, 255);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(11);
+                doc.text(categoryName, col1 + 3, y + 5.5);
+                y += 8;
+
+                const colHeaderBg = hexToRgb('#74c69d');
+                doc.setFillColor(colHeaderBg.r, colHeaderBg.g, colHeaderBg.b);
+                doc.rect(margin, y, contentWidth, rowHeight, 'FD');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(8);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Product', col1 + 2, y + 4);
+                doc.text('Grade/Size', col2 + 2, y + 4);
+                doc.text('Price', col3 + 2, y + 4);
+                doc.setDrawColor(255, 255, 255);
+                doc.setLineWidth(0.2);
+                doc.line(col2, y, col2, y + rowHeight);
+                doc.line(col3, y, col3, y + rowHeight);
+                y += rowHeight;
+
+                for (let i = 0; i < availableItems.length; i++) {
+                    checkPageBreak(rowHeight);
+                    const item = availableItems[i];
+                    if (i % 2 === 1) {
+                        const altBg = hexToRgb('#f1faee');
+                        doc.setFillColor(altBg.r, altBg.g, altBg.b);
+                        doc.rect(margin, y, contentWidth, rowHeight, 'F');
+                    }
+                    const borderColor = hexToRgb('#d8f3dc');
+                    doc.setDrawColor(borderColor.r, borderColor.g, borderColor.b);
+                    doc.setLineWidth(0.1);
+                    doc.rect(margin, y, contentWidth, rowHeight, 'S');
+                    doc.line(col2, y, col2, y + rowHeight);
+                    doc.line(col3, y, col3, y + rowHeight);
+
+                    const textColor = hexToRgb('#212529');
+                    doc.setTextColor(textColor.r, textColor.g, textColor.b);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(8);
+                    doc.text(item[0] ? item[0].toString().substring(0, 30) : '', col1 + 2, y + 4);
+                    doc.text(item[1] ? item[1].toString().substring(0, 20) : '', col2 + 2, y + 4);
+
+                    const priceColor = hexToRgb('#1b4332');
+                    doc.setTextColor(priceColor.r, priceColor.g, priceColor.b);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(formatPriceWithSymbol(item[2]), col3 + 2, y + 4);
+                    y += rowHeight;
+                }
+                y += 4;
+            }
+
+            checkPageBreak(35);
+            y += 3;
+            doc.setTextColor(hexToRgb('#2d6a4f').r, hexToRgb('#2d6a4f').g, hexToRgb('#2d6a4f').b);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.text('NOTES:', margin, y);
+            y += 6;
+            doc.setTextColor(hexToRgb('#495057').r, hexToRgb('#495057').g, hexToRgb('#495057').b);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(7);
+            ['All prices are wholesale rates', 'Prices subject to availability and market conditions', 'Quality guaranteed - fresh daily from Sydney Markets', 'Contact us for bulk pricing and special requests'].forEach(note => {
+                doc.text('• ' + note, margin + 3, y);
+                y += 4;
+            });
+
+            const pdfBlob = doc.output('blob');
+            const file = new File([pdfBlob], 'pricelist.pdf', { type: 'application/pdf' });
+
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title: 'Everfresh Price List' });
+            } else {
+                doc.save('pricelist.pdf');
             }
         }
 
@@ -12031,13 +12297,23 @@ Response format (JSON only, no markdown):
         function updatePrepareSection() {
             const prepareNeeded = document.getElementById('prepareNeeded');
             const prepareReady = document.getElementById('prepareReady');
+            const prepareBtn = document.getElementById('prepareBtn');
 
-            if (imageSavedThisSession) {
+            // Check saved status based on current format
+            const isSaved = currentShareFormat === 'image' ? imageSavedThisSession : pdfSavedThisSession;
+
+            if (isSaved) {
                 prepareNeeded.style.display = 'none';
                 prepareReady.style.display = 'flex';
             } else {
                 prepareNeeded.style.display = 'flex';
                 prepareReady.style.display = 'none';
+            }
+
+            // Reset button state
+            if (prepareBtn) {
+                prepareBtn.textContent = 'Prepare';
+                prepareBtn.disabled = false;
             }
         }
 
@@ -12182,6 +12458,25 @@ Response format (JSON only, no markdown):
 
             closeCustomerShareMenu();
 
+            // Save the sent prices for this customer
+            saveCustomerSentPrices(customer.name);
+
+            // Create personalized message
+            const message = generateShareMessage(customer);
+
+            // Check if file is prepared - use shortcut flow on iOS
+            const isPrepared = currentShareFormat === 'image' ? imageSavedThisSession : pdfSavedThisSession;
+
+            if (isIOS() && isPrepared) {
+                // iOS with prepared file - trigger appropriate shortcut
+                const shortcutName = currentShareFormat === 'image' ? 'Everfresh%20Pricelist' : 'Everfresh%20Pricelist%20pdf';
+                const shortcutInput = phone + ',' + message;
+                const shortcutUrl = 'shortcuts://run-shortcut?name=' + shortcutName + '&input=text&text=' + encodeURIComponent(shortcutInput);
+                window.location.href = shortcutUrl;
+                return;
+            }
+
+            // Not prepared or not iOS - use Web Share API flow
             const loading = document.getElementById('loading');
             loading.classList.add('show');
 
@@ -12191,21 +12486,15 @@ Response format (JSON only, no markdown):
 
                 // Generate image blob
                 const blob = await generateImageBlob();
-                
+
                 if (!blob) {
                     throw new Error('Failed to generate image');
                 }
 
-                // Save the sent prices for this customer
-                saveCustomerSentPrices(customer.name);
-
-                // Create personalized message with rotating variations (pass full customer for order link)
-                const message = generateShareMessage(customer);
-
                 // Check if Web Share API is available (iOS/modern browsers)
                 if (navigator.share && navigator.canShare) {
                     const file = new File([blob], 'everfresh-price-list.png', { type: 'image/png' });
-                    
+
                     if (navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             title: `Price List for ${customer.name}`,
@@ -12216,7 +12505,7 @@ Response format (JSON only, no markdown):
                         return;
                     }
                 }
-                
+
                 // Fallback: Download and open WhatsApp
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -12227,13 +12516,13 @@ Response format (JSON only, no markdown):
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                
+
                 loading.classList.remove('show');
-                
+
                 // Open WhatsApp with customer number
                 const messageEncoded = encodeURIComponent(message);
                 const whatsappUrl = `https://wa.me/${phone}?text=${messageEncoded}`;
-                
+
                 alert('Image downloaded! WhatsApp will open - please attach the image from your Photos/Files and send.');
                 setTimeout(() => {
                     window.open(whatsappUrl, '_blank');
