@@ -4221,7 +4221,7 @@
             const file = new File([pdfBlob], 'pricelist.pdf', { type: 'application/pdf' });
 
             if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({ files: [file], title: 'Everfresh Price List' });
+                await navigator.share({ files: [file] });
             } else {
                 doc.save('pricelist.pdf');
             }
@@ -11670,7 +11670,7 @@ Response format (JSON only, no markdown):
 
                 // Share via Web Share API
                 if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ files: [file], title: 'Everfresh Price List' });
+                    await navigator.share({ files: [file] });
                     console.log('PDF shared successfully!');
 
                     // Show customer selector after PDF is saved
