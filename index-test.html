@@ -11344,6 +11344,11 @@ Response format (JSON only, no markdown):
                 if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                     await navigator.share({ files: [file], title: 'Everfresh Price List' });
                     console.log('PDF shared successfully!');
+
+                    // Show customer selector after PDF is saved
+                    if (customerContacts.length > 0) {
+                        showPDFCustomerSelector();
+                    }
                 } else {
                     doc.save('pricelist.pdf');
                     alert('Share not supported. PDF downloaded instead.');
@@ -11356,6 +11361,116 @@ Response format (JSON only, no markdown):
                 }
                 loading.classList.remove('show');
             }
+        }
+
+        // Show customer selector for PDF sharing
+        function showPDFCustomerSelector() {
+            const modal = document.createElement('div');
+            modal.className = 'share-menu-overlay';
+            modal.id = 'pdfCustomerSelector';
+            modal.style.zIndex = '10003';
+            modal.onclick = (e) => { if (e.target === modal) closePDFCustomerSelector(); };
+
+            const menuDiv = document.createElement('div');
+            menuDiv.className = 'share-menu';
+            menuDiv.style.maxWidth = '360px';
+
+            // Header
+            const header = document.createElement('div');
+            header.style.cssText = 'background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 20px 20px 0 0;';
+
+            const headerLeft = document.createElement('div');
+            headerLeft.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+
+            const iconWrap = document.createElement('div');
+            iconWrap.style.cssText = 'width: 36px; height: 36px; background: rgba(255,255,255,0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center;';
+            iconWrap.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+
+            const title = document.createElement('h2');
+            title.style.cssText = 'font-size: 18px; font-weight: 700; color: white; margin: 0;';
+            title.textContent = 'Send PDF';
+
+            headerLeft.appendChild(iconWrap);
+            headerLeft.appendChild(title);
+
+            const closeBtn = document.createElement('button');
+            closeBtn.style.cssText = 'width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;';
+            closeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+            closeBtn.onclick = closePDFCustomerSelector;
+
+            header.appendChild(headerLeft);
+            header.appendChild(closeBtn);
+
+            // Body
+            const body = document.createElement('div');
+            body.style.cssText = 'padding: 16px; max-height: 400px; overflow-y: auto;';
+
+            const hint = document.createElement('p');
+            hint.style.cssText = 'font-size: 13px; color: #64748b; margin-bottom: 12px;';
+            hint.textContent = 'PDF saved! Tap a customer to send:';
+            body.appendChild(hint);
+
+            // Customer buttons
+            customerContacts.forEach((customer, idx) => {
+                const btn = document.createElement('button');
+                btn.style.cssText = 'width: 100%; padding: 14px 16px; background: white; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; text-align: left; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;';
+                btn.onclick = () => sendPDFToCustomer(idx);
+
+                const info = document.createElement('div');
+                const nameDiv = document.createElement('div');
+                nameDiv.style.cssText = 'font-size: 16px; font-weight: 600; color: #0f172a;';
+                nameDiv.textContent = customer.name;
+                const phoneDiv = document.createElement('div');
+                phoneDiv.style.cssText = 'font-size: 13px; color: #64748b;';
+                phoneDiv.textContent = customer.phone;
+                info.appendChild(nameDiv);
+                info.appendChild(phoneDiv);
+
+                const arrow = document.createElement('span');
+                arrow.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>';
+
+                btn.appendChild(info);
+                btn.appendChild(arrow);
+                body.appendChild(btn);
+            });
+
+            menuDiv.appendChild(header);
+            menuDiv.appendChild(body);
+            modal.appendChild(menuDiv);
+            document.body.appendChild(modal);
+            requestAnimationFrame(() => modal.classList.add('show'));
+        }
+
+        // Close PDF customer selector
+        function closePDFCustomerSelector() {
+            const modal = document.getElementById('pdfCustomerSelector');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+
+        // Send PDF to customer via shortcut
+        function sendPDFToCustomer(index) {
+            const customer = customerContacts[index];
+            const phone = customer.phone.replace(/\D/g, '');
+
+            closePDFCustomerSelector();
+
+            // Generate message
+            const message = generateShareMessage(customer);
+
+            // Trigger PDF shortcut immediately (iOS)
+            if (isIOS()) {
+                const shortcutInput = phone + ',' + message;
+                const shortcutUrl = 'shortcuts://run-shortcut?name=Everfresh%20Pricelist%20pdf&input=text&text=' + encodeURIComponent(shortcutInput);
+                window.location.href = shortcutUrl;
+                return;
+            }
+
+            // Non-iOS fallback: open WhatsApp with message
+            const waUrl = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(message);
+            window.open(waUrl, '_blank');
         }
 
         // Quick share on WhatsApp
