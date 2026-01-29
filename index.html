@@ -3990,20 +3990,21 @@
             }
         }
 
-        // Share PDF for customer flow - MATCHES IMAGE LAYOUT EXACTLY
+        // Share PDF for customer flow - EXACT 1:1 MATCH WITH IMAGE
         async function sharePDFForCustomers() {
             collectData();
 
             const { jsPDF } = window.jspdf;
 
-            // Calculate dimensions to match image (3600px width scaled to 200mm)
-            // Image is 3600px wide, dynamic height based on content
-            const scale = 200 / 3600; // 1px = 0.0556mm
-            const pxToMm = (px) => px * scale;
+            // Scale: 3600px image width -> 200mm PDF width
+            const scale = 200 / 3600;
+            const px = (val) => val * scale;
+            const pt = (pxVal) => pxVal * scale * 2.83; // px to points for fonts
 
-            // Calculate height same as image
+            // Calculate content same as image
             let totalRows = 0;
-            Object.values(priceData).forEach(items => {
+            const displayPriceData = selectedCustomer ? getAdjustedPriceData() : priceData;
+            Object.values(displayPriceData).forEach(items => {
                 const availableItems = items.filter(item => {
                     const price = (item[2] || '').toString().trim();
                     if (price === '') return false;
@@ -4012,8 +4013,8 @@
                 });
                 totalRows += availableItems.length;
             });
-            const categoryCount = Object.keys(priceData).filter(cat => {
-                return priceData[cat].some(item => {
+            const categoryCount = Object.keys(displayPriceData).filter(cat => {
+                return displayPriceData[cat].some(item => {
                     const price = (item[2] || '').toString().trim();
                     if (price === '') return false;
                     const cleanedPrice = price.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
@@ -4021,15 +4022,16 @@
                 });
             }).length;
 
-            // Match image dimensions: 3600px width, calculated height
+            // EXACT image dimensions
             const imgWidth = 3600;
             const imgHeight = 1200 + (categoryCount * 300) + (totalRows * 135) + 600;
 
-            const pageWidth = pxToMm(imgWidth);  // 200mm
-            const pageHeight = pxToMm(imgHeight);
-            const margin = pxToMm(180);
+            const pageWidth = px(imgWidth);
+            const pageHeight = px(imgHeight);
+            const margin = px(180);
+            const leftCol = px(300);
+            const rightCol = px(3300);
 
-            // Create PDF with custom page size matching image
             const doc = new jsPDF({
                 orientation: 'portrait',
                 unit: 'mm',
@@ -4037,80 +4039,84 @@
                 compress: false
             });
 
-            let y = pxToMm(120);
+            let y = px(120);
 
             // === WHITE BACKGROUND ===
             doc.setFillColor(255, 255, 255);
             doc.rect(0, 0, pageWidth, pageHeight, 'F');
 
-            // === HEADER BACKGROUND - Light green ===
-            const headerHeight = pxToMm((salesmanInfo.name || salesmanInfo.phone) ? 840 : 720);
+            // === HEADER BACKGROUND ===
+            const headerHeight = px((salesmanInfo.name || salesmanInfo.phone) ? 840 : 720);
             doc.setFillColor(250, 253, 247); // #fafdf7
             doc.rect(0, 0, pageWidth, headerHeight, 'F');
 
-            // Company name - Forest green, LARGE
+            // Company name - centered
             doc.setTextColor(45, 106, 79); // #2d6a4f
             doc.setFont('helvetica', 'bold');
-            doc.setFontSize(pxToMm(168) * 2.83); // Convert to points
-            doc.text('EVERFRESH PRODUCE GROUP', pageWidth / 2, y + pxToMm(150), { align: 'center' });
-            y += pxToMm(240);
+            doc.setFontSize(pt(168));
+            doc.text('EVERFRESH PRODUCE GROUP', pageWidth / 2, y + px(150), { align: 'center' });
+            y += px(240);
 
-            // Subtitle - Fresh green
+            // Subtitle - centered
             doc.setTextColor(82, 183, 136); // #52b788
-            doc.setFontSize(pxToMm(144) * 2.83);
-            doc.text('WHOLESALE PRICE LIST', pageWidth / 2, y + pxToMm(120), { align: 'center' });
-            y += pxToMm(210);
+            doc.setFontSize(pt(144));
+            doc.text('WHOLESALE PRICE LIST', pageWidth / 2, y + px(120), { align: 'center' });
+            y += px(210);
 
-            // Address and Date
+            // Address (left) and Date (right)
             doc.setTextColor(45, 106, 79);
-            doc.setFontSize(pxToMm(66) * 2.83);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Stand 275, Shed C, Sydney Markets', pxToMm(300), y + pxToMm(60));
+            doc.setFontSize(pt(66));
+            doc.text('Stand 275, Shed C, Sydney Markets', leftCol, y + px(60));
 
             const effectiveDate = getEffectiveDate();
-            const formattedDate = effectiveDate.toLocaleDateString('en-AU', {
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-            });
-            doc.text('Effective: ' + formattedDate, pageWidth - pxToMm(300), y + pxToMm(60), { align: 'right' });
-            y += pxToMm(120);
+            const formattedDate = effectiveDate.toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
+            doc.text('Effective: ' + formattedDate, rightCol, y + px(60), { align: 'right' });
+            y += px(150);
 
-            // Sales contact box
+            // Sales contact box - NAME ON LEFT, PHONE ON RIGHT (like image)
             if (salesmanInfo.name || salesmanInfo.phone) {
+                const boxX = px(240);  // leftCol - 60
+                const boxWidth = px(3120);  // 3600 - 480
+                const boxHeight = px(150);
+
                 doc.setFillColor(216, 243, 220); // #d8f3dc
                 doc.setDrawColor(82, 183, 136); // #52b788
-                doc.setLineWidth(pxToMm(6));
-                const boxWidth = pageWidth - pxToMm(360);
-                const boxHeight = pxToMm(120);
-                doc.roundedRect(margin, y, boxWidth, boxHeight, pxToMm(30), pxToMm(30), 'FD');
+                doc.setLineWidth(px(6));
+                doc.rect(boxX, y - px(30), boxWidth, boxHeight, 'FD');
 
                 doc.setTextColor(27, 67, 50); // #1b4332
-                doc.setFontSize(pxToMm(72) * 2.83);
+                doc.setFontSize(pt(72));
 
-                const contactText = salesmanInfo.name && salesmanInfo.phone
-                    ? 'Sales Contact: ' + salesmanInfo.name + '  •  ' + salesmanInfo.phone
-                    : 'Sales Contact: ' + (salesmanInfo.name || salesmanInfo.phone);
-                doc.text(contactText, pageWidth / 2, y + pxToMm(78), { align: 'center' });
-                y += pxToMm(180);
+                if (salesmanInfo.name && salesmanInfo.phone) {
+                    // Name on LEFT
+                    doc.text('Sales Contact: ' + salesmanInfo.name, leftCol, y + px(60));
+                    // Phone on RIGHT
+                    doc.text(salesmanInfo.phone, rightCol, y + px(60), { align: 'right' });
+                } else if (salesmanInfo.name) {
+                    doc.text('Sales Contact: ' + salesmanInfo.name, leftCol, y + px(60));
+                } else {
+                    doc.text('Sales Contact: ' + salesmanInfo.phone, leftCol, y + px(60));
+                }
+                y += px(195);
+            } else {
+                y += px(45);
             }
 
             // Separator line
-            y += pxToMm(30);
             doc.setDrawColor(183, 228, 199); // #b7e4c7
-            doc.setLineWidth(pxToMm(6));
+            doc.setLineWidth(px(6));
             doc.line(margin, y, pageWidth - margin, y);
-            y += pxToMm(60);
+            y += px(90);
 
-            // === TABLE SECTION ===
-            const contentWidth = pageWidth - margin * 2;
-            const col1Width = contentWidth * 0.42;
-            const col2Width = contentWidth * 0.28;
-            const col3Width = contentWidth * 0.30;
-            const rowHeight = pxToMm(135);
-            const catHeaderHeight = pxToMm(120);
-            const colHeaderHeight = pxToMm(90);
+            // === TABLE - EXACT COLUMN POSITIONS FROM IMAGE ===
+            const tableWidth = pageWidth - 2 * margin;
+            const col1 = margin;
+            const col2 = margin + tableWidth * 0.45;
+            const col3 = margin + tableWidth * 0.80;
+            const rowHeight = px(126);
 
-            for (const categoryName in priceData) {
-                const items = priceData[categoryName];
+            for (const categoryName in displayPriceData) {
+                const items = displayPriceData[categoryName];
                 const availableItems = items.filter(item => {
                     const price = (item[2] || '').toString().trim();
                     if (price === '') return false;
@@ -4119,101 +4125,90 @@
                 });
                 if (availableItems.length === 0) continue;
 
-                // Category header - dark green
+                // Category header - 150px height
                 doc.setFillColor(64, 145, 108); // #40916c
                 doc.setDrawColor(45, 106, 79); // #2d6a4f
-                doc.setLineWidth(pxToMm(6));
-                doc.roundedRect(margin, y, contentWidth, catHeaderHeight, pxToMm(24), pxToMm(24), 'FD');
+                doc.setLineWidth(px(6));
+                doc.rect(margin, y, tableWidth, px(150), 'FD');
 
                 doc.setTextColor(255, 255, 255);
                 doc.setFont('helvetica', 'bold');
-                doc.setFontSize(pxToMm(72) * 2.83);
-                doc.text(categoryName, margin + pxToMm(45), y + pxToMm(80));
-                y += catHeaderHeight;
+                doc.setFontSize(pt(102));
+                doc.text(categoryName, col1 + px(60), y + px(108));
+                y += px(150);
 
-                // Column headers - medium green
+                // Column headers - rowHeight (126px)
                 doc.setFillColor(116, 198, 157); // #74c69d
-                doc.rect(margin, y, contentWidth, colHeaderHeight, 'F');
+                doc.rect(margin, y, tableWidth, rowHeight, 'FD');
 
                 doc.setTextColor(255, 255, 255);
-                doc.setFontSize(pxToMm(54) * 2.83);
-                doc.text('Product', margin + pxToMm(30), y + pxToMm(60));
-                doc.text('Grade / Size', margin + col1Width + pxToMm(30), y + pxToMm(60));
-                doc.text('Price', margin + col1Width + col2Width + pxToMm(30), y + pxToMm(60));
+                doc.setFontSize(pt(78));
+                doc.text('Product', col1 + px(60), y + px(84));
+                doc.text('Grade/Size', col2 + px(60), y + px(84));
+                doc.text('Price', col3 + px(60), y + px(84));
 
-                // Column dividers
+                // White column dividers
                 doc.setDrawColor(255, 255, 255);
-                doc.setLineWidth(pxToMm(6));
-                doc.line(margin + col1Width, y, margin + col1Width, y + colHeaderHeight);
-                doc.line(margin + col1Width + col2Width, y, margin + col1Width + col2Width, y + colHeaderHeight);
-                y += colHeaderHeight;
+                doc.setLineWidth(px(6));
+                doc.line(col2, y, col2, y + rowHeight);
+                doc.line(col3, y, col3, y + rowHeight);
+                y += rowHeight;
 
                 // Data rows
                 for (let i = 0; i < availableItems.length; i++) {
                     const item = availableItems[i];
 
-                    // Alternating row background
-                    if (i % 2 === 0) {
-                        doc.setFillColor(255, 255, 255);
-                    } else {
-                        doc.setFillColor(241, 250, 238); // #f1faee
-                    }
-                    doc.rect(margin, y, contentWidth, rowHeight, 'F');
+                    // Alternating background
+                    doc.setFillColor(i % 2 === 1 ? 241 : 255, i % 2 === 1 ? 250 : 255, i % 2 === 1 ? 238 : 255);
+                    doc.rect(margin, y, tableWidth, rowHeight, 'F');
 
-                    // Row border
+                    // Borders
                     doc.setDrawColor(216, 243, 220); // #d8f3dc
-                    doc.setLineWidth(pxToMm(3));
-                    doc.rect(margin, y, contentWidth, rowHeight, 'S');
-                    doc.line(margin + col1Width, y, margin + col1Width, y + rowHeight);
-                    doc.line(margin + col1Width + col2Width, y, margin + col1Width + col2Width, y + rowHeight);
+                    doc.setLineWidth(px(3));
+                    doc.rect(margin, y, tableWidth, rowHeight, 'S');
+                    doc.line(col2, y, col2, y + rowHeight);
+                    doc.line(col3, y, col3, y + rowHeight);
 
-                    // Product name
+                    // Product text
                     doc.setTextColor(33, 37, 41); // #212529
                     doc.setFont('helvetica', 'normal');
-                    doc.setFontSize(pxToMm(54) * 2.83);
-                    const productText = item[0] ? item[0].toString() : '';
-                    doc.text(productText, margin + pxToMm(30), y + pxToMm(88));
+                    doc.setFontSize(pt(72));
+                    doc.text(item[0] ? item[0].toString() : '', col1 + px(60), y + px(84));
 
-                    // Grade/Size
-                    doc.setTextColor(107, 114, 128); // #6b7280
-                    const gradeText = item[1] ? item[1].toString() : '';
-                    doc.text(gradeText, margin + col1Width + pxToMm(30), y + pxToMm(88));
+                    // Grade text
+                    doc.text(item[1] ? item[1].toString() : '', col2 + px(60), y + px(84));
 
-                    // Price - bold dark green
+                    // Price - bold
                     doc.setTextColor(27, 67, 50); // #1b4332
                     doc.setFont('helvetica', 'bold');
-                    doc.setFontSize(pxToMm(60) * 2.83);
-                    doc.text(formatPriceWithSymbol(item[2]), margin + col1Width + col2Width + pxToMm(30), y + pxToMm(88));
+                    doc.setFontSize(pt(78));
+                    doc.text(formatPriceWithSymbol(item[2]), col3 + px(60), y + px(84));
 
                     y += rowHeight;
                 }
-                y += pxToMm(60); // Space after category
+                y += px(75); // Space after category
             }
 
-            // === NOTES SECTION ===
-            y += pxToMm(30);
-            const notesHeight = pxToMm(400);
-            doc.setFillColor(250, 253, 247); // #fafdf7
-            doc.roundedRect(margin, y, contentWidth, notesHeight, pxToMm(24), pxToMm(24), 'F');
-
+            // === NOTES ===
+            y += px(45);
             doc.setTextColor(45, 106, 79); // #2d6a4f
             doc.setFont('helvetica', 'bold');
-            doc.setFontSize(pxToMm(54) * 2.83);
-            doc.text('NOTES', margin + pxToMm(45), y + pxToMm(75));
+            doc.setFontSize(pt(96));
+            doc.text('NOTES:', margin, y + px(90));
+            y += px(150);
 
             doc.setTextColor(73, 80, 87); // #495057
             doc.setFont('helvetica', 'normal');
-            doc.setFontSize(pxToMm(42) * 2.83);
+            doc.setFontSize(pt(60));
             const notes = [
-                '• All prices are wholesale rates and subject to change',
+                '• All prices are wholesale rates',
                 '• Prices subject to availability and market conditions',
                 '• Quality guaranteed - fresh daily from Sydney Markets',
                 '• Contact us for bulk pricing and special requests'
             ];
-            let noteY = y + pxToMm(150);
             notes.forEach(note => {
-                doc.text(note, margin + pxToMm(45), noteY);
-                noteY += pxToMm(60);
+                doc.text(note, margin + px(60), y + px(66));
+                y += px(96);
             });
 
             // Generate and share
