@@ -18,6 +18,9 @@
     <!-- JSZip for XPS file parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -3025,12 +3028,20 @@
                         <span style="font-size: 13px; font-weight: 600; color: #0f172a;">Customers</span>
                     </button>
 
-                    <!-- Download -->
+                    <!-- Download Image -->
                     <button onclick="closeShareMenu(); downloadImage();" style="background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: all 0.15s;">
                         <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #0f172a 0%, #334155 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         </div>
-                        <span style="font-size: 13px; font-weight: 600; color: #0f172a;">Download</span>
+                        <span style="font-size: 13px; font-weight: 600; color: #0f172a;">Image</span>
+                    </button>
+
+                    <!-- Download PDF -->
+                    <button onclick="closeShareMenu(); downloadPDF();" style="background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: all 0.15s;">
+                        <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        </div>
+                        <span style="font-size: 13px; font-weight: 600; color: #0f172a;">PDF</span>
                     </button>
                 </div>
 
@@ -10804,6 +10815,288 @@ Response format (JSON only, no markdown):
                 } catch (error) {
                     console.error('Error:', error);
                     alert('Error generating image: ' + error.message);
+                    loading.classList.remove('show');
+                }
+            });
+        }
+
+        // Download as PDF - Vector sharp text
+        function downloadPDF() {
+            console.log('Starting PDF generation...');
+            collectData();
+
+            // Validate: Check for empty prices
+            let hasEmptyPrices = false;
+            let emptyPriceProducts = [];
+
+            for (const categoryName in priceData) {
+                const items = priceData[categoryName];
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    const price = (item[2] || '').toString().trim();
+                    if (price === '') {
+                        hasEmptyPrices = true;
+                        emptyPriceProducts.push(categoryName + ': ' + item[0]);
+                    }
+                }
+            }
+
+            if (hasEmptyPrices) {
+                let errorMessage;
+                if (emptyPriceProducts.length > 5) {
+                    const firstFive = emptyPriceProducts.slice(0, 5).join('\n- ');
+                    const remaining = emptyPriceProducts.length - 5;
+                    errorMessage = 'ERROR: Cannot generate PDF!\n\n' + emptyPriceProducts.length + ' products have empty prices:\n\n- ' + firstFive + '\n\n...and ' + remaining + ' more.\n\nPlease fill in all prices or mark as "NA" if not available.';
+                } else {
+                    const productList = emptyPriceProducts.join('\n- ');
+                    errorMessage = 'ERROR: Cannot generate PDF!\n\nThe following products have empty prices:\n\n- ' + productList + '\n\nPlease fill in all prices or mark as "NA" if not available.';
+                }
+                alert(errorMessage);
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            loading.classList.add('show');
+
+            requestAnimationFrame(() => {
+                try {
+                    const { jsPDF } = window.jspdf;
+
+                    // A4 size in mm: 210 x 297
+                    const pageWidth = 210;
+                    const pageHeight = 297;
+                    const margin = 15;
+                    const contentWidth = pageWidth - 2 * margin;
+
+                    const doc = new jsPDF({
+                        orientation: 'portrait',
+                        unit: 'mm',
+                        format: 'a4'
+                    });
+
+                    let y = 15;
+
+                    // Helper to check page break
+                    function checkPageBreak(neededHeight) {
+                        if (y + neededHeight > pageHeight - 15) {
+                            doc.addPage();
+                            y = 15;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    // Helper to convert hex to RGB
+                    function hexToRgb(hex) {
+                        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                        return result ? {
+                            r: parseInt(result[1], 16),
+                            g: parseInt(result[2], 16),
+                            b: parseInt(result[3], 16)
+                        } : { r: 0, g: 0, b: 0 };
+                    }
+
+                    // Header background
+                    const headerBg = hexToRgb('#fafdf7');
+                    doc.setFillColor(headerBg.r, headerBg.g, headerBg.b);
+                    const headerHeight = (salesmanInfo.name || salesmanInfo.phone) ? 55 : 45;
+                    doc.rect(0, 0, pageWidth, headerHeight, 'F');
+
+                    // Company name
+                    const companyColor = hexToRgb('#2d6a4f');
+                    doc.setTextColor(companyColor.r, companyColor.g, companyColor.b);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(18);
+                    doc.text('EVERFRESH PRODUCE GROUP', pageWidth / 2, y, { align: 'center' });
+                    y += 8;
+
+                    // Title
+                    const titleColor = hexToRgb('#52b788');
+                    doc.setTextColor(titleColor.r, titleColor.g, titleColor.b);
+                    doc.setFontSize(14);
+                    doc.text('WHOLESALE PRICE LIST', pageWidth / 2, y, { align: 'center' });
+                    y += 8;
+
+                    // Address and Date
+                    doc.setTextColor(companyColor.r, companyColor.g, companyColor.b);
+                    doc.setFontSize(8);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('Stand 275, Shed C, Sydney Markets', margin, y);
+
+                    const effectiveDate = getEffectiveDate();
+                    const formattedDate = effectiveDate.toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' });
+                    doc.text('Effective: ' + formattedDate, pageWidth - margin, y, { align: 'right' });
+                    y += 6;
+
+                    // Contact box
+                    if (salesmanInfo.name || salesmanInfo.phone) {
+                        const boxBg = hexToRgb('#d8f3dc');
+                        const boxBorder = hexToRgb('#52b788');
+                        doc.setFillColor(boxBg.r, boxBg.g, boxBg.b);
+                        doc.setDrawColor(boxBorder.r, boxBorder.g, boxBorder.b);
+                        doc.setLineWidth(0.3);
+                        doc.rect(margin, y, contentWidth, 8, 'FD');
+
+                        const contactColor = hexToRgb('#1b4332');
+                        doc.setTextColor(contactColor.r, contactColor.g, contactColor.b);
+                        doc.setFontSize(9);
+                        doc.setFont('helvetica', 'bold');
+
+                        if (salesmanInfo.name && salesmanInfo.phone) {
+                            doc.text('Sales Contact: ' + salesmanInfo.name, margin + 3, y + 5.5);
+                            doc.text(salesmanInfo.phone, pageWidth - margin - 3, y + 5.5, { align: 'right' });
+                        } else if (salesmanInfo.name) {
+                            doc.text('Sales Contact: ' + salesmanInfo.name, margin + 3, y + 5.5);
+                        } else {
+                            doc.text('Sales Contact: ' + salesmanInfo.phone, margin + 3, y + 5.5);
+                        }
+                        y += 12;
+                    } else {
+                        y += 4;
+                    }
+
+                    // Separator line
+                    const sepColor = hexToRgb('#b7e4c7');
+                    doc.setDrawColor(sepColor.r, sepColor.g, sepColor.b);
+                    doc.setLineWidth(0.3);
+                    doc.line(margin, y, pageWidth - margin, y);
+                    y += 5;
+
+                    // Table setup
+                    const col1 = margin;
+                    const col2 = margin + contentWidth * 0.45;
+                    const col3 = margin + contentWidth * 0.80;
+                    const rowHeight = 6;
+
+                    // Draw each category
+                    for (const categoryName in priceData) {
+                        const items = priceData[categoryName];
+
+                        // Filter out NA items
+                        const availableItems = items.filter(item => {
+                            const price = (item[2] || '').toString().trim();
+                            if (price === '') return false;
+                            const cleanedPrice = price.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                            return cleanedPrice !== 'na' && cleanedPrice !== 'notavailable';
+                        });
+
+                        if (availableItems.length === 0) continue;
+
+                        // Check if we need a new page for this category
+                        const categoryHeight = 12 + (availableItems.length * rowHeight) + 5;
+                        checkPageBreak(categoryHeight);
+
+                        // Category header
+                        const catBg = hexToRgb('#40916c');
+                        const catBorder = hexToRgb('#2d6a4f');
+                        doc.setFillColor(catBg.r, catBg.g, catBg.b);
+                        doc.setDrawColor(catBorder.r, catBorder.g, catBorder.b);
+                        doc.setLineWidth(0.2);
+                        doc.rect(margin, y, contentWidth, 8, 'FD');
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(11);
+                        doc.text(categoryName, col1 + 3, y + 5.5);
+                        y += 8;
+
+                        // Column headers
+                        const colHeaderBg = hexToRgb('#74c69d');
+                        doc.setFillColor(colHeaderBg.r, colHeaderBg.g, colHeaderBg.b);
+                        doc.rect(margin, y, contentWidth, rowHeight, 'FD');
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(8);
+                        doc.setFont('helvetica', 'bold');
+                        doc.text('Product', col1 + 2, y + 4);
+                        doc.text('Grade/Size', col2 + 2, y + 4);
+                        doc.text('Price', col3 + 2, y + 4);
+
+                        // Column dividers (white)
+                        doc.setDrawColor(255, 255, 255);
+                        doc.setLineWidth(0.2);
+                        doc.line(col2, y, col2, y + rowHeight);
+                        doc.line(col3, y, col3, y + rowHeight);
+                        y += rowHeight;
+
+                        // Data rows
+                        for (let i = 0; i < availableItems.length; i++) {
+                            checkPageBreak(rowHeight);
+
+                            const item = availableItems[i];
+
+                            // Alternating background
+                            if (i % 2 === 1) {
+                                const altBg = hexToRgb('#f1faee');
+                                doc.setFillColor(altBg.r, altBg.g, altBg.b);
+                                doc.rect(margin, y, contentWidth, rowHeight, 'F');
+                            }
+
+                            // Border
+                            const borderColor = hexToRgb('#d8f3dc');
+                            doc.setDrawColor(borderColor.r, borderColor.g, borderColor.b);
+                            doc.setLineWidth(0.1);
+                            doc.rect(margin, y, contentWidth, rowHeight, 'S');
+                            doc.line(col2, y, col2, y + rowHeight);
+                            doc.line(col3, y, col3, y + rowHeight);
+
+                            // Text
+                            const textColor = hexToRgb('#212529');
+                            doc.setTextColor(textColor.r, textColor.g, textColor.b);
+                            doc.setFont('helvetica', 'normal');
+                            doc.setFontSize(8);
+
+                            // Truncate text to fit columns
+                            const productText = item[0] ? item[0].toString().substring(0, 30) : '';
+                            const gradeText = item[1] ? item[1].toString().substring(0, 20) : '';
+                            doc.text(productText, col1 + 2, y + 4);
+                            doc.text(gradeText, col2 + 2, y + 4);
+
+                            // Price
+                            const priceColor = hexToRgb('#1b4332');
+                            doc.setTextColor(priceColor.r, priceColor.g, priceColor.b);
+                            doc.setFont('helvetica', 'bold');
+                            doc.text(formatPriceWithSymbol(item[2]), col3 + 2, y + 4);
+
+                            y += rowHeight;
+                        }
+                        y += 4;
+                    }
+
+                    // Notes section
+                    checkPageBreak(35);
+                    y += 3;
+                    const noteTitleColor = hexToRgb('#2d6a4f');
+                    doc.setTextColor(noteTitleColor.r, noteTitleColor.g, noteTitleColor.b);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(10);
+                    doc.text('NOTES:', margin, y);
+                    y += 6;
+
+                    const noteColor = hexToRgb('#495057');
+                    doc.setTextColor(noteColor.r, noteColor.g, noteColor.b);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(7);
+                    const notes = [
+                        '• All prices are wholesale rates',
+                        '• Prices subject to availability and market conditions',
+                        '• Quality guaranteed - fresh daily from Sydney Markets',
+                        '• Contact us for bulk pricing and special requests'
+                    ];
+                    notes.forEach(note => {
+                        doc.text(note, margin + 3, y);
+                        y += 4;
+                    });
+
+                    // Download
+                    const dateStr = new Date().toISOString().split('T')[0];
+                    const filename = 'everfresh-price-list-' + dateStr + '.pdf';
+                    doc.save(filename);
+
+                    console.log('PDF download complete!');
+                    loading.classList.remove('show');
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error generating PDF: ' + error.message);
                     loading.classList.remove('show');
                 }
             });
