@@ -12602,9 +12602,11 @@ Response format (JSON only, no markdown):
             const customer = customerContacts[index];
             const phone = customer.phone.replace(/\D/g, '');
 
-            // If image not prepared yet, prompt to prepare first
-            if (!imageSavedThisSession) {
-                showToast('Please tap "Prepare" first to save the image');
+            // Check saved status based on current format
+            const isPrepared = currentShareFormat === 'image' ? imageSavedThisSession : pdfSavedThisSession;
+            if (!isPrepared) {
+                const formatLabel = currentShareFormat === 'image' ? 'image' : 'PDF';
+                showToast(`Please tap "Prepare" first to save the ${formatLabel}`);
                 return;
             }
 
@@ -12631,7 +12633,8 @@ Response format (JSON only, no markdown):
                 const shortcutInput = `${phone},${message}`;
                 // Use x-callback-url to return to Chrome after shortcut completes
                 const returnUrl = encodeURIComponent(window.location.href);
-                const shortcutUrl = `shortcuts://x-callback-url/run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}&x-success=${returnUrl}&x-cancel=${returnUrl}`;
+                const shortcutName = currentShareFormat === 'image' ? 'Everfresh%20Pricelist' : 'Everfresh%20Pricelist%20pdf';
+                const shortcutUrl = `shortcuts://x-callback-url/run-shortcut?name=${shortcutName}&input=text&text=${encodeURIComponent(shortcutInput)}&x-success=${returnUrl}&x-cancel=${returnUrl}`;
                 // Mark that we're in sending mode so popup reopens on return
                 localStorage.setItem('everfresh_sendingMode', 'true');
                 window.location.href = shortcutUrl;
@@ -12650,7 +12653,8 @@ Response format (JSON only, no markdown):
             if (method === 'imessage' && !isIOS()) {
                 const shortcutInput = `${phone},${message}`;
                 const returnUrl = encodeURIComponent(window.location.href);
-                const shortcutUrl = `shortcuts://x-callback-url/run-shortcut?name=Everfresh%20Pricelist&input=text&text=${encodeURIComponent(shortcutInput)}&x-success=${returnUrl}&x-cancel=${returnUrl}`;
+                const shortcutName = currentShareFormat === 'image' ? 'Everfresh%20Pricelist' : 'Everfresh%20Pricelist%20pdf';
+                const shortcutUrl = `shortcuts://x-callback-url/run-shortcut?name=${shortcutName}&input=text&text=${encodeURIComponent(shortcutInput)}&x-success=${returnUrl}&x-cancel=${returnUrl}`;
                 window.location.href = shortcutUrl;
             }
         }
